@@ -4,6 +4,7 @@ import ij.util.*;
 import ij.gui.ImageWindow;
 import ij.plugin.MacroInstaller;
 import ij.gui.Toolbar;
+import ij.macro.Interpreter;
 import java.awt.*;
 import java.awt.image.*;
 import java.awt.event.*;
@@ -81,6 +82,7 @@ public class Menus {
 	private static Font menuFont;
 
 	static boolean jnlp; // true when using Java WebStart
+	public static int setMenuBarCount;
 		
 	Menus(ImageJ ijInstance, Applet appletInstance) {
 		ij = ijInstance;
@@ -152,7 +154,7 @@ public class Menus {
 			
 		image.addSeparator();
 		getMenu("Image>Adjust", true);
-		addPlugInItem(image, "Show Info...", "ij.plugin.filter.Info", KeyEvent.VK_I, false);
+		addPlugInItem(image, "Show Info...", "ij.plugin.ImageInfo", KeyEvent.VK_I, false);
 		addPlugInItem(image, "Properties...", "ij.plugin.filter.ImageProperties", KeyEvent.VK_P, true);
 		getMenu("Image>Color", true);
 		getMenu("Image>Stacks", true);
@@ -248,8 +250,10 @@ public class Menus {
 
 		if (fontSize!=0)
 			mbar.setFont(getFont());
-		if (ij!=null)
+		if (ij!=null) {
 			ij.setMenuBar(mbar);
+			Menus.setMenuBarCount++;
+		}
 		
 		if (pluginError!=null)
 			error = error!=null?error+="\n"+pluginError:pluginError;
@@ -267,6 +271,7 @@ public class Menus {
 		addExample(submenu, "Semi-log Plot", "Semi-log_Plot.ijm");
 		addExample(submenu, "Arrow Plot", "Arrow_Plot.ijm");
 		addExample(submenu, "Process Folder", "Batch_Process_Folder.ijm");
+		addExample(submenu, "OpenDialog Demo", "OpenDialog_Demo.ijm");
 		addExample(submenu, "Sine/Cosine Table", "Sine_Cosine_Table.ijm");
 		addExample(submenu, "Non-numeric Table", "Non-numeric_Table.ijm");
 		addExample(submenu, "Overlay", "Overlay.ijm");
@@ -288,6 +293,7 @@ public class Menus {
 		addExample(submenu, "Overlay", "Overlay.js");
 		addExample(submenu, "Stack Overlay", "Stack_Overlay.js");
 		addExample(submenu, "Dual Progress Bars", "Dual_Progress_Bars.js");
+		addExample(submenu, "Gamma Adjuster", "Gamma_Adjuster.js");
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 		submenu = new Menu("BeanShell");
@@ -311,8 +317,14 @@ public class Menus {
 		addExample(submenu, "Plugin Filter", "Filter_Plugin.java");
 		addExample(submenu, "Plugin Frame", "Plugin_Frame.java");
 		addExample(submenu, "Plugin Tool", "Prototype_Tool.java");
+		addExample(submenu, "Gamma Adjuster", "Gamma_Adjuster.java");
 		submenu.addActionListener(listener);
 		menu.add(submenu);
+		menu.addSeparator();
+		CheckboxMenuItem item = new CheckboxMenuItem("Autorun");
+		menu.add(item);
+		item.addItemListener(ij);
+		item.setState(Prefs.autoRunExamples);
 		return menu;
 	}
 	
@@ -645,16 +657,14 @@ public class Menus {
 			String jar = (String)jarFiles.elementAt(i);
 			InputStream is = getConfigurationFile(jar);
             if (is==null) continue;
-            int maxEntries = 100;
-            String[] entries = new String[maxEntries];
-            int nEntries=0;
+            ArrayList entries = new ArrayList(20);
             LineNumberReader lnr = new LineNumberReader(new InputStreamReader(is));
             try {
                 while(true) {
                     String s = lnr.readLine();
-                    if (s==null || nEntries==maxEntries-1) break;
+                    if (s==null) break;
 					if (s.length()>=3 && !s.startsWith("#"))
-						entries[nEntries++] = s;
+						entries.add(s);
 	            }
             }
             catch (IOException e) {}
@@ -662,8 +672,8 @@ public class Menus {
 				try {if (lnr!=null) lnr.close();}
 				catch (IOException e) {}
 			}
-			for (int j=0; j<nEntries; j++)
-				installJarPlugin(jar, entries[j]);
+			for (int j=0; j<entries.size(); j++)
+				installJarPlugin(jar, (String)entries.get(j));
 		}		
 	}
     
@@ -1289,18 +1299,8 @@ public class Menus {
 	static synchronized void addWindowMenuItem(ImagePlus imp) {
 		if (ij==null) return;
 		String name = imp.getTitle();
-		int size = (imp.getWidth()*imp.getHeight()*imp.getStackSize())/1024;
-		switch (imp.getType()) {
-			case ImagePlus.GRAY32: case ImagePlus.COLOR_RGB: // 32-bit
-				size *=4;
-				break;
-			case ImagePlus.GRAY16:  // 16-bit
-				size *= 2;
-				break;
-			default: // 8-bit
-				;
-		}
-		CheckboxMenuItem item = new CheckboxMenuItem(name + " " + size + "K");
+		String size = ImageWindow.getImageSize(imp);
+		CheckboxMenuItem item = new CheckboxMenuItem(name+" "+size);
 		item.setActionCommand("" + imp.getID());
 		window.add(item);
 		item.addItemListener(ij);
@@ -1309,7 +1309,8 @@ public class Menus {
 	/** Removes the specified item from the Window menu. */
 	static synchronized void removeWindowMenuItem(int index) {
 		//IJ.log("removeWindowMenuItem: "+index+" "+windowMenuItems2+" "+window.getItemCount());
-		if (ij==null) return;
+		if (ij==null)
+			return;
 		try {
 			if (index>=0 && index<window.getItemCount()) {
 				window.remove(WINDOW_MENU_ITEMS+index);
@@ -1326,27 +1327,33 @@ public class Menus {
 
 	/** Changes the name of an item in the Window menu. */
 	public static synchronized void updateWindowMenuItem(String oldLabel, String newLabel) {
-		if (oldLabel==null || oldLabel.equals(newLabel))
+		updateWindowMenuItem(null, oldLabel, newLabel);
+	}
+
+	/** Changes the name of an item in the Window menu. */
+	public static synchronized void updateWindowMenuItem(ImagePlus imp, String oldLabel, String newLabel) {
+		if (oldLabel==null || newLabel==null)
 			return;
 		int first = WINDOW_MENU_ITEMS;
-		int last = window.getItemCount()-1;
-		//IJ.write("updateWindowMenuItem: "+" "+first+" "+last+" "+oldLabel+" "+newLabel);
+		int count = window.getItemCount();
 		try {  // workaround for Linux/Java 5.0/bug
-			for (int i=first; i<=last; i++) {
+			for (int i=first; i<count; i++) {
 				MenuItem item = window.getItem(i);
-				//IJ.write(i+" "+item.getLabel()+" "+newLabel);
 				String label = item.getLabel();
-				if (item!=null && label.startsWith(oldLabel)) {
-					if (label.endsWith("K")) {
-						int index = label.lastIndexOf(' ');
-						if (index>-1)
-							newLabel += label.substring(index, label.length());
-					}
-					item.setLabel(newLabel);
+				if (imp!=null) {  //remove size (e.g. " 24MB")
+					int index = label.lastIndexOf(" ");
+					if (index>-1)
+						label = label.substring(0, index);
+				}
+				if (item!=null && label.equals(oldLabel)) {
+					String size = "";
+					if (imp!=null)
+						size =  " " + ImageWindow.getImageSize(imp);
+					item.setLabel(newLabel+size);
 					return;
 				}
 			}
-		} catch (NullPointerException e) {}
+		} catch (Exception e) {}
 	}
 	
 	/** Adds a file path to the beginning of the File/Open Recent submenu. */
@@ -1609,4 +1616,5 @@ public class Menus {
 		IJ.runPlugIn("ij.plugin.ClassChecker", "");
 		IJ.showStatus("Menus updated: "+m.nPlugins + " commands, " + m.nMacros + " macros");
 	}
+	
 }

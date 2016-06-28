@@ -193,6 +193,8 @@ public class ImageStack {
 		if (n<1 || n>nSlices)
 			throw new IllegalArgumentException(outOfRange+n);
 		stack[n-1] = pixels;
+		if (type==UNKNOWN)
+			setType(pixels);
 	}
 	
 	/** Returns the stack as an array of 1D pixel arrays. Note
@@ -206,6 +208,11 @@ public class ImageStack {
 	/** Returns the number of slices in this stack. */
 	public int getSize() {
 		return nSlices;
+	}
+
+	/** Returns the number of slices in this stack. */
+	public int size() {
+		return getSize();
 	}
 
 	/** Returns the slice labels as an array of Strings. Note
@@ -339,7 +346,12 @@ public class ImageStack {
 		return ("stack["+getWidth()+"x"+getHeight()+"x"+getSize()+v+"]");
 	}
 	
-	/** Returns, as a double, the specified voxel. */
+	/** Returns, as a double, the specified voxel. Returns
+	 * NaN if x, y or z are beyond the stack limits. Use the
+	 * ImagePlus.getStackIndex() method to convert a C,Z,T
+	 * hyperstack position (one-based) into a z index (zero-based).
+	 * @see ij.ImagePlus#getStackIndex
+	*/
 	public final double getVoxel(int x, int y, int z) {
 		if (x>=0 && x<width && y>=0 && y<height && z>=0 && z<nSlices) {
 			switch (type) {
@@ -355,10 +367,10 @@ public class ImageStack {
 				case RGB:
 					int[] ints = (int[])stack[z];
 					return ints[y*width+x]&0xffffffff;
-				default: return 0.0;
+				default: return Double.NaN;
 			}
 		} else
-			return 0.0;
+			throw new IndexOutOfBoundsException();
 	}
 		
 	/* Sets the value of the specified voxel. */

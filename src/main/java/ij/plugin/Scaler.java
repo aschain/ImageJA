@@ -16,6 +16,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 	private String zstr = "1.0";
 	private static int newWidth, newHeight;
 	private int newDepth;
+	private boolean doZScaling;
     private static boolean averageWhenDownsizing = true;
 	private static boolean newWindow = true;
 	private static int interpolationMethod = ImageProcessor.BILINEAR;
@@ -40,7 +41,8 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		ImageProcessor ip = imp.getProcessor();
 		if (!showDialog(ip))
 			return;
-		if (newDepth>0 && newDepth!=oldDepth) {
+		doZScaling = newDepth>0 && newDepth!=oldDepth;
+		if (doZScaling) {
 			newWindow = true;
 			processStack = true;
 		}
@@ -53,8 +55,16 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		try {
 			if (newWindow && imp.getStackSize()>1 && processStack)
 				createNewStack(imp, ip);
-			else
-				scale(ip);
+			else {
+				Overlay overlay = imp.getOverlay();
+				if (imp.getHideOverlay())
+					overlay = null;
+				if (overlay!=null && overlay.size()!=1)
+					overlay = null;
+				if (overlay!=null)
+					overlay = overlay.duplicate();
+				scale(ip, overlay);
+			}
 		}
 		catch(OutOfMemoryError o) {
 			IJ.outOfMemory("Scale");
@@ -94,6 +104,27 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			cal.pixelWidth *= 1.0/xscale;
 			cal.pixelHeight *= 1.0/yscale;
 		}
+		Overlay overlay = imp.getOverlay();
+		if (imp.getHideOverlay())
+			overlay = null;
+		if (overlay!=null) {
+			overlay = overlay.duplicate();
+			Overlay overlay2 = new Overlay();
+			for (int i=0; i<overlay.size(); i++) {
+				Roi roi = overlay.get(i);
+				Rectangle bounds = roi.getBounds();
+				if (roi instanceof ImageRoi && bounds.x==0 && bounds.y==0) {
+					ImageRoi iroi = (ImageRoi)roi;
+					ImageProcessor processor = iroi.getProcessor();
+					processor.setInterpolationMethod(method);
+					processor = processor.resize(newWidth, newHeight, averageWhenDownsizing);
+					iroi.setProcessor(processor);
+					overlay2.add(iroi);
+				}
+			}
+			if (overlay2.size()>0)
+				imp2.setOverlay(overlay2);
+		}
 		IJ.showProgress(1.0);
 		int[] dim = imp.getDimensions();
 		imp2.setDimensions(dim[2], dim[3], dim[4]);
@@ -103,7 +134,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		}
 		if (imp.isHyperStack())
 			imp2.setOpenAsHyperStack(true);
-		if (newDepth>0 && newDepth!=oldDepth) {
+		if (doZScaling) {
 			Resizer resizer = new Resizer();
 			resizer.setAverageWhenDownsizing(averageWhenDownsizing);
 			imp2 = resizer.zScale(imp2, newDepth, interpolationMethod);
@@ -114,7 +145,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		}
 	}
 
-	void scale(ImageProcessor ip) {
+	private void scale(ImageProcessor ip, Overlay overlay) {
 		if (newWindow) {
 			Rectangle r = ip.getRoi();
 			ImagePlus imp2 = imp.createImagePlus();
@@ -123,6 +154,18 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			if (cal.scaled()) {
 				cal.pixelWidth *= 1.0/xscale;
 				cal.pixelHeight *= 1.0/yscale;
+			}
+			if (overlay!=null) {
+				Roi roi = overlay.get(0);
+				Rectangle bounds = roi.getBounds();
+				if (roi instanceof ImageRoi && bounds.x==0 && bounds.y==0) {
+					ImageRoi iroi = (ImageRoi)roi;
+					ImageProcessor processor = iroi.getProcessor();
+					processor.setInterpolationMethod(interpolationMethod);
+					processor =processor.resize(newWidth, newHeight, averageWhenDownsizing);
+					iroi.setProcessor(processor);
+					imp2.setOverlay(new Overlay(iroi));
+				}
 			}
 			imp2.show();
 			imp.trimProcessor();
@@ -238,7 +281,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		yscale = Tools.parseDouble(ystr, 0.0);
 		if (isStack) {
 			zstr = gd.getNextString();
-			zscale = Tools.parseDouble(ystr, 0.0);
+			zscale = Tools.parseDouble(zstr, 0.0);
 		}
 		String wstr = gd.getNextString();
 		newWidth = (int)Tools.parseDouble(wstr, 0);
@@ -253,8 +296,11 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			newWidth = (int)(r.width*xscale);
 			newHeight = (int)(r.height*yscale);
 		}
-		if (isStack)
+		if (isStack) {
 			newDepth = (int)Tools.parseDouble(gd.getNextString(), 0);
+			if (newDepth==stackSize && zscale!=1.0 && zscale>0.0)
+				newDepth = (int)(stackSize*zscale);
+		}
 		interpolationMethod = gd.getNextChoiceIndex();
 		if (bitDepth==8 || bitDepth==24)
 			fillWithBackground = gd.getNextBoolean();
@@ -268,6 +314,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			xscale = (double)newWidth/r.width;
 			yscale = (double)newHeight/r.height;
 		}
+		gd.setSmartRecording(true);
 		title = gd.getNextString();
 
 		if (fillWithBackground) {

@@ -90,6 +90,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	private static int default16bitDisplayRange;
 	private boolean antialiasRendering = true;
 	private boolean ignoreGlobalCalibration;
+	public boolean setIJMenuBar = true;
+	public boolean typeSet;
 	
 
     /** Constructs an uninitialized ImagePlus. */
@@ -156,6 +158,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		if (locked) {
 			IJ.beep();
 			IJ.showStatus("\"" + title + "\" is locked");
+			if (IJ.macroRunning())
+				IJ.wait(500);
 			return false;
         } else {
         	locked = true;
@@ -816,42 +820,38 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		return mask;
 	}
 
-	/** Returns an ImageStatistics object generated using the standard
-		measurement options (area, mean, mode, min and max).
-		This plugin demonstrates how get the area, mean and max of the
+	/** Returns an ImageStatistics object generated using all
+		measurement options. This code demonstrates how
+		to get the area, mean, max and median of the
 		current image or selection:
 		<pre>
-   public class Get_Statistics implements PlugIn {
-      public void run(String arg) {
-         ImagePlus imp = IJ.getImage();
-         ImageStatistics stats = imp.getStatistics();
+         imp = IJ.getImage();
+         stats = imp.getStatistics();
          IJ.log("Area: "+stats.area);
          IJ.log("Mean: "+stats.mean);
          IJ.log("Max: "+stats.max);
-      }
-   }
+         IJ.log("Median: "+stats.median);
 		</pre>
 		@see ij.process.ImageStatistics
 		@see ij.process.ImageStatistics#getStatistics
 		*/
 	public ImageStatistics getStatistics() {
-		return getStatistics(AREA+MEAN+MODE+MIN_MAX);
+		return getStatistics(ALL_STATS);
 	}
 	
+	/** Returns an ImageStatistics object generated using all 
+		measurement options and ignoring calibration. */
+	public ImageStatistics getRawStatistics() {
+		setupProcessor();
+		if (roi!=null && roi.isArea())
+			ip.setRoi(roi);
+		else
+			ip.resetRoi();
+		return ImageStatistics.getStatistics(ip);
+	}
+
 	/** Returns an ImageStatistics object generated using the
-		specified measurement options. This plugin demonstrates how
-		get the area and centroid of the current selection:
-		<pre>
-   public class Get_Statistics implements PlugIn, Measurements {
-      public void run(String arg) {
-         ImagePlus imp = IJ.getImage();
-         ImageStatistics stats = imp.getStatistics(MEDIAN+CENTROID);
-         IJ.log("Median: "+stats.median);
-         IJ.log("xCentroid: "+stats.xCentroid);
-         IJ.log("yCentroid: "+stats.yCentroid);
-      }
-   }
-		</pre>
+		specified measurement options.
 		@see ij.process.ImageStatistics
 		@see ij.measure.Measurements
 	*/
@@ -917,7 +917,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			return;
     	if (win!=null) {
     		if (ij!=null)
-				Menus.updateWindowMenuItem(this.title, title);
+				Menus.updateWindowMenuItem(this, this.title, title);
 			String virtual = stack!=null && stack.isVirtual()?" (V)":"";
 			String global = getGlobalCalibration()!=null?" (G)":"";
 			String scale = "";
@@ -1080,8 +1080,11 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     	return imageType;
     }
 
-    /** Returns the bit depth, 8, 16, 24 (RGB) or 32. RGB images actually use 32 bits per pixel. */
+    /** Returns the bit depth, 8, 16, 24 (RGB) or 32, or 0 if the bit depth 
+    	is unknown. RGB images actually use 32 bits per pixel. */
     public int getBitDepth() {
+    	if (imageType==GRAY8 && ip==null && img==null && !typeSet)
+    		return 0;
     	int bitDepth = 0;
     	switch (imageType) {
 	    	case GRAY8: case COLOR_256: bitDepth=8; break;
@@ -1101,17 +1104,18 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     	}
 	}
 
-    protected void setType(int type) {
-    	if ((type<0) || (type>COLOR_RGB))
-    		return;
-    	int previousType = imageType;
-    	imageType = type;
+	protected void setType(int type) {
+		if ((type<0) || (type>COLOR_RGB))
+			return;
+		int previousType = imageType;
+		imageType = type;
+		typeSet = true;
 		if (imageType!=previousType) {
 			if (win!=null)
 				Menus.updateMenus();
 			getLocalCalibration().setImage(this);
 		}
-    }
+	}
 		
  	/** Returns the string value from the "Info" property string  
 	 * associated with 'key', or null if the key is not found. 
@@ -1373,8 +1377,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		}
 	}
 
-	/** Returns the current stack index (one-based) or 1 if
-		this is a single image. */
+	/** Returns the current stack index (one-based) or 1 if this is a single image. */
 	public int getCurrentSlice() {
 		if (currentSlice<1) setCurrentSlice(1);
 		if (currentSlice>getStackSize())
@@ -1534,7 +1537,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			setCurrentSlice(n);
 			Object pixels = null;
 			Overlay overlay2 = null;
-			if (stack.isVirtual() && !(stack instanceof FileInfoVirtualStack)) {
+			if (stack.isVirtual() && !((stack instanceof FileInfoVirtualStack)||(stack instanceof AVI_Reader))) {
 				ImageProcessor ip2 = stack.getProcessor(currentSlice);
 				overlay2 = ip2.getOverlay();
 				if (overlay2!=null || getOverlay()!=null)
@@ -1621,7 +1624,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				ip.resetRoi();
 		}
 		roi.setImage(this);
-		if (updateDisplay) draw();
+		if (updateDisplay)
+			draw();
 		//roi.notifyListeners(RoiListener.CREATED);
 	}
 	
@@ -1714,6 +1718,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 					rm.deselect(roi);
 			}
 			roi.notifyListeners(RoiListener.DELETED);
+			if (roi instanceof PointRoi)
+				((PointRoi)roi).resetCounters();
 			roi = null;
 			if (ip!=null)
 				ip.resetRoi();
@@ -1726,7 +1732,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		deleteRoi();
 	}
 
-	public void saveRoi() {
+	public synchronized void saveRoi() {
 		if (roi!=null) {
 			roi.endPaste();
 			Rectangle r = roi.getBounds();
@@ -1983,9 +1989,20 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	}
 	
 
-	/** Returns a copy (clone) of this ImagePlus. */
+	/** Returns a copy of this image or stack, cropped if there is an ROI.
+	* @see #crop
+	* @see ij.plugin.Duplicator#run
+	*/
 	public ImagePlus duplicate() {
 		return (new Duplicator()).run(this);
+	}
+
+	/** Returns a copy this image or stack slice, cropped if there is an ROI.
+	* @see #duplicate
+	* @see ij.plugin.Duplicator#crop
+	*/
+	public ImagePlus crop() {
+		return (new Duplicator()).crop(this);
 	}
 
 	/** Returns a new ImagePlus with this image's attributes
@@ -2079,7 +2096,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 
    /** Sets this image's calibration. */
     public void setCalibration(Calibration cal) {
-		//IJ.write("setCalibration: "+cal);
 		if (cal==null)
 			calibration = null;
 		else {
@@ -2099,6 +2115,11 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     
     /** Returns the system-wide calibration, or null. */
     public Calibration getGlobalCalibration() {
+			return globalCalibration;
+    }
+
+    /** This is a version of getGlobalCalibration() that can be called from a static context. */
+    public static Calibration getStaticGlobalCalibration() {
 			return globalCalibration;
     }
 
@@ -2458,6 +2479,8 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			}
 		}
 		Overlay overlay2 = getOverlay();
+		if (overlay2!=null && imp2.getRoi()!=null)
+			imp2.deleteRoi();
 		ic2.setOverlay(overlay2);
 		ImageCanvas ic = getCanvas();
 		if (ic!=null)
@@ -2656,6 +2679,14 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 
     public String toString() {
     	return "img["+getTitle()+" ("+width+"x"+height+"x"+getNChannels()+"x"+getNSlices()+"x"+getNFrames()+")]";
+    }
+    
+    public void setIJMenuBar(boolean b) {
+    	setIJMenuBar = b;
+    }
+    
+    public boolean setIJMenuBar() {
+    	return setIJMenuBar;
     }
     
 }

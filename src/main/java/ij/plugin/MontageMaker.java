@@ -16,7 +16,8 @@ public class MontageMaker implements PlugIn {
 	private static boolean useForegroundColor;
 	private static int saveID;
 	private static int saveStackSize;
-	private static int fontSize = 12;
+	private static final int defaultFontSize = 12;
+	private static int fontSize = defaultFontSize;
 	private boolean hyperstack;
 
 	public void run(String arg) {
@@ -46,7 +47,9 @@ public class MontageMaker implements PlugIn {
 			if (ci.getMode()!=mode)
 				ci.setMode(mode);
 			imp.setPosition(channel, imp.getSlice(), imp.getFrame());
+			Calibration cal = imp.getCalibration();
 			imp = new ImagePlus(imp.getTitle(), stack);
+			imp.setCalibration(cal);
 		}
 		makeMontage(imp);
 		imp.updateImage();
@@ -61,7 +64,8 @@ public class MontageMaker implements PlugIn {
 				if (nSlices==1)
 					nSlices = imp.getNFrames();
 			}
-			if (columns==0 || !(imp.getID()==saveID || nSlices==saveStackSize)) {
+			boolean macro = Macro.getOptions()!=null;
+			if (macro || columns==0 || !(imp.getID()==saveID || nSlices==saveStackSize)) {
 				columns = (int)Math.sqrt(nSlices);
 				rows = columns;
 				int n = nSlices - columns*rows;
@@ -74,6 +78,12 @@ public class MontageMaker implements PlugIn {
 				inc = 1;
 				first = 1;
 				last = nSlices;
+			}
+			if (macro) {
+				fontSize = defaultFontSize;
+				borderWidth = 0;
+				label = false;
+				useForegroundColor = false;
 			}
 			saveStackSize = nSlices;
 			
@@ -96,6 +106,7 @@ public class MontageMaker implements PlugIn {
 			columns = (int)gd.getNextNumber();
 			rows = (int)gd.getNextNumber();
 			scale = gd.getNextNumber();
+			gd.setSmartRecording(true);
 			if (!hyperstack) {
 				first = (int)gd.getNextNumber();
 				last = (int)gd.getNextNumber();
@@ -122,6 +133,13 @@ public class MontageMaker implements PlugIn {
 				imp2 = makeMontage2(imp, columns, rows, scale, first, last, inc, borderWidth, label);
 			if (imp2!=null)
 				imp2.show();
+			if (macro) {
+				fontSize = defaultFontSize;
+				borderWidth = 0;
+				label = false;
+				useForegroundColor = false;
+				columns = 0;
+			}
 	}
 	
 	/** Creates a montage and displays it. */
@@ -219,6 +237,7 @@ public class MontageMaker implements PlugIn {
 			montages[i] = makeMontage2(channels[i], columns, rows, scale, 1, last, inc, borderWidth, labels);
 		}
 		ImagePlus montage = (new RGBStackMerge()).mergeHyperstacks(montages, false);
+		montage.setCalibration(montages[0].getCalibration());
 		montage.setTitle("Montage");
 		return montage;
 	}

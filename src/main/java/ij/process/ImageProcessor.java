@@ -1118,6 +1118,31 @@ public abstract class ImageProcessor implements Cloneable {
 		lineTo(x2, y2);
 	}
 
+	/* Draws a line using the Bresenham's algorithm that is 4-connected instead of 8-connected.<br>
+		Based on code from http://stackoverflow.com/questions/5186939/algorithm-for-drawing-a-4-connected-line<br>
+		Author: Gabriel Landini (G.Landini at bham.ac.uk)
+	*/
+	 public void drawLine4(int x1, int y1, int x2, int y2) {
+		int dx = Math.abs(x2 - x1);
+		int dy = Math.abs(y2 - y1);
+		int sgnX = x1 < x2 ? 1 : -1;
+		int sgnY = y1 < y2 ? 1 : -1;
+		int e = 0;
+		for (int i=0; i < dx+dy; i++) {
+			putPixel(x1, y1, fgColor);
+			int e1 = e + dy;
+			int e2 = e - dx;
+			if (Math.abs(e1) < Math.abs(e2)) {
+				x1 += sgnX;
+				e = e1;
+			} else {
+				y1 += sgnY;
+				e = e2;
+			}
+		}
+		putPixel(x2, y2, fgColor);
+	}
+
 	/** Draws a rectangle. */
 	public void drawRect(int x, int y, int width, int height) {
 		if (width<1 || height<1)
@@ -1199,6 +1224,7 @@ public abstract class ImageProcessor implements Cloneable {
 			}
 			setRoi(xmin, ymin, lineWidth, lineWidth);
 			fill(dotMask);
+			resetRoi();
 		}
 	}
 	
@@ -1729,7 +1755,7 @@ public abstract class ImageProcessor implements Cloneable {
 	/** Uses the current interpolation method (bilinear or bicubic)
 		to find the pixel value at real coordinates (x,y). */
 	public abstract double getInterpolatedPixel(double x, double y);
-
+	
 	/** Uses the current interpolation method to find the pixel value at real coordinates (x,y).
 		For RGB images, the argb values are packed in an int. For float images,
 		the value must be converted using Float.intBitsToFloat().  Returns zero
@@ -1804,19 +1830,6 @@ public abstract class ImageProcessor implements Cloneable {
 			z = -a*x*x*x + 5.0*a*x*x - 8.0*a*x + 4.0*a;
 		return z;
 	}	
-
-	/*
-		// a = 0.5
-	double cubic2(double x) {
-		if (x < 0) x = -x;
-		double z = 0;
-		if (x < 1)
-			z = 1.5*x*x*x + -2.5*x*x + 1.0;
-		else if (x < 2)
-			z = -0.5*x*x*x + 2.5*x*x - 4.0*x + 2.0;
-		return z;
-	}
-	*/	
 
 	private final double getInterpolatedEdgeValue(double x, double y) {
 		int xbase = (int)x;
@@ -2150,6 +2163,20 @@ public abstract class ImageProcessor implements Cloneable {
 	*/
 	public abstract int[] getHistogram();
 	
+	/** Returns the histogram of the image or ROI, using the specified number of bins. */
+	public int[] getHistogram(int nBins) {
+		ImageProcessor ip;
+		if (((this instanceof ByteProcessor)||(this instanceof ColorProcessor)) && nBins!=256)
+			ip = convertToShort(false);
+		else
+			ip = this;
+		ip.setHistogramSize(nBins);
+		ip.setHistogramRange(0.0, 0.0);
+		ImageStatistics stats = ImageStatistics.getStatistics(ip);
+		ip.setHistogramSize(256);
+		return stats.histogram;
+	}
+	
 	/** Erodes the image or ROI using a 3x3 maximum filter. Requires 8-bit or RGB image. */
 	public abstract void erode();
 	
@@ -2276,7 +2303,7 @@ public abstract class ImageProcessor implements Cloneable {
 		threshold(getAutoThreshold());
 	}
 
-	/**	Returns a pixel value (threshold) that can be used to divide the image into objects 
+	/** Returns a pixel value (threshold) that can be used to divide the image into objects 
 		and background. It does this by taking a test threshold and computing the average 
 		of the pixels at or below the threshold and pixels above. It then computes the average
 		of those two, increments the threshold, and repeats the process. Incrementing stops 
@@ -2513,29 +2540,31 @@ public abstract class ImageProcessor implements Cloneable {
 		return false;
 	}
 
+	/** Returns 'true' if this is a signed 16-bit image. */
+	public boolean isSigned16Bit() {
+		return false;
+	}
+
 	/* This method is experimental and may be removed. */
 	public static void setUseBicubic(boolean b) {
 		useBicubic = b;
 	}
 	
-	/** Calculates and returns statistics (area, mean, std-dev, mode, min, max,
-	 * centroid, center of mass, 256 bin histogram) for this image or ROI. Use the
+	/** Calculates and returns statistics for this image or ROI. Use the
 	 * setRoi(Roi) method to limit statistics to a non-rectangular area.
 	 * @see ImageProcessor#setRoi	
 	 * @see ImageStatistics	
 	*/
 	public ImageStatistics getStatistics() {
-		// 127 = AREA+MEAN+STD_DEV+MODE+MIN_MAX+CENTROID+CENTER_OF_MASS
-		return ImageStatistics.getStatistics(this, 127, null);
+		return ImageStatistics.getStatistics(this);
 	}
-	
+		
 	/** Blurs the image by convolving with a Gaussian function. */
 	public void blurGaussian(double sigma) {
-		double accuracy = getBitDepth()==8||getBitDepth()==24?0.002:0.0002;
 		resetRoi();
 		GaussianBlur gb = new GaussianBlur();
 		gb.showProgress(false);
-        gb.blurGaussian(this, sigma, sigma, accuracy);
+        gb.blurGaussian(this, sigma);
 	}
 
 	/** Uses the Process/Math/Macro command to apply macro code to this image. */
