@@ -1400,35 +1400,15 @@ public class Toolbar extends Canvas implements MouseListener, MouseMotionListene
 
 	private 	void installStartupMacros() {
 		resetTools();
-		String path = IJ.getDir("macros")+"StartupMacros.txt";
-		File f = new File(path);
-		if (!f.exists()) {
-<<<<<<< HEAD
-			String path2 = IJ.getDirectory("macros")+"StartupMacros.ijm";
-			f = new File(path2);
-			if (f.exists())
-				path = path2;
-		}
-		if (!f.exists()) {
-			String path2 = IJ.getDirectory("macros")+"StartupMacros.fiji.ijm";
-			f = new File(path2);
-			if (!f.exists()) {
-				IJ.error("StartupMacros not found:\n \n"+path);
+		final String[] ext={"txt","ijm","fiji.ijm"};
+		String path="";
+		for(int i=0;i<ext.length;i++){
+			path = IJ.getDir("macros")+"StartupMacros."+ext[i];
+			if ((new File(path)).exists()) break;
+			else if(i==(ext.length-1)) {
+				IJ.error("StartupMacros not found in\n \n"+IJ.getDir("macros"));
 				return;
-			} else
-				path = path2;
-=======
-			path = IJ.getDir("macros")+"StartupMacros.ijm";
-			f = new File(path);
-		}
-		if (!f.exists()) {
-			path = IJ.getDir("macros")+"StartupMacros.fiji.ijm";
-			f = new File(path);
-		}
-		if (!f.exists()) {
-			IJ.error("StartupMacros not found in\n \n"+IJ.getDir("macros"));
-			return;
->>>>>>> upstream/master
+			}
 		}
 		if (IJ.shiftKeyDown()) {
 			IJ.open(path);
