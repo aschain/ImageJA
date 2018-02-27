@@ -1680,54 +1680,59 @@ public class ImageCanvas implements MouseListener, MouseMotionListener, Cloneabl
 	}
 	
 	public void repaint() {
-		icc.repaint();
+		if(icc!=null)icc.repaint();
 	}
 	
 	public void repaint(int x,int y,int width,int height) {
-		icc.repaint(x,y,width,height);
+		if(icc!=null)icc.repaint(x,y,width,height);
 	}
 	
 	public Point getLocation() {
-		return icc.getLocation();
+		if(icc!=null)return icc.getLocation();
+		else return null;
 	}
 	
 	public Rectangle getBounds() {
-		return icc.getBounds();
+		if(icc!=null) return icc.getBounds();
+		else return null;
 	}
 	
 	public void setCursor(Cursor cursor) {
-		icc.setCursor(cursor);
+		if(icc!=null)icc.setCursor(cursor);
 	}
 	
 	public void addMouseListener(MouseListener object) {
-		icc.addMouseListener(object);
+		if(icc!=null)icc.addMouseListener(object);
 	}
 	public void addMouseMotionListener(MouseMotionListener object) {
-		icc.addMouseMotionListener(object);
+		if(icc!=null)icc.addMouseMotionListener(object);
 	}
 	public void addKeyListener(KeyListener object) {
-		icc.addKeyListener(object);
+		if(icc!=null)icc.addKeyListener(object);
 	}
 
 	public void removeMouseListener(MouseListener object) {
-		icc.removeMouseListener(object);
+		if(icc!=null)icc.removeMouseListener(object);
 	}
 	public void removeMouseMotionListener(MouseMotionListener object) {
-		icc.removeMouseMotionListener(object);
+		if(icc!=null)icc.removeMouseMotionListener(object);
 	}
 	public void removeKeyListener(KeyListener object) {
-		icc.removeKeyListener(object);
+		if(icc!=null)icc.removeKeyListener(object);
 	}
 	public void requestFocus() {
-		icc.requestFocus();
+		if(icc!=null)icc.requestFocus();
 	}
 	public Container getParent() {
-		return icc.getParent();
+		if(icc!=null)return icc.getParent();
+		else return null;
 	}
 	public Graphics getGraphics() {
-		return icc.getGraphics();
+		if(icc!=null)return icc.getGraphics();
+		else return null;
 	}
 	public Dimension getSize() {
-		return icc.getSize();
+		if(icc!=null)return icc.getSize();
+		else return null;
 	}
 }
