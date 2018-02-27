@@ -263,7 +263,7 @@ public class SyncWindows extends PlugInFrame implements
 				if (! (roi != null && roi instanceof PolygonRoi && roi.getState() == Roi.CONSTRUCTING) )
 					drawSyncCursor(imp, p.x, p.y);
 				if (iw != iwc)
-					ic.mouseMoved(adaptEvent(e, ic, p));	   
+					ic.mouseMoved(adaptEvent(e, ic.icc, p));	   
 			}		   
 		}
 		// Display correct values in ImageJ statusbar
@@ -319,7 +319,7 @@ public class SyncWindows extends PlugInFrame implements
 					drawSyncCursor(imp, p.x, p.y);
 
 				if(iw != iwc)
-					ic.mouseDragged(adaptEvent(e, ic, p));
+					ic.mouseDragged(adaptEvent(e, ic.icc, p));
 			}
 		}
 		// Store srcRect, Magnification and others of current ImageCanvas
@@ -364,7 +364,7 @@ public class SyncWindows extends PlugInFrame implements
 					if (cCoords.getState()) {
 						p = getMatchingCoords(ic, icc, x, y);
 					}
-					ic.mouseClicked(adaptEvent(e, ic, p));
+					ic.mouseClicked(adaptEvent(e, ic.icc, p));
 				}
 			}
 		}
@@ -402,7 +402,7 @@ public class SyncWindows extends PlugInFrame implements
 					if (cCoords.getState()) {
 						p = getMatchingCoords(ic, icc, x, y);
 					}
-					ic.mouseEntered(adaptEvent(e, ic, p));
+					ic.mouseEntered(adaptEvent(e, ic.icc, p));
 				}				
 			}
 		}
@@ -446,7 +446,7 @@ public class SyncWindows extends PlugInFrame implements
 
 				setCursor(imp, null);
 				if (iw != iwc)
-					ic.mouseExited(adaptEvent(e, ic, p));					 
+					ic.mouseExited(adaptEvent(e, ic.icc, p));					 
 			}
 		}
 		// Store srcRect, Magnification and others of current ImageCanvas
@@ -490,7 +490,7 @@ public class SyncWindows extends PlugInFrame implements
 					if (cCoords.getState()) {
 						p = getMatchingCoords(ic, icc, x, y);
 					}
-					ic.mousePressed(adaptEvent(e, ic, p));
+					ic.mousePressed(adaptEvent(e, ic.icc, p));
 				}
 			}
 		}
@@ -538,7 +538,7 @@ public class SyncWindows extends PlugInFrame implements
 				if (! (roi != null && roi instanceof PolygonRoi && roi.getState() == Roi.CONSTRUCTING) )
 					drawSyncCursor(imp, p.x, p.y);
 				if(iw != iwc)
-					ic.mouseReleased(adaptEvent(e, ic, p));
+					ic.mouseReleased(adaptEvent(e, ic.icc, p));
 			}
 		}
 		// Store srcRect, Magnification and others of current ImageCanvas

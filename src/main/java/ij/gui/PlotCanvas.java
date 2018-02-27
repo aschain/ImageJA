@@ -136,7 +136,7 @@ public class PlotCanvas extends ImageCanvas {
 		int height = bounds.height-extraSize.height;//(insets.top+insets.bottom+ImageWindow.VGAP*2);
 		//IJ.log("fitToWindow "+bounds+"-> w*h="+width+"*"+height);
 		resizeCanvas(width, height);
-		getParent().doLayout();
+		icc.getParent().doLayout();
 	}
 
 	/** Resizes the canvas when the user resizes the window. To avoid a race condition while creating

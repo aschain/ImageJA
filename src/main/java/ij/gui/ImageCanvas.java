@@ -19,7 +19,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 
 /** This is a Canvas used to display images in a Window. */
-public class ImageCanvas extends Canvas implements MouseListener, MouseMotionListener, Cloneable {
+public class ImageCanvas implements MouseListener, MouseMotionListener, Cloneable {
+	
+	public Component icc;
 
 	protected static Cursor defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
 	protected static Cursor handCursor = new Cursor(Cursor.HAND_CURSOR);
@@ -86,6 +88,25 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	private boolean flattening;
 		
 	public ImageCanvas(ImagePlus imp) {
+		this(imp,null);
+	}
+	
+	class myCanvas extends Canvas {
+		ImageCanvas ic;
+		public myCanvas(ImageCanvas ic) {
+			this.ic=ic;
+		}
+		public void update(Graphics g) {
+			paint(g);
+		}
+		public void paint(Graphics g) {
+			ic.paint(g);
+		}
+	}
+	
+	public ImageCanvas(ImagePlus imp, Canvas canvas) {
+		if(canvas==null) this.icc=new myCanvas(this);
+		else this.icc=canvas;
 		this.imp = imp;
 		paintPending = new AtomicBoolean(false);
 		ij = IJ.getInstance();
@@ -99,7 +120,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
  		addMouseListener(this);
  		addMouseMotionListener(this);
  		addKeyListener(ij);  // ImageJ handles keyboard shortcuts
- 		setFocusTraversalKeysEnabled(false);
+ 		icc.setFocusTraversalKeysEnabled(false);
 		//setScaleToFit(true);
 	}
 		
@@ -155,7 +176,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			srcRect.height = r.height;
 		}
 		if (dstWidth==0) {
-			Dimension size = getSize();
+			Dimension size = icc.getSize();
 			dstWidth = size.width;
 			dstHeight = size.height;
 		}
@@ -180,7 +201,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	}
 		
 	public void setSize(int width, int height) {
-		super.setSize(width, height);
+		icc.setSize(width, height);
 		dstWidth = width;
 		dstHeight = height;
 	}
@@ -503,7 +524,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		final int srcRectWidthMag = (int)(srcRect.width*magnification+0.5);
 		final int srcRectHeightMag = (int)(srcRect.height*magnification+0.5);
 		if (offScreenImage==null || offScreenWidth!=srcRectWidthMag || offScreenHeight!=srcRectHeightMag) {
-			offScreenImage = createImage(srcRectWidthMag, srcRectHeightMag);
+			offScreenImage = icc.createImage(srcRectWidthMag, srcRectHeightMag);
 			offScreenWidth = srcRectWidthMag;
 			offScreenHeight = srcRectHeightMag;
 		}
@@ -710,7 +731,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			width = (int)(imageWidth*magnification);
 		if (height>imageHeight*magnification)
 			height = (int)(imageHeight*magnification);
-		Dimension size = getSize();
+		Dimension size = icc.getSize();
 		if (srcRect.width<imageWidth || srcRect.height<imageHeight || (painted&&(width!=size.width||height!=size.height))) {
 			setSize(width, height);
 			srcRect.width = (int)(dstWidth/magnification);
@@ -738,7 +759,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		if (width==dstWidth&&height==dstHeight) return;
 		srcRect=new Rectangle(0,0,imageWidth, imageHeight);
 		setSize(width, height);
-		getParent().doLayout();
+		icc.getParent().doLayout();
 	}
     
 	void setMaxBounds() {
@@ -1228,9 +1249,9 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		}
 		PopupMenu popup = Menus.getPopupMenu();
 		if (popup!=null) {
-			add(popup);
+			icc.add(popup);
 			if (IJ.isMacOSX()) IJ.wait(10);
-			popup.show(this, x, y);
+			popup.show(icc, x, y);
 		}
 	}
 	
@@ -1657,5 +1678,56 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			IJ.wait(10);
 		return hidden;
 	}
+	
+	public void repaint() {
+		icc.repaint();
+	}
+	
+	public void repaint(int x,int y,int width,int height) {
+		icc.repaint(x,y,width,height);
+	}
+	
+	public Point getLocation() {
+		return icc.getLocation();
+	}
+	
+	public Rectangle getBounds() {
+		return icc.getBounds();
+	}
+	
+	public void setCursor(Cursor cursor) {
+		icc.setCursor(cursor);
+	}
+	
+	public void addMouseListener(MouseListener object) {
+		icc.addMouseListener(object);
+	}
+	public void addMouseMotionListener(MouseMotionListener object) {
+		icc.addMouseMotionListener(object);
+	}
+	public void addKeyListener(KeyListener object) {
+		icc.addKeyListener(object);
+	}
 
+	public void removeMouseListener(MouseListener object) {
+		icc.removeMouseListener(object);
+	}
+	public void removeMouseMotionListener(MouseMotionListener object) {
+		icc.removeMouseMotionListener(object);
+	}
+	public void removeKeyListener(KeyListener object) {
+		icc.removeKeyListener(object);
+	}
+	public void requestFocus() {
+		icc.requestFocus();
+	}
+	public Container getParent() {
+		return icc.getParent();
+	}
+	public Graphics getGraphics() {
+		return icc.getGraphics();
+	}
+	public Dimension getSize() {
+		return icc.getSize();
+	}
 }

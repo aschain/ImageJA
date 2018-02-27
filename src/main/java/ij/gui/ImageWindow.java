@@ -86,7 +86,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		this.ic = ic;
 		ImageWindow previousWindow = imp.getWindow();
 		setLayout(new ImageLayout(ic));
-		add(ic);
+		add(ic.icc);
  		addFocusListener(this);
  		addWindowListener(this);
  		addWindowStateListener(this);
