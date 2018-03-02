@@ -100,27 +100,53 @@ public class ImageCanvas implements MouseListener, MouseMotionListener, Cloneabl
 			paint(g);
 		}
 		public void paint(Graphics g) {
+			if (imageUpdated) {
+				imageUpdated = false;
+				imp.updateImage();
+			}
+			Image img = imp.getImage();
+			Roi roi=imp.getRoi();
+			try {
+				setInterpolation(g, Prefs.interpolateScaledImages);
+				if (img!=null) {
+					if ((roi!=null || overlay!=null || showAllOverlay!=null || Prefs.paintDoubleBuffered) && imageWidth!=0) {
+						final int srcRectWidthMag = (int)(srcRect.width*magnification+0.5);
+						final int srcRectHeightMag = (int)(srcRect.height*magnification+0.5);
+						if (offScreenImage==null || offScreenWidth!=srcRectWidthMag || offScreenHeight!=srcRectHeightMag) {
+							offScreenImage = createImage(srcRectWidthMag, srcRectHeightMag);
+							offScreenWidth = srcRectWidthMag;
+							offScreenHeight = srcRectHeightMag;
+						}
+						Graphics offScreenGraphics = offScreenImage.getGraphics();
+						setInterpolation(offScreenGraphics, Prefs.interpolateScaledImages);
+						offScreenGraphics.drawImage(img, 0, 0, srcRectWidthMag, srcRectHeightMag,
+								srcRect.x, srcRect.y, srcRect.x+srcRect.width, srcRect.y+srcRect.height, null);
+					}else {
+						g.drawImage(img, 0, 0, (int)(srcRect.width*magnification+0.5), (int)(srcRect.height*magnification+0.5),
+								srcRect.x, srcRect.y, srcRect.x+srcRect.width, srcRect.y+srcRect.height, null);
+					}
+				}
+			}catch(OutOfMemoryError e) {IJ.outOfMemory("Paint");}
 			ic.paint(g);
 		}
 	}
 	
-	public ImageCanvas(ImagePlus imp, Canvas canvas) {
-		if(canvas==null) this.icc=new myCanvas(this);
-		else this.icc=canvas;
-		this.imp = imp;
+	public ImageCanvas(ImagePlus imp, Component canvas) {
 		paintPending = new AtomicBoolean(false);
 		ij = IJ.getInstance();
-		int width = imp.getWidth();
-		int height = imp.getHeight();
-		imageWidth = width;
-		imageHeight = height;
-		srcRect = new Rectangle(0, 0, imageWidth, imageHeight);
-		setSize(imageWidth, imageHeight);
-		magnification = 1.0;
+		updateImage(imp);
+		setCanvas(canvas);
+	}
+	
+	public void setCanvas(Component canvas) {
+		this.icc=null;
+		if(canvas==null) this.icc=new myCanvas(this);
+		else this.icc=canvas;
  		addMouseListener(this);
  		addMouseMotionListener(this);
  		addKeyListener(ij);  // ImageJ handles keyboard shortcuts
  		icc.setFocusTraversalKeysEnabled(false);
+		setSize(imageWidth, imageHeight);
 		//setScaleToFit(true);
 	}
 		
@@ -131,7 +157,6 @@ public class ImageCanvas implements MouseListener, MouseMotionListener, Cloneabl
 		imageWidth = width;
 		imageHeight = height;
 		srcRect = new Rectangle(0, 0, imageWidth, imageHeight);
-		setSize(imageWidth, imageHeight);
 		magnification = 1.0;
 	}
 
@@ -238,15 +263,8 @@ public class ImageCanvas implements MouseListener, MouseMotionListener, Cloneabl
 			}
 		}
 		try {
-			if (imageUpdated) {
-				imageUpdated = false;
-				imp.updateImage();
-			}
 			setInterpolation(g, Prefs.interpolateScaledImages);
-			Image img = imp.getImage();
-			if (img!=null)
- 				g.drawImage(img, 0, 0, (int)(srcRect.width*magnification+0.5), (int)(srcRect.height*magnification+0.5),
-				srcRect.x, srcRect.y, srcRect.x+srcRect.width, srcRect.y+srcRect.height, null);
+			
 			if (overlay!=null)
 				drawOverlay(overlay, g);
 			if (showAllOverlay!=null)
@@ -536,10 +554,6 @@ public class ImageCanvas implements MouseListener, MouseMotionListener, Cloneabl
 			}
 			Graphics offScreenGraphics = offScreenImage.getGraphics();
 			setInterpolation(offScreenGraphics, Prefs.interpolateScaledImages);
-			Image img = imp.getImage();
-			if (img!=null)
-				offScreenGraphics.drawImage(img, 0, 0, srcRectWidthMag, srcRectHeightMag,
-					srcRect.x, srcRect.y, srcRect.x+srcRect.width, srcRect.y+srcRect.height, null);
 			if (overlay!=null)
 				drawOverlay(overlay, offScreenGraphics);
 			if (showAllOverlay!=null)
@@ -1680,59 +1694,54 @@ public class ImageCanvas implements MouseListener, MouseMotionListener, Cloneabl
 	}
 	
 	public void repaint() {
-		if(icc!=null)icc.repaint();
+		icc.repaint();
 	}
 	
 	public void repaint(int x,int y,int width,int height) {
-		if(icc!=null)icc.repaint(x,y,width,height);
+		icc.repaint(x,y,width,height);
 	}
 	
 	public Point getLocation() {
-		if(icc!=null)return icc.getLocation();
-		else return null;
+		return icc.getLocation();
 	}
 	
 	public Rectangle getBounds() {
-		if(icc!=null) return icc.getBounds();
-		else return null;
+		return icc.getBounds();
 	}
 	
 	public void setCursor(Cursor cursor) {
-		if(icc!=null)icc.setCursor(cursor);
+		icc.setCursor(cursor);
 	}
 	
 	public void addMouseListener(MouseListener object) {
-		if(icc!=null)icc.addMouseListener(object);
+		icc.addMouseListener(object);
 	}
 	public void addMouseMotionListener(MouseMotionListener object) {
-		if(icc!=null)icc.addMouseMotionListener(object);
+		icc.addMouseMotionListener(object);
 	}
 	public void addKeyListener(KeyListener object) {
-		if(icc!=null)icc.addKeyListener(object);
+		icc.addKeyListener(object);
 	}
 
 	public void removeMouseListener(MouseListener object) {
-		if(icc!=null)icc.removeMouseListener(object);
+		icc.removeMouseListener(object);
 	}
 	public void removeMouseMotionListener(MouseMotionListener object) {
-		if(icc!=null)icc.removeMouseMotionListener(object);
+		icc.removeMouseMotionListener(object);
 	}
 	public void removeKeyListener(KeyListener object) {
-		if(icc!=null)icc.removeKeyListener(object);
+		icc.removeKeyListener(object);
 	}
 	public void requestFocus() {
-		if(icc!=null)icc.requestFocus();
+		icc.requestFocus();
 	}
 	public Container getParent() {
-		if(icc!=null)return icc.getParent();
-		else return null;
+		return icc.getParent();
 	}
 	public Graphics getGraphics() {
-		if(icc!=null)return icc.getGraphics();
-		else return null;
+		return icc.getGraphics();
 	}
 	public Dimension getSize() {
-		if(icc!=null)return icc.getSize();
-		else return null;
+		return icc.getSize();
 	}
 }
