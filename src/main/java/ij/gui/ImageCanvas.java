@@ -539,20 +539,15 @@ public class ImageCanvas implements MouseListener, MouseMotionListener, Cloneabl
 	// Use double buffer to reduce flicker when drawing complex ROIs.
 	// Author: Erik Meijering
 	void paintDoubleBuffered(Graphics g) {
-		final int srcRectWidthMag = (int)(srcRect.width*magnification+0.5);
-		final int srcRectHeightMag = (int)(srcRect.height*magnification+0.5);
-		if (offScreenImage==null || offScreenWidth!=srcRectWidthMag || offScreenHeight!=srcRectHeightMag) {
-			offScreenImage = icc.createImage(srcRectWidthMag, srcRectHeightMag);
-			offScreenWidth = srcRectWidthMag;
-			offScreenHeight = srcRectHeightMag;
-		}
 		Roi roi = imp.getRoi();
 		try {
 			if (imageUpdated) {
 				imageUpdated = false;
 				imp.updateImage();
 			}
-			Graphics offScreenGraphics = offScreenImage.getGraphics();
+			Graphics offScreenGraphics;
+			if(offScreenImage==null)offScreenGraphics=g;
+			else offScreenGraphics = offScreenImage.getGraphics();
 			setInterpolation(offScreenGraphics, Prefs.interpolateScaledImages);
 			if (overlay!=null)
 				drawOverlay(overlay, offScreenGraphics);
@@ -563,7 +558,7 @@ public class ImageCanvas implements MouseListener, MouseMotionListener, Cloneabl
 			if (srcRect.width<imageWidth || srcRect.height<imageHeight)
 				drawZoomIndicator(offScreenGraphics);
 			if (IJ.debugMode) showFrameRate(offScreenGraphics);
-			g.drawImage(offScreenImage, 0, 0, null);
+			if(offScreenImage!=null)g.drawImage(offScreenImage, 0, 0, null);
 		}
 		catch(OutOfMemoryError e) {IJ.outOfMemory("Paint");}
 	}
