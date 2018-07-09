@@ -187,7 +187,7 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 	}
 
 	/**
-	Adds one or lines of text to the window.
+	Adds one or more lines of text to the window.
 	@param text		The text to be appended. Multiple
 					lines should be separated by \n.
 	*/
@@ -346,6 +346,11 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 	}
 	
 	public void focusGained(FocusEvent e) {
+		ImageJ ij = IJ.getInstance();
+		if (!Interpreter.isBatchMode() && ij!=null && !ij.quitting()) {
+			if (IJ.debugMode) IJ.log("focusGained: "+this);
+			WindowManager.setWindow(this);
+		}
 	}
 
 	public void focusLost(FocusEvent e) {}
