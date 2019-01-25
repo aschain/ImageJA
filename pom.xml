@@ -85,13 +85,7 @@
 		<main-class>ij.ImageJ</main-class>
 		<license.licenseName>N/A</license.licenseName>
 		<license.copyrightOwners>N/A</license.copyrightOwners>
-
-<<<<<<< HEAD
 		<scijava.jvm.version>1.8</scijava.jvm.version>
-=======
-		<scijava.jvm.version>1.6</scijava.jvm.version>
-		<scijava.jvm.build.version>1.6</scijava.jvm.build.version>
->>>>>>> upstream/master
 		<javac.path>${java.home}/../lib/tools.jar</javac.path>
 	</properties>
 
