@@ -24,7 +24,7 @@ public class ScrollbarWithLabel extends Panel implements Adjustable, AdjustmentL
 		this.stackWindow = stackWindow;
 		bar = new Scrollbar(Scrollbar.HORIZONTAL, value, visible, minimum, maximum);
 		if (IJ.isWindows())
-			bar.setBackground(Color.white);
+			bar.setBackground(Color.gray);
 		icon = new Icon(label);
 		add(icon, BorderLayout.WEST);
 		add(bar, BorderLayout.CENTER);
