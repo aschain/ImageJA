@@ -14,6 +14,13 @@ import java.applet.Applet;
 import java.awt.event.*;
 import java.util.zip.*;
 
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.KeyStroke;
+
 /**
 This class installs and updates ImageJ's menus. Note that menu labels,
 even in submenus, must be unique. This is because ImageJ uses a single
@@ -47,10 +54,10 @@ public class Menus {
 	public static final int MAX_OPEN_RECENT_ITEMS = 15;
 
 	private static Menus instance;
-	private static MenuBar mbar;
-	private static CheckboxMenuItem gray8Item,gray16Item,gray32Item,
+	private static JMenuBar mbar;
+	private static JCheckBoxMenuItem gray8Item,gray16Item,gray32Item,
 			color256Item,colorRGBItem,RGBStackItem,HSBStackItem,LabStackItem;
-	private static PopupMenu popup;
+	private static JPopupMenu popup;
 
 	private static ImageJ ij;
 	private static Applet applet;
@@ -58,8 +65,8 @@ public class Menus {
 	private static String ImageJPath, pluginsPath, macrosPath;
 	private static Properties menus;
 	private static Properties menuSeparators;
-	private static Menu pluginsMenu, saveAsMenu, shortcutsMenu, utilitiesMenu, macrosMenu;
-	static Menu window, openRecentMenu;
+	private static JMenu pluginsMenu, saveAsMenu, shortcutsMenu, utilitiesMenu, macrosMenu;
+	static JMenu window, openRecentMenu;
 	private static Hashtable pluginsTable;
 	
 	private static int nPlugins, nMacros;
@@ -84,6 +91,8 @@ public class Menus {
 
 	static boolean jnlp; // true when using Java WebStart
 	public static int setMenuBarCount;
+	
+	private static int CTRL=Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 		
 	Menus(ImageJ ijInstance, Applet appletInstance) {
 		ij = ijInstance;
@@ -106,16 +115,16 @@ public class Menus {
 		pluginsPrefs = new Vector();
 		macroShortcuts = null;
 		setupPluginsAndMacrosPaths();
-		Menu file = getMenu("File");
-		Menu newMenu = getMenu("File>New", true);
+		JMenu file = getMenu("File");
+		JMenu newMenu = getMenu("File>New", true);
 		addPlugInItem(file, "Open...", "ij.plugin.Commands(\"open\")", KeyEvent.VK_O, false);
 		addPlugInItem(file, "Open Next", "ij.plugin.NextImageOpener", KeyEvent.VK_O, true);
-		Menu openSamples = getMenu("File>Open Samples", true);
+		JMenu openSamples = getMenu("File>Open Samples", true);
 		openSamples.addSeparator();
 		addPlugInItem(openSamples, "Cache Sample Images ", "ij.plugin.URLOpener(\"cache\")", 0, false);
 		addOpenRecentSubMenu(file);
-		Menu importMenu = getMenu("File>Import", true);		
-		Menu showFolderMenu = new Menu("Show Folder");
+		JMenu importMenu = getMenu("File>Import", true);		
+		JMenu showFolderMenu = new JMenu("Show Folder");
 		file.add(showFolderMenu);
 		addPlugInItem(showFolderMenu, "Image", "ij.plugin.SimpleCommands(\"showdirImage\")", 0, false);
 		addPlugInItem(showFolderMenu, "Plugins", "ij.plugin.SimpleCommands(\"showdirPlugins\")", 0, false);
@@ -134,7 +143,7 @@ public class Menus {
 		addPlugInItem(file, "Page Setup...", "ij.plugin.filter.Printer(\"setup\")", 0, false);
 		addPlugInItem(file, "Print...", "ij.plugin.filter.Printer(\"print\")", KeyEvent.VK_P, false);
 		
-		Menu edit = getMenu("Edit");
+		JMenu edit = getMenu("Edit");
 		addPlugInItem(edit, "Undo", "ij.plugin.Commands(\"undo\")", KeyEvent.VK_Z, false);
 		edit.addSeparator();
 		addPlugInItem(edit, "Cut", "ij.plugin.Clipboard(\"cut\")", KeyEvent.VK_X, false);
@@ -150,16 +159,16 @@ public class Menus {
 		addPlugInItem(edit, "Invert", "ij.plugin.filter.Filters(\"invert\")", KeyEvent.VK_I, true);
 		edit.addSeparator();
 		getMenu("Edit>Selection", true);
-		Menu optionsMenu = getMenu("Edit>Options", true);
+		JMenu optionsMenu = getMenu("Edit>Options", true);
 		
-		Menu image = getMenu("Image");
-		Menu imageType = getMenu("Image>Type");
+		JMenu image = getMenu("Image");
+		JMenu imageType = getMenu("Image>Type");
 			gray8Item = addCheckboxItem(imageType, "8-bit", "ij.plugin.Converter(\"8-bit\")");
 			gray16Item = addCheckboxItem(imageType, "16-bit", "ij.plugin.Converter(\"16-bit\")");
 			gray32Item = addCheckboxItem(imageType, "32-bit", "ij.plugin.Converter(\"32-bit\")");
 			color256Item = addCheckboxItem(imageType, "8-bit Color", "ij.plugin.Converter(\"8-bit Color\")");
 			colorRGBItem = addCheckboxItem(imageType, "RGB Color", "ij.plugin.Converter(\"RGB Color\")");
-			imageType.add(new MenuItem("-"));
+			imageType.add(new JMenuItem("-"));
 			RGBStackItem = addCheckboxItem(imageType, "RGB Stack", "ij.plugin.Converter(\"RGB Stack\")");
 			HSBStackItem = addCheckboxItem(imageType, "HSB Stack", "ij.plugin.Converter(\"HSB Stack\")");
 			LabStackItem = addCheckboxItem(imageType, "Lab Stack", "ij.plugin.Converter(\"Lab Stack\")");
@@ -173,7 +182,7 @@ public class Menus {
 		getMenu("Image>Stacks", true);
 		getMenu("Image>Stacks>Animation_", true);
 		getMenu("Image>Stacks>Tools_", true);
-		Menu hyperstacksMenu = getMenu("Image>Hyperstacks", true);
+		JMenu hyperstacksMenu = getMenu("Image>Hyperstacks", true);
 		image.addSeparator();
 		addPlugInItem(image, "Crop", "ij.plugin.Resizer(\"crop\")", KeyEvent.VK_X, true);
 		addPlugInItem(image, "Duplicate...", "ij.plugin.Duplicator", KeyEvent.VK_D, true);
@@ -185,7 +194,7 @@ public class Menus {
 		image.addSeparator();
 		getMenu("Image>Lookup Tables", true);
 		
-		Menu process = getMenu("Process");
+		JMenu process = getMenu("Process");
 		addPlugInItem(process, "Smooth", "ij.plugin.filter.Filters(\"smooth\")", KeyEvent.VK_S, true);
 		addPlugInItem(process, "Sharpen", "ij.plugin.filter.Filters(\"sharpen\")", 0, false);
 		addPlugInItem(process, "Find Edges", "ij.plugin.filter.Filters(\"edge\")", 0, false);
@@ -196,14 +205,14 @@ public class Menus {
 		getMenu("Process>Binary", true);
 		getMenu("Process>Math", true);
 		getMenu("Process>FFT", true);
-		Menu filtersMenu = getMenu("Process>Filters", true);
+		JMenu filtersMenu = getMenu("Process>Filters", true);
 		process.addSeparator();
 		getMenu("Process>Batch", true);
 		addPlugInItem(process, "Image Calculator...", "ij.plugin.ImageCalculator", 0, false);
 		addPlugInItem(process, "Subtract Background...", "ij.plugin.filter.BackgroundSubtracter", 0, false);
 		addItem(process, "Repeat Command", KeyEvent.VK_R, false);
 		
-		Menu analyzeMenu = getMenu("Analyze");
+		JMenu analyzeMenu = getMenu("Analyze");
 		addPlugInItem(analyzeMenu, "Measure", "ij.plugin.filter.Analyzer", KeyEvent.VK_M, false);
 		addPlugInItem(analyzeMenu, "Analyze Particles...", "ij.plugin.filter.ParticleAnalyzer", 0, false);
 		addPlugInItem(analyzeMenu, "Summarize", "ij.plugin.filter.Analyzer(\"sum\")", 0, false);
@@ -218,12 +227,12 @@ public class Menus {
 		addPlugInItem(analyzeMenu, "Plot Profile", "ij.plugin.Profiler(\"plot\")", KeyEvent.VK_K, false);
 		addPlugInItem(analyzeMenu, "Surface Plot...", "ij.plugin.SurfacePlotter", 0, false);
 		getMenu("Analyze>Gels", true);
-		Menu toolsMenu = getMenu("Analyze>Tools", true);
+		JMenu toolsMenu = getMenu("Analyze>Tools", true);
 
 		// the plugins will be added later, after a separator
 		addPluginsMenu();
 
-		Menu window = getMenu("Window");
+		JMenu window = getMenu("Window");
 		addPlugInItem(window, "Show All", "ij.plugin.WindowOrganizer(\"show\")", KeyEvent.VK_CLOSE_BRACKET, false);
 		String key = IJ.isWindows()?"enter":"return";
 		addPlugInItem(window, "Main Window ["+key+"]", "ij.plugin.WindowOrganizer(\"imagej\")", 0, false);
@@ -232,7 +241,7 @@ public class Menus {
 		addPlugInItem(window, "Tile", "ij.plugin.WindowOrganizer(\"tile\")", 0, false);
 		window.addSeparator();
 
-		Menu help = getMenu("Help");
+		JMenu help = getMenu("Help");
 		addPlugInItem(help, "ImageJ Website...", "ij.plugin.BrowserLauncher", 0, false);
 		addPlugInItem(help, "ImageJ News...", "ij.plugin.BrowserLauncher(\""+IJ.URL+"/notes.html\")", 0, false);
 		addPlugInItem(help, "Documentation...", "ij.plugin.BrowserLauncher(\""+IJ.URL+"/docs\")", 0, false);
@@ -243,14 +252,14 @@ public class Menus {
 		addPlugInItem(help, "Plugins...", "ij.plugin.BrowserLauncher(\""+IJ.URL+"/plugins\")", 0, false);
 		addPlugInItem(help, "Macros...", "ij.plugin.BrowserLauncher(\""+IJ.URL+"/macros/\")", 0, false);
 		addPlugInItem(help, "Macro Functions...", "ij.plugin.BrowserLauncher(\""+IJ.URL+"/developer/macro/functions.html\")", 0, false);
-		Menu examplesMenu = getExamplesMenu(ij);
+		JMenu examplesMenu = getExamplesMenu(ij);
 		addPlugInItem(examplesMenu, "Open as Panel", "ij.plugin.SimpleCommands(\"opencp\")", 0, false);
 		help.add(examplesMenu);
 		help.addSeparator();
 		addPlugInItem(help, "Update ImageJ...", "ij.plugin.ImageJ_Updater", 0, false);
 		addPlugInItem(help, "Refresh Menus", "ij.plugin.ImageJ_Updater(\"menus\")", 0, false);
 		help.addSeparator();
-		Menu aboutMenu = getMenu("Help>About Plugins", true);
+		JMenu aboutMenu = getMenu("Help>About Plugins", true);
 		addPlugInItem(help, "About ImageJ...", "ij.plugin.AboutBox", 0, false);
 				
 		if (applet==null) {
@@ -266,7 +275,7 @@ public class Menus {
 		if (fontSize!=0 || scale>1.0)
 			mbar.setFont(getFont());
 		if (ij!=null) {
-			ij.setMenuBar(mbar);
+			ij.setJMenuBar(mbar);
 			Menus.setMenuBarCount++;
 		}
 		
@@ -281,9 +290,9 @@ public class Menus {
 		return error;
 	}
 	
-	public static Menu getExamplesMenu(ActionListener listener) {
-		Menu menu = new Menu("Examples");
-		Menu submenu = new Menu("Plots");
+	public static JMenu getExamplesMenu(ActionListener listener) {
+		JMenu menu = new JMenu("Examples");
+		JMenu submenu = new JMenu("Plots");
 		addExample(submenu, "Example Plot", "Example_Plot_.ijm");
 		addExample(submenu, "Semi-log Plot", "Semi-log_Plot_.ijm");
 		addExample(submenu, "Arrow Plot", "Arrow_Plot_.ijm");
@@ -299,7 +308,7 @@ public class Menus {
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 		
-		submenu = new Menu("Macro");
+		submenu = new JMenu("Macro");
 		addExample(submenu, "Sphere", "Sphere.ijm");
 		addExample(submenu, "Dialog Box", "Dialog_Box.ijm");
 		addExample(submenu, "Process Folder", "Batch_Process_Folder.ijm");
@@ -321,7 +330,7 @@ public class Menus {
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 
-		submenu = new Menu("JavaScript");
+		submenu = new JMenu("JavaScript");
 		addExample(submenu, "Sphere", "Sphere.js");
 		addExample(submenu, "Plasma Cloud", "Plasma_Cloud.js");
 		addExample(submenu, "Cloud Debugger", "Cloud_Debugger.js");
@@ -350,7 +359,7 @@ public class Menus {
 		addExample(submenu, "Curve Fitting", "Curve_Fitting.js");
 		submenu.addActionListener(listener);
 		menu.add(submenu);
-		submenu = new Menu("BeanShell");
+		submenu = new JMenu("BeanShell");
 		addExample(submenu, "Sphere", "Sphere.bsh");
 		addExample(submenu, "Example Plot", "Example_Plot.bsh");
 		addExample(submenu, "Semi-log Plot", "Semi-log_Plot.bsh");
@@ -358,14 +367,14 @@ public class Menus {
 		addExample(submenu, "Sine/Cosine Table", "Sine_Cosine_Table.bsh");
 		submenu.addActionListener(listener);
 		menu.add(submenu);
-		submenu = new Menu("Python");
+		submenu = new JMenu("Python");
 		addExample(submenu, "Sphere", "Sphere.py");
 		addExample(submenu, "Animated Gaussian Blur", "Animated_Gaussian_Blur.py");
 		addExample(submenu, "Spiral Rotation", "Spiral_Rotation.py");
 		addExample(submenu, "Overlay", "Overlay.py");
 		submenu.addActionListener(listener);
 		menu.add(submenu);
-		submenu = new Menu("Java");
+		submenu = new JMenu("Java");
 		addExample(submenu, "Sphere", "Sphere_.java");
 		addExample(submenu, "Plasma Cloud", "Plasma_Cloud.java");
 		addExample(submenu, "Gamma Adjuster", "Gamma_Adjuster.java");
@@ -376,43 +385,45 @@ public class Menus {
 		submenu.addActionListener(listener);
 		menu.add(submenu);
 		menu.addSeparator();
-		CheckboxMenuItem item = new CheckboxMenuItem("Autorun Examples");
+		JCheckBoxMenuItem item = new JCheckBoxMenuItem("Autorun Examples");
 		menu.add(item);
 		item.addItemListener(ij);
 		item.setState(Prefs.autoRunExamples);
 		return menu;
 	}
 	
-	private static void addExample(Menu menu, String label, String command) {
-		MenuItem item = new MenuItem(label);
+	private static void addExample(JMenu menu, String label, String command) {
+		JMenuItem item = new JMenuItem(label);
 		menu.add(item);
 		item.setActionCommand(command);
 	}
 
-	void addOpenRecentSubMenu(Menu menu) {
+	void addOpenRecentSubMenu(JMenu menu) {
 		openRecentMenu = getMenu("File>Open Recent");
  		for (int i=0; i<MAX_OPEN_RECENT_ITEMS; i++) {
 			String path = Prefs.getString("recent" + (i/10)%10 + i%10);
 			if (path==null) break;
-			MenuItem item = new MenuItem(path);
+			JMenuItem item = new JMenuItem(path);
 			openRecentMenu.add(item);
 			item.addActionListener(ij);
 		}
 		menu.add(openRecentMenu);
 	}
 
-	static void addItem(Menu menu, String label, int shortcut, boolean shift) {
+	static void addItem(JMenu menu, String label, int shortcut, boolean shift) {
 		if (menu==null)
 			return;
-		MenuItem item;
+		JMenuItem item;
 		if (shortcut==0)
-			item = new MenuItem(label);
+			item = new JMenuItem(label);
 		else {
 			if (shift) {
-				item = new MenuItem(label, new MenuShortcut(shortcut, true));
+				item = new JMenuItem(label);
+				item.setAccelerator(KeyStroke.getKeyStroke(shortcut, CTRL|InputEvent.SHIFT_DOWN_MASK));
 				shortcuts.put(new Integer(shortcut+200),label);
 			} else {
-				item = new MenuItem(label, new MenuShortcut(shortcut));
+				item = new JMenuItem(label);
+				item.setAccelerator(KeyStroke.getKeyStroke(shortcut, CTRL));
 				shortcuts.put(new Integer(shortcut),label);
 			}
 		}
@@ -426,27 +437,27 @@ public class Menus {
 		item.addActionListener(ij);
 	}
 	
-	void addPlugInItem(Menu menu, String label, String className, int shortcut, boolean shift) {
+	void addPlugInItem(JMenu menu, String label, String className, int shortcut, boolean shift) {
 		pluginsTable.put(label, className);
 		nPlugins++;
 		addItem(menu, label, shortcut, shift);
 	}
 
-	CheckboxMenuItem addCheckboxItem(Menu menu, String label, String className) {
+	JCheckBoxMenuItem addCheckboxItem(JMenu menu, String label, String className) {
 		pluginsTable.put(label, className);
 		nPlugins++;
-		CheckboxMenuItem item = new CheckboxMenuItem(label);
+		JCheckBoxMenuItem item = new JCheckBoxMenuItem(label);
 		menu.add(item);
 		item.addItemListener(ij);
 		item.setState(false);
 		return item;
 	}
 
-	static Menu addSubMenu(Menu menu, String name) {
+	static JMenu addSubMenu(JMenu menu, String name) {
 		String value;
 		String key = name.toLowerCase(Locale.US);
 		int index;
- 		Menu submenu=new Menu(name.replace('_', ' '));
+ 		JMenu submenu=new JMenu(name.replace('_', ' '));
 		index = key.indexOf(' ');
 		if (index>0)
 			key = key.substring(0, index);
@@ -466,7 +477,7 @@ public class Menus {
 		return submenu;
 	}
 	
-	static void addLuts(Menu submenu) {
+	static void addLuts(JMenu submenu) {
 		String path = IJ.getDirectory("luts");
 		if (path==null) return;
 		File f = new File(path);
@@ -483,7 +494,7 @@ public class Menus {
  				name = name.substring(0,name.length()-4);
  				if (name.contains("_") && !name.contains(" "))
  					name = name.replace("_", " ");
- 				MenuItem item = new MenuItem(name);
+ 				JMenuItem item = new JMenuItem(name);
 				submenu.add(item);
 				item.addActionListener(ij);
 				nPlugins++;
@@ -491,7 +502,7 @@ public class Menus {
 		}
 	}
 
-	static void addPluginItem(Menu submenu, String s) {
+	static void addPluginItem(JMenu submenu, String s) {
 		if (s.startsWith("\"-\"")) {
 			// add menu separator if command="-"
 			addSeparator(submenu);
@@ -539,7 +550,7 @@ public class Menus {
 	void addPluginsMenu() {
 		String value,label,className;
 		int index;
-		//pluginsMenu = new Menu("Plugins");
+		//pluginsMenu = new JMenu("Plugins");
 		pluginsMenu = getMenu("Plugins");
 		for (int count=1; count<100; count++) {
 			value = Prefs.getString("plug-in" + (count/10)%10 + count%10);
@@ -550,8 +561,8 @@ public class Menus {
 				pluginsMenu.addSeparator();
 			else if (firstChar=='>') {
 				String submenu = value.substring(2,value.length()-1);
-				//Menu menu = getMenu("Plugins>" + submenu, true);
-				Menu menu = addSubMenu(pluginsMenu, submenu);
+				//JMenu menu = getMenu("Plugins>" + submenu, true);
+				JMenu menu = addSubMenu(pluginsMenu, submenu);
 				if (submenu.equals("Shortcuts"))
 					shortcutsMenu = menu;
 				else if (submenu.equals("Utilities"))
@@ -572,7 +583,7 @@ public class Menus {
 		int nPlugins0 = nPlugins;
 		String value, className;
 		char menuCode;
-		Menu menu;
+		JMenu menu;
 		String[] pluginList = getPlugins();
 		String[] pluginsList2 = null;
 		Hashtable skipList = new Hashtable();
@@ -643,7 +654,7 @@ public class Menus {
 	/** Installs a macro or script in the Plugins menu, or submenu, with
 		with underscores in the file name replaced by spaces. */
 	void installMacro(String name) {
-		Menu menu = pluginsMenu;
+		JMenu menu = pluginsMenu;
 		String dir = null;
 		int slashIndex = name.indexOf('/');
 		if (slashIndex>0) {
@@ -667,7 +678,7 @@ public class Menus {
 		command.trim();
 		if (pluginsTable.get(command)!=null) // duplicate command?
 			command = command + " Macro";
-		MenuItem item = new MenuItem(command);
+		JMenuItem item = new JMenuItem(command);
 		addOrdered(menu, item);
 		item.addActionListener(ij);
 		String path = (dir!=null?dir+File.separator:"") + name;
@@ -675,7 +686,7 @@ public class Menus {
 		nMacros++;
 	}
 
-	static int addPluginSeparatorIfNeeded(Menu menu) {
+	static int addPluginSeparatorIfNeeded(JMenu menu) {
 		if (menuSeparators == null)
 			return 0;
 		Integer i = (Integer)menuSeparators.get(menu);
@@ -689,7 +700,7 @@ public class Menus {
 	}
 
 	/** Inserts 'item' into 'menu' in alphanumeric order. */
-	static void addOrdered(Menu menu, MenuItem item) {
+	static void addOrdered(JMenu menu, JMenuItem item) {
 		String label = item.getLabel();
 		int start = addPluginSeparatorIfNeeded(menu);
 		for (int i=start; i<menu.getItemCount(); i++) {
@@ -740,7 +751,7 @@ public class Menus {
     /** Install a plugin located in a JAR file. */
 	void installJarPlugin(String jar, String s) {
 		addSorted = false;
-		Menu menu;
+		JMenu menu;
 		s = s.trim();
 		if (s.startsWith("Plugins>")) {
 			int firstComma = s.indexOf(',');
@@ -809,7 +820,7 @@ public class Menus {
     }
 
 	/** Returns the specified ImageJ menu (e.g., "File>New") or null if it is not found. */
-	public static Menu getImageJMenu(String menuPath) {
+	public static JMenu getImageJMenu(String menuPath) {
 		if (menus==null)
 			return null;
 		if (menus.get(menuPath)!=null)
@@ -818,20 +829,20 @@ public class Menus {
 			return null;
 	}
 
-	private static Menu getMenu(String menuPath) {
+	private static JMenu getMenu(String menuPath) {
 		return getMenu(menuPath, false);
 	}
 
-	private static Menu getMenu(String menuName, boolean readFromProps) {
+	private static JMenu getMenu(String menuName, boolean readFromProps) {
 		if (menuName.endsWith(">"))
 			menuName = menuName.substring(0, menuName.length() - 1);
-		Menu result = (Menu)menus.get(menuName);
+		JMenu result = (JMenu)menus.get(menuName);
 		if (result==null) {
 			int offset = menuName.lastIndexOf('>');
 			if (offset < 0) {
-				result = new Menu(menuName);
+				result = new JMenu(menuName);
 				if (mbar == null)
-					mbar = new MenuBar();
+					mbar = new JMenuBar();
 				if (menuName.equals("Help"))
 					mbar.setHelpMenu(result);
 				else
@@ -843,8 +854,8 @@ public class Menus {
 			} else {
 				String parentName = menuName.substring(0, offset);
 				String menuItemName = menuName.substring(offset + 1);
-				Menu parentMenu = getMenu(parentName);
-				result = new Menu(menuItemName);
+				JMenu parentMenu = getMenu(parentName);
+				result = new JMenu(menuItemName);
 				addPluginSeparatorIfNeeded(parentMenu);
 				if (readFromProps)
 					result = addSubMenu(parentMenu, menuItemName);
@@ -860,7 +871,7 @@ public class Menus {
 		return result;
 	}
 
-	Menu getPluginsSubmenu(String submenuName) {
+	JMenu getPluginsSubmenu(String submenuName) {
 		return getMenu("Plugins>" + submenuName);
     }
     
@@ -880,12 +891,12 @@ public class Menus {
 		return name;
     }
 
-	static void addItemSorted(Menu menu, MenuItem item, int startingIndex) {
+	static void addItemSorted(JMenu menu, JMenuItem item, int startingIndex) {
 		String itemLabel = item.getLabel();
 		int count = menu.getItemCount();
 		boolean inserted = false;
 		for (int i=startingIndex; i<count; i++) {
-			MenuItem mi = menu.getItem(i);
+			JMenuItem mi = menu.getItem(i);
 			String label = mi.getLabel();
 			//IJ.log(i+ "  "+itemLabel+"  "+label + "  "+(itemLabel.compareTo(label)));
 			if (itemLabel.compareTo(label)<0) {
@@ -897,7 +908,7 @@ public class Menus {
 		if (!inserted) menu.add(item);
 	}
 
-    static void addSeparator(Menu menu) {
+    static void addSeparator(JMenu menu) {
     	menu.addSeparator();
     }
 
@@ -1141,7 +1152,7 @@ public class Menus {
 		int slashIndex = className.indexOf('/');
 		String menuName = slashIndex < 0 ? "Plugins" : "Plugins>" +
 			className.substring(0, slashIndex).replace('/', '>');
-		Menu menu = getMenu(menuName);
+		JMenu menu = getMenu(menuName);
 		String command = className;
 		if (slashIndex>0) {
 			command = className.substring(slashIndex+1);
@@ -1154,7 +1165,7 @@ public class Menus {
 
 		if (!force && itemExists)  // duplicate command?
 			command = command + " Plugin";
-		MenuItem item = new MenuItem(command);
+		JMenuItem item = new JMenuItem(command);
 		if(force)
 			addItemSorted(menu,item,0);
 		else
@@ -1167,8 +1178,8 @@ public class Menus {
 	void installPopupMenu(ImageJ ij) {
 		String s;
 		int count = 0;
-		MenuItem mi;
-		popup = new PopupMenu("");
+		JMenuItem mi;
+		popup = new JPopupMenu("");
 		if (fontSize!=0 || scale>1.0)
 			popup.setFont(getFont());
 		while (true) {
@@ -1179,22 +1190,22 @@ public class Menus {
 			if (s.equals("-"))
 				popup.addSeparator();
 			else if (!s.equals("")) {
-				mi = new MenuItem(s);
+				mi = new JMenuItem(s);
 				mi.addActionListener(ij);
 				popup.add(mi);
 			}
 		}
 	}
 
-	public static MenuBar getMenuBar() {
+	public static JMenuBar getMenuBar() {
 		return mbar;
 	}
 		
-	public static Menu getMacrosMenu() {
+	public static JMenu getMacrosMenu() {
 		return macrosMenu;
 	}
 
-	public static Menu getOpenRecentMenu() {
+	public static JMenu getOpenRecentMenu() {
 		return openRecentMenu;
 	}
 
@@ -1265,7 +1276,7 @@ public class Menus {
     	int index = start + WindowManager.getCurrentIndex();
     	try {  // workaround for Linux/Java 5.0/bug
 			for (int i=start; i<nItems; i++) {
-				CheckboxMenuItem item = (CheckboxMenuItem)window.getItem(i);
+				JCheckBoxMenuItem item = (JCheckBoxMenuItem)window.getItem(i);
 				item.setState(i==index);
 			}
 		} catch (Exception e) {}
@@ -1334,7 +1345,7 @@ public class Menus {
 		if (ij==null || win==null)
 			return;
 		String title = win instanceof Frame?((Frame)win).getTitle():((Dialog)win).getTitle();
-		CheckboxMenuItem item = new CheckboxMenuItem(title);
+		JCheckBoxMenuItem item = new JCheckBoxMenuItem(title);
 		item.addItemListener(ij);
 		int index = WINDOW_MENU_ITEMS+windowMenuItems2;
 		if (windowMenuItems2>=2)
@@ -1352,7 +1363,7 @@ public class Menus {
 		if (ij==null) return;
 		String name = imp.getTitle();
 		String size = ImageWindow.getImageSize(imp);
-		CheckboxMenuItem item = new CheckboxMenuItem(name+" "+size);
+		JCheckBoxMenuItem item = new JCheckBoxMenuItem(name+" "+size);
 		item.setActionCommand("" + imp.getID());
 		window.add(item);
 		item.addItemListener(ij);
@@ -1390,7 +1401,7 @@ public class Menus {
 		int count = window.getItemCount();
 		try {  // workaround for Linux/Java 5.0/bug
 			for (int i=first; i<count; i++) {
-				MenuItem item = window.getItem(i);
+				JMenuItem item = window.getItem(i);
 				String label = item.getLabel();
 				if (imp!=null) {  //remove size (e.g. " 24MB")
 					int index = label.lastIndexOf(" ");
@@ -1421,16 +1432,16 @@ public class Menus {
 		}
 		if (count==MAX_OPEN_RECENT_ITEMS)
 			openRecentMenu.remove(MAX_OPEN_RECENT_ITEMS-1);
-		MenuItem item = new MenuItem(path);
+		JMenuItem item = new JMenuItem(path);
 		openRecentMenu.insert(item, 0);
 		item.addActionListener(ij);
 	}
 
-	public static PopupMenu getPopupMenu() {
+	public static JPopupMenu getPopupMenu() {
 		return popup;
 	}
 	
-	public static Menu getSaveAsMenu() {
+	public static JMenu getSaveAsMenu() {
 		return saveAsMenu;
 	}
 
@@ -1453,7 +1464,7 @@ public class Menus {
 		if (shortcutInUse(shortcut))
 			return SHORTCUT_IN_USE;
 			
-		Menu menu;
+		JMenu menu;
 		switch (menuCode) {
 			case PLUGINS_MENU: menu = pluginsMenu; break;
 			case IMPORT_MENU: menu = getMenu("File>Import"); break;
@@ -1466,14 +1477,14 @@ public class Menus {
 			default: return 0;
 		}
 		int code = convertShortcutToCode(shortcut);
-		MenuItem item;
+		JMenuItem item;
 		boolean functionKey = code>=KeyEvent.VK_F1 && code<=KeyEvent.VK_F12;
 		if (code==0)
-			item = new MenuItem(command);
+			item = new JMenuItem(command);
 		else if (functionKey) {
 			command += " [F"+(code-KeyEvent.VK_F1+1)+"]";
 			shortcuts.put(new Integer(code),command);
-			item = new MenuItem(command);
+			item = new JMenuItem(command);
 		} else {
 			shortcuts.put(new Integer(code),command);
 			int keyCode = code;
@@ -1482,7 +1493,10 @@ public class Menus {
 				keyCode -= 200;
 				shift = true;
 			}
-			item = new MenuItem(command, new MenuShortcut(keyCode, shift));
+			item = new JMenuItem(command);
+			int ctrlMask=CTRL;
+			if(shift)CTRL|=InputEvent.SHIFT_DOWN_MASK;
+			item.setAccelerator(KeyStroke.getKeyStroke(keyCode, ctrlMask));
 		}
 		menu.add(item);
 		item.addActionListener(ij);
@@ -1671,7 +1685,7 @@ public class Menus {
 		Font font = getFont();
 		mbar.setFont(font);
 		if (ij!=null)
-			ij.setMenuBar(mbar);
+			ij.setJMenuBar(mbar);
 		popup.setFont(font);
 	}
 	

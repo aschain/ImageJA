@@ -11,9 +11,10 @@ import ij.plugin.frame.*;
 import ij.plugin.PointToolOptions;
 import ij.macro.Interpreter;
 import ij.util.*;
+import javax.swing.*;
 
 /** A frame for displaying images. */
-public class ImageWindow extends Frame implements FocusListener, WindowListener, WindowStateListener, MouseWheelListener {
+public class ImageWindow extends JFrame implements FocusListener, WindowListener, WindowStateListener, MouseWheelListener {
 
 	public static final int MIN_WIDTH = 128;
 	public static final int MIN_HEIGHT = 32;
@@ -696,14 +697,14 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		ImagePlus imp = win.getImagePlus();
 		if (imp!=null)
 			setMenuBar = imp.setIJMenuBar();
-		MenuBar mb = Menus.getMenuBar();
-		if (mb!=null && mb==win.getMenuBar())
+		JMenuBar mb = Menus.getMenuBar();
+		if (mb!=null && mb==win.getJMenuBar())
 			setMenuBar = false;
 		setMenuBarTime = 0L;
 		if (setMenuBar && ij!=null && !ij.quitting() && !Interpreter.nonBatchMacroRunning()) {
 			IJ.wait(10); // may be needed for Java 1.4 on OS X
 			long t0 = System.currentTimeMillis();
-			win.setMenuBar(mb);
+			win.setJMenuBar(mb);
 			long time = System.currentTimeMillis()-t0;
 			setMenuBarTime = time;
 			Menus.setMenuBarCount++;

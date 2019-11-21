@@ -15,8 +15,7 @@ import java.awt.event.*;
 import java.io.*;
 import java.net.*;
 import java.awt.image.*;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
+import javax.swing.*;
 
 /**
 This frame is the main ImageJ class.
@@ -73,7 +72,7 @@ The following command line options are recognized by ImageJ:
 </pre>
 @author Wayne Rasband (wsr@nih.gov)
 */
-public class ImageJ extends Frame implements ActionListener, 
+public class ImageJ extends JFrame implements ActionListener, 
 	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
@@ -369,12 +368,12 @@ public class ImageJ extends Frame implements ActionListener,
 
 	/** Handles CheckboxMenuItem state changes. */
 	public void itemStateChanged(ItemEvent e) {
-		MenuItem item = (MenuItem)e.getSource();
-		MenuComponent parent = (MenuComponent)item.getParent();
+		JMenuItem item = (JMenuItem)e.getSource();
+		Component parent = (Component)item.getParent();
 		String cmd = e.getItem().toString();
 		if ("Autorun Examples".equals(cmd)) // Examples>Autorun Examples
 			Prefs.autoRunExamples = e.getStateChange()==1;
-		else if ((Menu)parent==Menus.window)
+		else if ((JMenu)parent==Menus.window)
 			WindowManager.activateWindow(cmd, item);
 		else
 			doCommand(cmd);
@@ -645,11 +644,11 @@ public class ImageJ extends Frame implements ActionListener,
 	public void windowActivated(WindowEvent e) {
 		if (IJ.isMacintosh() && !quitting) {
 			IJ.wait(10); // may be needed for Java 1.4 on OS X
-			MenuBar mb = Menus.getMenuBar();
-			if (mb!=null && mb!=getMenuBar()) {
-				setMenuBar(mb);
+			JMenuBar mb = Menus.getMenuBar();
+			if (mb!=null && mb!=getJMenuBar()) {
+				setJMenuBar(mb);
 				Menus.setMenuBarCount++;
-				if (IJ.debugMode) IJ.log("setMenuBar: "+Menus.setMenuBarCount);
+				if (IJ.debugMode) IJ.log("setJMenuBar: "+Menus.setMenuBarCount);
 			}
 		}
 	}

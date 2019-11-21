@@ -22,6 +22,9 @@ import java.io.*;
 import java.lang.reflect.*;
 import java.net.*;
 import javax.net.ssl.*;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+
 import java.security.cert.*;
 import java.security.KeyStore;
 import java.nio.ByteBuffer;
@@ -2314,11 +2317,11 @@ public class IJ {
 	public static String[] getLuts() {
 		ArrayList list = new ArrayList();
 		Hashtable commands = Menus.getCommands();
-		Menu lutsMenu = Menus.getImageJMenu("Image>Lookup Tables");
+		JMenu lutsMenu = Menus.getImageJMenu("Image>Lookup Tables");
 		if (commands==null || lutsMenu==null)
 			return new String[0];
 		for (int i=0; i<lutsMenu.getItemCount(); i++) {
-			MenuItem menuItem = lutsMenu.getItem(i);
+			JMenuItem menuItem = lutsMenu.getItem(i);
 			if (menuItem.getActionListeners().length == 0) // separator?
 				continue;
 			String label = menuItem.getLabel();
