@@ -1,10 +1,16 @@
 package ij.gui;
-import java.awt.*;
-import java.awt.image.*;
-import java.util.Properties;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Event;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.Insets;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.*;
 import ij.*;
-import ij.process.*;
 import ij.io.*;
 import ij.measure.*;
 import ij.plugin.frame.*;
@@ -16,6 +22,10 @@ import javax.swing.*;
 /** A frame for displaying images. */
 public class ImageWindow extends JFrame implements FocusListener, WindowListener, WindowStateListener, MouseWheelListener {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	public static final int MIN_WIDTH = 128;
 	public static final int MIN_HEIGHT = 32;
 	public static final int HGAP = 5;
@@ -26,7 +36,6 @@ public class ImageWindow extends JFrame implements FocusListener, WindowListener
 	protected ImageJ ij;
 	protected ImageCanvas ic;
 	private double initialMagnification = 1;
-	private int newWidth, newHeight;
 	protected boolean closed;
 	private boolean newCanvas;
 	private boolean unzoomWhenMinimizing = true;
@@ -59,14 +68,17 @@ public class ImageWindow extends JFrame implements FocusListener, WindowListener
 	
 	public ImageWindow(String title) {
 		super(title);
+		
 	}
 
     public ImageWindow(ImagePlus imp) {
     	this(imp, null);
+    	setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
    }
     
     public ImageWindow(ImagePlus imp, ImageCanvas ic) {
 		super(imp.getTitle());
+    	setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		if (SCALE>1.0) {
 			TEXT_GAP = (int)(TEXT_GAP*SCALE);
 			textGap = centerOnScreen?0:TEXT_GAP;
@@ -113,7 +125,7 @@ public class ImageWindow extends JFrame implements FocusListener, WindowListener
 			setLocation(loc.x, loc.y);
 			if (!(this instanceof StackWindow || this instanceof PlotWindow)) { //layout now unless components will be added later
 				pack();
-				show();
+				setVisible(true);
 			}
 			if (ic.getMagnification()!=0.0)
 				imp.setTitle(imp.getTitle());
@@ -144,7 +156,7 @@ public class ImageWindow extends JFrame implements FocusListener, WindowListener
 				WindowManager.setTempCurrentImage(imp);
 				Interpreter.addBatchModeImage(imp);
 			} else
-				show();
+				setVisible(true);
 		}
      }
     
@@ -364,7 +376,10 @@ public class ImageWindow extends JFrame implements FocusListener, WindowListener
 		return IJ.d2s(n,digits);
     }
 
+    @Override
     public void paint(Graphics g) {
+    	super.paint(g);
+    	update(g);
 		drawInfo(g);
 		Rectangle r = ic.getBounds();
 		int extraWidth = MIN_WIDTH - r.width;
@@ -585,7 +600,7 @@ public class ImageWindow extends JFrame implements FocusListener, WindowListener
 		int oldState = e.getOldState();
 		int newState = e.getNewState();
 		if (IJ.debugMode) IJ.log("windowStateChanged: "+oldState+" "+newState);
-		if ((oldState&Frame.MAXIMIZED_BOTH)==0 && (newState&Frame.MAXIMIZED_BOTH)!=0)
+		if ((oldState&JFrame.MAXIMIZED_BOTH)==0 && (newState&JFrame.MAXIMIZED_BOTH)!=0)
 			maximize();
 	}
 

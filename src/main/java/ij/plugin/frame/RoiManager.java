@@ -9,6 +9,8 @@ import java.awt.geom.*;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
@@ -49,7 +51,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	private boolean canceled;
 	private boolean macro;
 	private boolean ignoreInterrupts;
-	private PopupMenu pm;
+	private JPopupMenu pm;
 	private Button moreButton, colorButton;
 	private Checkbox showAllCheckbox = new Checkbox("Show All", false);
 	private Checkbox labelsCheckbox = new Checkbox("Labels", false);
@@ -167,7 +169,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 
 	void addPopupMenu() {
-		pm = new PopupMenu();
+		pm = new JPopupMenu();
 		GUI.scalePopupMenu(pm);
 		addPopupItem("Open...");
 		addPopupItem("Save...");
@@ -193,7 +195,7 @@ public class RoiManager extends PlugInFrame implements ActionListener, ItemListe
 	}
 
 	void addPopupItem(String s) {
-		MenuItem mi=new MenuItem(s);
+		JMenuItem mi=new JMenuItem(s);
 		mi.addActionListener(this);
 		pm.add(mi);
 	}

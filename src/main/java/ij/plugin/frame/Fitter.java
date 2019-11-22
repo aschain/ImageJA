@@ -2,6 +2,9 @@ package ij.plugin.frame;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
+
+import javax.swing.JMenuItem;
+
 import java.io.*;
 import java.awt.datatransfer.*;	
 import ij.*;
@@ -232,7 +235,7 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 	}
 	
 	public void actionPerformed(ActionEvent e) {
-		if (e.getSource() instanceof MenuItem) {
+		if (e.getSource() instanceof JMenuItem) {
 			String cmd = e.getActionCommand();
 			if (cmd==null) return;
 			if (cmd.equals("Cut"))

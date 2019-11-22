@@ -13,7 +13,7 @@ import ij.util.Tools;
 import ij.plugin.frame.Recorder;
 import ij.gui.*;
 import ij.macro.Interpreter;
-
+import javax.swing.*;
 
 /**
 This is an unlimited size text panel with tab-delimited,
@@ -21,7 +21,7 @@ labeled and resizable columns. It is based on the hGrid
 class at
     http://www.lynx.ch/contacts/~/thomasm/Grid/index.html.
 */
-public class TextPanel extends Panel implements AdjustmentListener,
+public class TextPanel extends JPanel implements AdjustmentListener,
 	MouseListener, MouseMotionListener, KeyListener,  ClipboardOwner,
 	ActionListener, MouseWheelListener, Runnable {
 
@@ -36,7 +36,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	int iColCount,iRowCount;
 	int iRowHeight,iFirstRow;
 	// scrolling
-	Scrollbar sbHoriz,sbVert;
+	JScrollBar sbHoriz,sbVert;
 	int iSbWidth,iSbHeight;
 	boolean bDrag;
 	int iXDrag,iColDrag;
@@ -49,14 +49,14 @@ public class TextPanel extends Panel implements AdjustmentListener,
   	Cursor defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
 	int selStart=-1, selEnd=-1,selOrigin=-1, selLine=-1;
 	TextCanvas tc;
-	PopupMenu pm;
+	JPopupMenu pm;
 	boolean columnsManuallyAdjusted;
 	long mouseDownTime;
     String filePath;
     ResultsTable rt;
     boolean unsavedLines;
     String searchString;
-    Menu fileMenu, editMenu;
+    JMenu fileMenu, editMenu;
     boolean menusExtended;
     boolean saveAsCSV;
 
@@ -66,11 +66,11 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		tc = new TextCanvas(this);
 		setLayout(new BorderLayout());
 		add("Center",tc);
-		sbHoriz=new Scrollbar(Scrollbar.HORIZONTAL);
+		sbHoriz=new JScrollBar(JScrollBar.HORIZONTAL);
 		sbHoriz.addAdjustmentListener(this);
 		sbHoriz.setFocusable(false); // prevents scroll bar from blinking on Windows
 		add("South", sbHoriz);
-		sbVert=new Scrollbar(Scrollbar.VERTICAL);
+		sbVert=new JScrollBar(JScrollBar.VERTICAL);
 		sbVert.addAdjustmentListener(this);
 		sbVert.setFocusable(false);
 		ImageJ ij = IJ.getInstance();
@@ -96,7 +96,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	}
 
 	void addPopupMenu() {
-		pm=new PopupMenu();
+		pm=new JPopupMenu();
 		addPopupItem("Save As...");
 		pm.addSeparator();
 		addPopupItem("Cut");
@@ -107,7 +107,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	}
 
 	void addPopupItem(String s) {
-		MenuItem mi=new MenuItem(s);
+		JMenuItem mi=new JMenuItem(s);
 		mi.addActionListener(this);
 		pm.add(mi);
 	}

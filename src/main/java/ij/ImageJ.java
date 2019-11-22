@@ -1,16 +1,13 @@
 package ij;
 import ij.gui.*;
-import ij.process.*;
-import ij.io.*;
 import ij.plugin.*;
 import ij.plugin.filter.*;
 import ij.plugin.frame.*;
 import ij.text.*;
 import ij.macro.Interpreter;
-import ij.io.Opener;
 import ij.util.*;
-import java.awt.*;
 import java.util.*;
+import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.net.*;
@@ -101,10 +98,9 @@ public class ImageJ extends JFrame implements ActionListener,
 	private static String[] arguments;
 	
 	private Toolbar toolbar;
-	private Panel statusBar;
+	private JPanel statusBar;
 	private ProgressBar progressBar;
 	private JLabel statusLine;
-	private boolean firstTime = true;
 	private java.applet.Applet applet; // null if not running as an applet
 	private Vector classes = new Vector();
 	private boolean exitWhenQuitting;
@@ -112,7 +108,6 @@ public class ImageJ extends JFrame implements ActionListener,
 	private boolean quitMacro;
 	private long keyPressedTime, actionPerformedTime;
 	private String lastKeyCommand;
-	private boolean embedded;
 	private boolean windowClosed;
 	private static String commandName;
 	private static boolean batchMode;
@@ -143,7 +138,6 @@ public class ImageJ extends JFrame implements ActionListener,
 			IJ.setDebugMode(true);
 		mode = mode & 255;
 		if (IJ.debugMode) IJ.log("ImageJ starting in debug mode: "+mode);
-		embedded = applet==null && (mode==EMBEDDED||mode==NO_SHOW);
 		this.applet = applet;
 		String err1 = Prefs.load(this, applet);
 		setBackground(backgroundColor);
@@ -158,7 +152,7 @@ public class ImageJ extends JFrame implements ActionListener,
 		add("Center", toolbar);
 
 		// Status bar
-		statusBar = new Panel();
+		statusBar = new JPanel();
 		statusBar.setLayout(new BorderLayout());
 		statusBar.setForeground(Color.black);
 		statusBar.setBackground(backgroundColor);
@@ -181,7 +175,7 @@ public class ImageJ extends JFrame implements ActionListener,
 		m.installStartupMacroSet(); //add custom tools
  		
 		Point loc = getPreferredLocation();
-		Dimension tbSize = toolbar.getPreferredSize();
+		//Dimension tbSize = toolbar.getPreferredSize();
 		setCursor(Cursor.getDefaultCursor()); // work-around for JDK 1.1.8 bug
 		if (mode!=NO_SHOW) {
 			if (IJ.isWindows()) try {setIcon();} catch(Exception e) {}
@@ -301,7 +295,7 @@ public class ImageJ extends JFrame implements ActionListener,
         return progressBar;
 	}
 
-	public Panel getStatusBar() {
+	public JPanel getStatusBar() {
         return statusBar;
 	}
 
@@ -332,8 +326,8 @@ public class ImageJ extends JFrame implements ActionListener,
 
 	/** Handle menu events. */
 	public void actionPerformed(ActionEvent e) {
-		if ((e.getSource() instanceof MenuItem)) {
-			MenuItem item = (MenuItem)e.getSource();
+		if ((e.getSource() instanceof JMenuItem)) {
+			JMenuItem item = (JMenuItem)e.getSource();
 			String cmd = e.getActionCommand();
 			Frame frame = WindowManager.getFrontWindow();
 			if (frame!=null && (frame instanceof Fitter)) {
@@ -368,12 +362,21 @@ public class ImageJ extends JFrame implements ActionListener,
 
 	/** Handles CheckboxMenuItem state changes. */
 	public void itemStateChanged(ItemEvent e) {
-		JMenuItem item = (JMenuItem)e.getSource();
-		Component parent = (Component)item.getParent();
-		String cmd = e.getItem().toString();
+		String cmd="";
+		Object item=null;
+		Component parent=null;
+		if(e.getSource() instanceof JCheckBoxMenuItem) {
+			item = (Component)e.getSource();
+			parent = ((Component)item).getParent();
+			cmd = ((JCheckBoxMenuItem)item).getActionCommand();//e.getItem().toString();
+		}else if(e.getSource() instanceof CheckboxMenuItem) {
+			item = (MenuItem)e.getSource();
+			parent = ((Component)item).getParent();
+			cmd=e.getItem().toString();
+		}else {IJ.log("non checkbox "+item);}
 		if ("Autorun Examples".equals(cmd)) // Examples>Autorun Examples
 			Prefs.autoRunExamples = e.getStateChange()==1;
-		else if ((JMenu)parent==Menus.window)
+		else if (parent instanceof JMenu && (JMenu)parent==Menus.window)
 			WindowManager.activateWindow(cmd, item);
 		else
 			doCommand(cmd);
@@ -444,7 +447,7 @@ public class ImageJ extends JFrame implements ActionListener,
         		
 		// Handle one character macro shortcuts
 		if (!control && !meta) {
-			Hashtable macroShortcuts = Menus.getMacroShortcuts();
+			Hashtable<Integer,String> macroShortcuts = Menus.getMacroShortcuts();
 			if (macroShortcuts.size()>0) {
 				if (shift)
 					cmd = (String)macroShortcuts.get(new Integer(keyCode+200));

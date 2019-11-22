@@ -525,7 +525,7 @@ public class WindowManager {
     }
 
 	/** Activates a window selected from the Window menu. */
-	synchronized static void activateWindow(String menuItemLabel, JMenuItem item) {
+	synchronized static void activateWindow(String menuItemLabel, Object item) {
 		for (int i=0; i<nonImageList.size(); i++) {
 			Object win = nonImageList.get(i);
 			String title = win instanceof Frame?((Frame)win).getTitle():((Dialog)win).getTitle();
@@ -543,7 +543,9 @@ public class WindowManager {
 		int lastSpace = menuItemLabel.lastIndexOf(' ');
 		if (lastSpace>0) // remove image size (e.g., " 90K")
 		menuItemLabel = menuItemLabel.substring(0, lastSpace);
-		String idString = item.getActionCommand();
+		String idString;
+		if(item instanceof JMenuItem) idString=((JMenuItem)item).getActionCommand();
+		else idString=((MenuItem)item).getActionCommand();
 		int id = (int)Tools.parseDouble(idString, 0);
 		ImagePlus imp = WindowManager.getImage(id);
 		if (imp==null) return;

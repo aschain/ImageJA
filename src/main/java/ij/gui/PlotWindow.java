@@ -2,15 +2,13 @@ package ij.gui;
 
 import java.awt.*;
 import java.awt.event.*;
+import javax.swing.*;
 import java.io.*;
 import java.awt.datatransfer.*;
 import java.util.*;
 import ij.*;
 import ij.process.*;
 import ij.util.*;
-import ij.text.TextWindow;
-import ij.plugin.filter.Analyzer;
-import ij.plugin.filter.PlugInFilterRunner;
 import ij.measure.*;
 import ij.io.SaveDialog;
 
@@ -74,11 +72,11 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 
 	boolean wasActivated;			// true after window has been activated once, needed by PlotCanvas
 
-	private Button list, data, more, live;
-	private PopupMenu dataPopupMenu, morePopupMenu;
+	private JButton list, data, more, live;
+	private JPopupMenu dataPopupMenu, morePopupMenu;
 	private static final int NUM_MENU_ITEMS = 20; //how many menu items we have in total
-	private MenuItem[] menuItems = new MenuItem[NUM_MENU_ITEMS];
-	private Label coordinates;
+	private JMenuItem[] menuItems = new JMenuItem[NUM_MENU_ITEMS];
+	private JLabel coordinates;
 	private static String defaultDirectory = null;
 	private static int options;
 	private int defaultDigits = -1;
@@ -221,25 +219,25 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 
 	/** Displays the plot. */
 	public void draw() {
-		Panel bottomPanel = new Panel();
+		JPanel bottomPanel = new JPanel();
 		int hgap = IJ.isMacOSX()?1:5;
 
-		list = new Button(" List ");
+		list = new JButton(" List ");
 		list.addActionListener(this);
 		bottomPanel.add(list);
 		bottomPanel.setLayout(new FlowLayout(FlowLayout.RIGHT,hgap,0));
-		data = new Button(dataButtonLabel);
+		data = new JButton(dataButtonLabel);
 		data.addActionListener(this);
 		bottomPanel.add(data);
-		more = new Button(moreButtonLabel);
+		more = new JButton(moreButtonLabel);
 		more.addActionListener(this);
 		bottomPanel.add(more);
 		if (plot!=null && plot.getPlotMaker()!=null) {
-			live = new Button("Live");
+			live = new JButton("Live");
 			live.addActionListener(this);
 			bottomPanel.add(live);
 		}
-		coordinates = new Label(blankLabel);
+		coordinates = new JLabel(blankLabel);
 		coordinates.setFont(new Font("Monospaced", Font.PLAIN, 12));
 		coordinates.setBackground(new Color(220, 220, 220));
 		bottomPanel.add(coordinates);
@@ -317,8 +315,8 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 			SET_RANGE, PREV_RANGE, RESET_RANGE, FIT_RANGE, ZOOM_SELECTION, AXIS_OPTIONS, LEGEND, STYLE, RESET_PLOT};
 
 	/** Prepares and returns the popupMenu of the Data>> button */
-	PopupMenu getDataPopupMenu() {
-		dataPopupMenu = new PopupMenu();
+	JPopupMenu getDataPopupMenu() {
+		dataPopupMenu = new JPopupMenu();
 		GUI.scalePopupMenu(dataPopupMenu);
 		menuItems[SAVE] = addPopupItem(dataPopupMenu, "Save Data...");
 		menuItems[COPY] = addPopupItem(dataPopupMenu, "Copy 1st Data Set");
@@ -332,8 +330,8 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 	}
 
 	/** Prepares and returns the popupMenu of the More>> button */
-	PopupMenu getMorePopupMenu() {
-		morePopupMenu = new PopupMenu();
+	JPopupMenu getMorePopupMenu() {
+		morePopupMenu = new JPopupMenu();
 		GUI.scalePopupMenu(morePopupMenu);
 		menuItems[SET_RANGE] = addPopupItem(morePopupMenu, "Set Range...");
 		menuItems[PREV_RANGE] = addPopupItem(morePopupMenu, "Previous Range");
@@ -353,17 +351,17 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 		return morePopupMenu;
 	}
 
-	MenuItem addPopupItem(PopupMenu popupMenu, String s) {
+	JMenuItem addPopupItem(JPopupMenu popupMenu, String s) {
 		return addPopupItem(popupMenu, s, false);
 	}
 
-	MenuItem addPopupItem(PopupMenu popupMenu, String s, boolean isCheckboxItem) {
-		MenuItem mi = null;
+	JMenuItem addPopupItem(JPopupMenu popupMenu, String s, boolean isCheckboxItem) {
+		JMenuItem mi = null;
 		if (isCheckboxItem) {
-			mi = new CheckboxMenuItem(s);
-			((CheckboxMenuItem)mi).addItemListener(this);
+			mi = new JCheckBoxMenuItem(s);
+			((JCheckBoxMenuItem)mi).addItemListener(this);
 		} else {
-			mi = new MenuItem(s);
+			mi = new JMenuItem(s);
 			mi.addActionListener(this);
 		}
 		popupMenu.add(mi);
@@ -433,7 +431,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 
 	private void enableDisableMenuItems() {
 		boolean frozen = plot.isFrozen();	//prepare menu according to 'frozen' state of plot
-		((CheckboxMenuItem)menuItems[FREEZE]).setState(frozen);
+		((JCheckBoxMenuItem)menuItems[FREEZE]).setState(frozen);
 		for (int i : DISABLED_WHEN_FROZEN)
 			menuItems[i].setEnabled(!frozen);
 		if (!PlotContentsDialog.tableWindowExists())
@@ -442,10 +440,10 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 			menuItems[ADD_FIT].setEnabled(false);
 	}
 
-	/** Called if the user activates/deactivates a CheckboxMenuItem */
+	/** Called if the user activates/deactivates a JCheckBoxMenuItem */
 	public void itemStateChanged(ItemEvent e) {
 		if (e.getSource()==menuItems[FREEZE]) {
-			boolean frozen = ((CheckboxMenuItem)menuItems[FREEZE]).getState();
+			boolean frozen = ((JCheckBoxMenuItem)menuItems[FREEZE]).getState();
 			plot.setFrozen(frozen);
 		}
 	}

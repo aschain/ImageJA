@@ -1,15 +1,15 @@
 package ij.gui;
 import ij.*;
-import ij.measure.Calibration;
 import ij.plugin.frame.SyncWindows;
-import java.awt.*;
-import java.awt.image.*;
+import java.awt.EventQueue;
+import java.awt.Point;
 import java.awt.event.*;
+import javax.swing.*;
 
 /** This class is an extended ImageWindow that displays stacks and hyperstacks. */
 public class StackWindow extends ImageWindow implements Runnable, AdjustmentListener, ActionListener, MouseWheelListener {
 
-	protected Scrollbar sliceSelector; // for backward compatibity with Image5D
+	protected JScrollBar sliceSelector; // for backward compatibility with Image5D
 	protected ScrollbarWithLabel cSelector, zSelector, tSelector;
 	protected Thread thread;
 	protected volatile boolean done;
@@ -29,11 +29,11 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 		addScrollbars(imp);
 		addMouseWheelListener(this);
 		if (sliceSelector==null && this.getClass().getName().indexOf("Image5D")!=-1)
-			sliceSelector = new Scrollbar(); // prevents Image5D from crashing
+			sliceSelector = new JScrollBar(); // prevents Image5D from crashing
 		pack();
 		ic = imp.getCanvas();
 		if (ic!=null) ic.setMaxBounds();
-		show();
+		setVisible(true);
 		int previousSlice = imp.getCurrentSlice();
 		if (previousSlice>1 && previousSlice<=imp.getStackSize())
 			imp.setSlice(previousSlice);
@@ -171,7 +171,6 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 	public void mouseWheelMoved(MouseWheelEvent e) {
 		synchronized(this) {
 			int rotation = e.getWheelRotation();
-			boolean ctrl = (e.getModifiers()&Event.CTRL_MASK)!=0;
 			if ((IJ.shiftKeyDown()) && ic!=null) {
 				Point loc = ic.getCursorLoc();
 				int x = ic.screenX(loc.x);

@@ -9,11 +9,12 @@ import java.awt.*;
 import java.io.*;
 import java.awt.event.*;
 import java.util.ArrayList;
+import javax.swing.*;
 
 /** Uses a TextPanel to displays text in a window.
 	@see TextPanel
 */
-public class TextWindow extends Frame implements ActionListener, FocusListener, ItemListener {
+public class TextWindow extends JFrame implements ActionListener, FocusListener, ItemListener {
 
 	public static final String LOC_KEY = "results.loc";
 	public static final String WIDTH_KEY = "results.width";
@@ -25,10 +26,10 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 	static final String FONT_SIZE = "tw.font.size";
 	static final String FONT_ANTI= "tw.font.anti";
 	TextPanel textPanel;
-    CheckboxMenuItem antialiased;
+    JCheckBoxMenuItem antialiased;
 	int[] sizes = {9, 10, 11, 12, 13, 14, 16, 18, 20, 24, 36, 48, 60, 72};
 	int fontSize = (int)Prefs.get(FONT_SIZE, 5);
-	MenuBar mb;
+	JMenuBar mb;
  
 	/**
 	* Opens a new single-column text window.
@@ -142,52 +143,52 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 	}
 	
 	void addMenuBar() {
-		mb = new MenuBar();
+		mb = new JMenuBar();
 		if (Menus.getFontSize()!=0)
 			mb.setFont(Menus.getFont());
-		Menu m = new Menu("File");
-		m.add(new MenuItem("Save As...", new MenuShortcut(KeyEvent.VK_S)));
+		JMenu m = new JMenu("File");
+		Menus.addJMenuItemWithShortcut(m, "Save As...", KeyEvent.VK_S, false);
 		if (getTitle().equals("Results")) {
-			m.add(new MenuItem("Rename..."));
-			m.add(new MenuItem("Duplicate..."));
+			m.add(new JMenuItem("Rename..."));
+			m.add(new JMenuItem("Duplicate..."));
 		}
 		m.addActionListener(this);
 		mb.add(m);
 		textPanel.fileMenu = m;
-		m = new Menu("Edit");
-		m.add(new MenuItem("Cut", new MenuShortcut(KeyEvent.VK_X)));
-		m.add(new MenuItem("Copy", new MenuShortcut(KeyEvent.VK_C)));
-		m.add(new MenuItem("Clear"));
-		m.add(new MenuItem("Select All", new MenuShortcut(KeyEvent.VK_A)));
+		m = new JMenu("Edit");
+		Menus.addJMenuItemWithShortcut(m, "Cut", KeyEvent.VK_X, false);
+		Menus.addJMenuItemWithShortcut(m, "Copy", KeyEvent.VK_C, false);
+		m.add(new JMenuItem("Clear"));
+		Menus.addJMenuItemWithShortcut(m, "Select All", KeyEvent.VK_A, false);
 		m.addSeparator();
-		m.add(new MenuItem("Find...", new MenuShortcut(KeyEvent.VK_F)));
-		m.add(new MenuItem("Find Next", new MenuShortcut(KeyEvent.VK_G)));
+		Menus.addJMenuItemWithShortcut(m, "Find...", KeyEvent.VK_F, false);
+		Menus.addJMenuItemWithShortcut(m, "Find Next", KeyEvent.VK_G, false);
 		m.addActionListener(this);
 		mb.add(m);
 		textPanel.editMenu = m;
-		m = new Menu("Font");
-		m.add(new MenuItem("Make Text Smaller"));
-		m.add(new MenuItem("Make Text Larger"));
+		m = new JMenu("Font");
+		m.add(new JMenuItem("Make Text Smaller"));
+		m.add(new JMenuItem("Make Text Larger"));
 		m.addSeparator();
-		antialiased = new CheckboxMenuItem("Antialiased", Prefs.get(FONT_ANTI, IJ.isMacOSX()?true:false));
+		antialiased = new JCheckBoxMenuItem("Antialiased", Prefs.get(FONT_ANTI, IJ.isMacOSX()?true:false));
 		antialiased.addItemListener(this);
 		m.add(antialiased);
-		m.add(new MenuItem("Save Settings"));
+		m.add(new JMenuItem("Save Settings"));
 		m.addActionListener(this);
 		mb.add(m);
 		if (getTitle().equals("Results")) {
-			m = new Menu("Results");
-			m.add(new MenuItem("Clear Results"));
-			m.add(new MenuItem("Summarize"));
-			m.add(new MenuItem("Distribution..."));
-			m.add(new MenuItem("Set Measurements..."));
-			m.add(new MenuItem("Sort..."));
-			m.add(new MenuItem("Plot..."));
-			m.add(new MenuItem("Options..."));
+			m = new JMenu("Results");
+			m.add(new JMenuItem("Clear Results"));
+			m.add(new JMenuItem("Summarize"));
+			m.add(new JMenuItem("Distribution..."));
+			m.add(new JMenuItem("Set Measurements..."));
+			m.add(new JMenuItem("Sort..."));
+			m.add(new JMenuItem("Plot..."));
+			m.add(new JMenuItem("Options..."));
 			m.addActionListener(this);
 			mb.add(m);
 		}
-		setMenuBar(mb);
+		setJMenuBar(mb);
 	}
 
 	/**

@@ -3,15 +3,12 @@ import ij.process.*;
 import ij.util.*;
 import ij.gui.ImageWindow;
 import ij.plugin.MacroInstaller;
-import ij.gui.Toolbar;
-import ij.macro.Interpreter;
 import java.awt.*;
 import java.awt.image.*;
 import java.awt.event.*;
 import java.util.*;
 import java.io.*;
 import java.applet.Applet;
-import java.awt.event.*;
 import java.util.zip.*;
 
 import javax.swing.JCheckBoxMenuItem;
@@ -71,7 +68,7 @@ public class Menus {
 	
 	private static int nPlugins, nMacros;
 	private static Hashtable shortcuts;
-	private static Hashtable macroShortcuts;
+	private static Hashtable<Integer,String> macroShortcuts;
 	private static Vector pluginsPrefs; // commands saved in IJ_Prefs
 	static int windowMenuItems2; // non-image windows listed in Window menu + separator
 	private String error;
@@ -1330,9 +1327,9 @@ public class Menus {
         
 	/** Returns the hashtable that associates keyboard shortcuts with macros. The keys
 		in the hashtable are Integer keycodes, or keycode+200 for uppercase. */
-	public static Hashtable getMacroShortcuts() {
+	public static Hashtable<Integer,String> getMacroShortcuts() {
 		if (macroShortcuts==null)
-			macroShortcuts = new Hashtable();
+			macroShortcuts = new Hashtable<Integer,String>();
 		return macroShortcuts;
 	}
         
@@ -1700,6 +1697,12 @@ public class Menus {
 		int mods=Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 		if(shift)mods|=InputEvent.SHIFT_DOWN_MASK;
 		mi.setAccelerator(KeyStroke.getKeyStroke(keycode, mods));
+	}
+	
+	public static void addJMenuItemWithShortcut(JMenu menu, String label, int keycode, boolean shift) {
+		JMenuItem mi=new JMenuItem(label);
+		setAccelerator(mi, keycode, shift);
+		menu.add(mi);
 	}
 	
 }
