@@ -14,6 +14,7 @@ import ij.plugin.Commands;
 import ij.plugin.Macro_Runner;
 import ij.plugin.JavaScriptEvaluator;
 import ij.io.SaveDialog;
+import javax.swing.*;
 
 /** This is a simple TextArea based editor for editing and compiling plugins. */
 public class Editor extends PlugInFrame implements ActionListener, ItemListener,
@@ -73,12 +74,12 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	private static int lineNumber = 1;
 	private static int xoffset, yoffset;
 	private static int nWindows;
-	private Menu fileMenu, editMenu;
+	private JMenu fileMenu, editMenu;
 	private Properties p = new Properties();
 	private int[] macroStarts;
 	private String[] macroNames;
-	private MenuBar mb;
-	private Menu macrosMenu;
+	private JMenuBar mb;
+	private JMenu macrosMenu;
 	private int nMacros;
 	private Program pgm;
 	private int eventCount;
@@ -89,7 +90,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	private boolean dontShowWindow;
 	private int[] sizes = {9, 10, 11, 12, 13, 14, 16, 18, 20, 24, 36, 48, 60, 72};
 	private int fontSize = (int)Prefs.get(FONT_SIZE, 6); // defaults to 16-point
-	private CheckboxMenuItem monospaced;
+	private JCheckBoxMenuItem monospaced;
 	private static boolean wholeWords;
 	private boolean isMacroWindow;
 	private int debugStart, debugEnd;
@@ -106,7 +107,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	private boolean checkForCurlyQuotes;
 	private static int tabInc = (int)Prefs.get(TAB_INC, 3);
 	private static boolean insertSpaces = Prefs.get(INSERT_SPACES, false);
-	private CheckboxMenuItem insertSpacesItem;
+	private JCheckBoxMenuItem insertSpacesItem;
 	private boolean interactiveMode;
 	private Interpreter interpreter;
 	private JavaScriptEvaluator evaluator;
@@ -138,77 +139,94 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	}
 	
 	void addMenuBar(int options) {
-		mb = new MenuBar();
+		mb = new JMenuBar();
 		if (Menus.getFontSize()!=0) ;
 			mb.setFont(Menus.getFont());
-		Menu m = new Menu("File");
-		m.add(new MenuItem("New...", new MenuShortcut(KeyEvent.VK_N, true)));
-		m.add(new MenuItem("Open...", new MenuShortcut(KeyEvent.VK_O)));
-		m.add(new MenuItem("Save", new MenuShortcut(KeyEvent.VK_S)));
-		m.add(new MenuItem("Save As..."));
-		m.add(new MenuItem("Revert"));
-		m.add(new MenuItem("Print..."));
+		JMenu m = new JMenu("File");
+		JMenuItem temp=new JMenuItem("New...");
+		Menus.setAccelerator(temp, KeyEvent.VK_N, true);
+		m.add(temp);
+		temp=new JMenuItem("Open...");
+		Menus.setAccelerator(temp, KeyEvent.VK_O, false);
+		m.add(temp);
+		temp=new JMenuItem("Save...");
+		Menus.setAccelerator(temp, KeyEvent.VK_S, false);
+		m.add(temp);
+		m.add(new JMenuItem("Save As..."));
+		m.add(new JMenuItem("Revert"));
+		m.add(new JMenuItem("Print..."));
 		m.addActionListener(this);
 		fileMenu = m;
 		mb.add(m);
 		
-		m = new Menu("Edit");
-		MenuItem item = null;
-		if (IJ.isWindows())
-			item = new MenuItem("Undo  Ctrl+Z");
-		else
-			item = new MenuItem("Undo",new MenuShortcut(KeyEvent.VK_Z));		
+		m = new JMenu("Edit");
+		JMenuItem item = null;
+		if (IJ.isWindows()) {
+			item = new JMenuItem("Undo  Ctrl+Z");
+		}else{
+			item = new JMenuItem("Undo");
+			Menus.setAccelerator(item, KeyEvent.VK_Z, false);
+			
+		}
 		m.add(item);
 		m.addSeparator();		
 		if (IJ.isWindows())
-			item = new MenuItem("Cut  Ctrl+X");
-		else
-			item = new MenuItem("Cut",new MenuShortcut(KeyEvent.VK_X));
+			item = new JMenuItem("Cut  Ctrl+X");
+		else {
+			item = new JMenuItem("Cut");
+			Menus.setAccelerator(item, KeyEvent.VK_X, false);}
 		m.add(item);
 		if (IJ.isWindows())
-			item = new MenuItem("Copy  Ctrl+C");
-		else
-			item = new MenuItem("Copy", new MenuShortcut(KeyEvent.VK_C));
+			item = new JMenuItem("Copy  Ctrl+C");
+		else {
+			item = new JMenuItem("Copy");
+			Menus.setAccelerator(item, KeyEvent.VK_C, false);}
 		m.add(item);
 		if (IJ.isWindows())
-			item = new MenuItem("Paste  Ctrl+V");
-		else
-			item = new MenuItem("Paste",new MenuShortcut(KeyEvent.VK_V));
+			item = new JMenuItem("Paste  Ctrl+V");
+		else {
+			item = new JMenuItem("Paste");
+			Menus.setAccelerator(item, KeyEvent.VK_V, false);}
 		m.add(item);
 		m.addSeparator();
-		m.add(new MenuItem("Find...", new MenuShortcut(KeyEvent.VK_F)));
-		m.add(new MenuItem("Find Next", new MenuShortcut(KeyEvent.VK_G)));
-		m.add(new MenuItem("Go to Line...", new MenuShortcut(KeyEvent.VK_L)));
+		temp=new JMenuItem("Find..."); Menus.setAccelerator(item, KeyEvent.VK_F, false);
+		m.add(temp);
+		temp=new JMenuItem("Find Next"); Menus.setAccelerator(item, KeyEvent.VK_G, false);
+		m.add(temp);
+		temp=new JMenuItem("Go to Line..."); Menus.setAccelerator(item, KeyEvent.VK_L, false);
+		m.add(temp);
 		m.addSeparator();
-		m.add(new MenuItem("Select All", new MenuShortcut(KeyEvent.VK_A)));
-		m.add(new MenuItem("Balance", new MenuShortcut(KeyEvent.VK_B,false)));
-		m.add(new MenuItem("Detab..."));
-		insertSpacesItem = new CheckboxMenuItem("Tab Key Inserts Spaces");
+		temp=new JMenuItem("Select All"); Menus.setAccelerator(item, KeyEvent.VK_A, false);
+		m.add(temp);
+		temp=new JMenuItem("Balance"); Menus.setAccelerator(item, KeyEvent.VK_B, false);
+		m.add(temp);
+		m.add(new JMenuItem("Detab..."));
+		insertSpacesItem = new JCheckBoxMenuItem("Tab Key Inserts Spaces");
 		insertSpacesItem.addItemListener(this);
 		insertSpacesItem.setState(insertSpaces);
 		m.add(insertSpacesItem);
-		m.add(new MenuItem("Zap Gremlins"));
-		m.add(new MenuItem("Copy to Image Info"));
+		m.add(new JMenuItem("Zap Gremlins"));
+		m.add(new JMenuItem("Copy to Image Info"));
 		m.addActionListener(this);
 		mb.add(m);
 		editMenu = m;
 		if ((options&MENU_BAR)!=0)
-			setMenuBar(mb);
+			setJMenuBar(mb);
 		
-		m = new Menu("Font");
-		m.add(new MenuItem("Make Text Smaller"));
-		m.add(new MenuItem("Make Text Larger"));
+		m = new JMenu("Font");
+		m.add(new JMenuItem("Make Text Smaller"));
+		m.add(new JMenuItem("Make Text Larger"));
 		m.addSeparator();
-		monospaced = new CheckboxMenuItem("Monospaced Font", Prefs.get(FONT_MONO, false));
+		monospaced = new JCheckBoxMenuItem("Monospaced Font", Prefs.get(FONT_MONO, false));
 		if ((options&MONOSPACED)!=0) monospaced.setState(true);
 		monospaced.addItemListener(this);
 		m.add(monospaced);
-		m.add(new MenuItem("Save Settings"));
+		m.add(new JMenuItem("Save Settings"));
 		m.addActionListener(this);
 		mb.add(m);
 		
-		m = Menus.getExamplesMenu(this);
-		mb.add(m);
+		//m = Menus.getExamplesMenu(this);
+		//mb.add(m);
 	}			
 			
 	public void positionWindow() {
@@ -233,6 +251,12 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		setTitle(title);
 	}
 	
+	private void addItemToMenu(JMenu menu, String label, int keycode, boolean shift) {
+		JMenuItem mi=new JMenuItem(label);
+		Menus.setAccelerator(mi, keycode, shift);
+		menu.add(mi);
+	}
+	
 	public void create(String name, String text) {
 		ta.append(text);
 		if (IJ.isMacOSX()) IJ.wait(25); // needed to get setCaretPosition() on OS X
@@ -240,40 +264,40 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		setWindowTitle(name);
 		boolean macroExtension = name.endsWith(".txt") || name.endsWith(".ijm");
 		if (macroExtension || name.endsWith(".js") || name.endsWith(".bsh") || name.endsWith(".py") || name.indexOf(".")==-1) {
-			macrosMenu = new Menu("Macros");			
-			macrosMenu.add(new MenuItem("Run Macro", new MenuShortcut(KeyEvent.VK_R)));
-			macrosMenu.add(new MenuItem("Evaluate Line", new MenuShortcut(KeyEvent.VK_Y)));
-			macrosMenu.add(new MenuItem("Abort Macro"));
-			macrosMenu.add(new MenuItem("Install Macros", new MenuShortcut(KeyEvent.VK_I)));
-			macrosMenu.add(new MenuItem("Macro Functions...", new MenuShortcut(KeyEvent.VK_M, true)));
-			macrosMenu.add(new MenuItem("Function Finder...", new MenuShortcut(KeyEvent.VK_F, true)));
-			macrosMenu.add(new MenuItem("Enter Interactive Mode"));
-			macrosMenu.add(new MenuItem("Assign to Repeat Cmd",new MenuShortcut(KeyEvent.VK_A, true)));
+			macrosMenu = new JMenu("Macros");
+			addItemToMenu(macrosMenu, "Macros", KeyEvent.VK_R, false);
+			addItemToMenu(macrosMenu, "Evaluate Line", KeyEvent.VK_Y, false);
+			macrosMenu.add(new JMenuItem("Abort Macro"));
+			addItemToMenu(macrosMenu, "Install Macros", KeyEvent.VK_I, false);
+			addItemToMenu(macrosMenu, "Macro Functions...", KeyEvent.VK_M, true);
+			addItemToMenu(macrosMenu, "Function Finder...", KeyEvent.VK_F, true);
+			macrosMenu.add(new JMenuItem("Enter Interactive Mode"));
+			addItemToMenu(macrosMenu, "Assign to Repeat Cmd", KeyEvent.VK_A, true);
 			macrosMenu.addSeparator();
-			macrosMenu.add(new MenuItem("Evaluate Macro"));
-			macrosMenu.add(new MenuItem("Evaluate JavaScript", new MenuShortcut(KeyEvent.VK_J, false)));
-			macrosMenu.add(new MenuItem("Evaluate BeanShell", new MenuShortcut(KeyEvent.VK_B, true)));
-			macrosMenu.add(new MenuItem("Evaluate Python", new MenuShortcut(KeyEvent.VK_P, false)));
-			macrosMenu.add(new MenuItem("Show Log Window", new MenuShortcut(KeyEvent.VK_L, true)));
+			macrosMenu.add(new JMenuItem("Evaluate Macro"));
+			addItemToMenu(macrosMenu, "Evaluate JavaScript", KeyEvent.VK_J, false);
+			addItemToMenu(macrosMenu, "Evaluate BeanShell", KeyEvent.VK_B, true);
+			addItemToMenu(macrosMenu, "Evaluate Python", KeyEvent.VK_P, false);
+			addItemToMenu(macrosMenu, "Show Log Window", KeyEvent.VK_L, true);
 			macrosMenu.addSeparator();
 			// MACROS_MENU_ITEMS must be updated if items are added to this menu
 			macrosMenu.addActionListener(this);
 			mb.add(macrosMenu);
 			if (!(name.endsWith(".js")||name.endsWith(".bsh")||name.endsWith(".py"))) {
-				Menu debugMenu = new Menu("Debug");			
-				debugMenu.add(new MenuItem("Debug Macro", new MenuShortcut(KeyEvent.VK_D)));
-				debugMenu.add(new MenuItem("Step", new MenuShortcut(KeyEvent.VK_E)));
-				debugMenu.add(new MenuItem("Trace", new MenuShortcut(KeyEvent.VK_T)));
-				debugMenu.add(new MenuItem("Fast Trace", new MenuShortcut(KeyEvent.VK_T,true)));
-				debugMenu.add(new MenuItem("Run"));
-				debugMenu.add(new MenuItem("Run to Insertion Point", new MenuShortcut(KeyEvent.VK_E, true)));
-				debugMenu.add(new MenuItem("Abort"));
+				JMenu debugMenu = new JMenu("Debug");
+				addItemToMenu(debugMenu, "Debug Macro", KeyEvent.VK_D, false);
+				addItemToMenu(debugMenu, "Step", KeyEvent.VK_E, false);
+				addItemToMenu(debugMenu, "Trace", KeyEvent.VK_T, false);
+				addItemToMenu(debugMenu, "Fast Trace", KeyEvent.VK_T, true);
+				debugMenu.add(new JMenuItem("Run"));
+				addItemToMenu(debugMenu, "Run to Insertion Point", KeyEvent.VK_E, true);
+				debugMenu.add(new JMenuItem("Abort"));
 				debugMenu.addActionListener(this);
 				mb.add(debugMenu);
 			}
 		} else {
 			fileMenu.addSeparator();
-			fileMenu.add(new MenuItem("Compile and Run", new MenuShortcut(KeyEvent.VK_R)));
+			addItemToMenu(fileMenu, "Compile and Run", KeyEvent.VK_R, false);
 		}
 		if (IJ.getInstance()!=null && !dontShowWindow)
 			show();
@@ -1097,7 +1121,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	}
 
 	public void itemStateChanged(ItemEvent e) {
-		CheckboxMenuItem item = (CheckboxMenuItem)e.getSource();
+		JCheckBoxMenuItem item = (JCheckBoxMenuItem)e.getSource();
 		String cmd = e.getItem().toString();
 		if ("Tab Key Inserts Spaces".equals(cmd)) {
 			insertSpaces = e.getStateChange()==1;

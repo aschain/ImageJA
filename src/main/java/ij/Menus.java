@@ -91,8 +91,6 @@ public class Menus {
 
 	static boolean jnlp; // true when using Java WebStart
 	public static int setMenuBarCount;
-	
-	private static int CTRL=Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 		
 	Menus(ImageJ ijInstance, Applet appletInstance) {
 		ij = ijInstance;
@@ -413,17 +411,15 @@ public class Menus {
 	static void addItem(JMenu menu, String label, int shortcut, boolean shift) {
 		if (menu==null)
 			return;
-		JMenuItem item;
-		if (shortcut==0)
-			item = new JMenuItem(label);
-		else {
+		JMenuItem item = new JMenuItem(label);
+		if (shortcut!=0){
 			if (shift) {
 				item = new JMenuItem(label);
-				item.setAccelerator(KeyStroke.getKeyStroke(shortcut, CTRL|InputEvent.SHIFT_DOWN_MASK));
+				setAccelerator(item, shortcut, true);
 				shortcuts.put(new Integer(shortcut+200),label);
 			} else {
 				item = new JMenuItem(label);
-				item.setAccelerator(KeyStroke.getKeyStroke(shortcut, CTRL));
+				setAccelerator(item, shortcut, false);
 				shortcuts.put(new Integer(shortcut),label);
 			}
 		}
@@ -844,7 +840,7 @@ public class Menus {
 				if (mbar == null)
 					mbar = new JMenuBar();
 				if (menuName.equals("Help"))
-					mbar.setHelpMenu(result);
+					;//mbar.setHelpMenu(result);
 				else
 					mbar.add(result);
 				if (menuName.equals("Window"))
@@ -1494,9 +1490,7 @@ public class Menus {
 				shift = true;
 			}
 			item = new JMenuItem(command);
-			int ctrlMask=CTRL;
-			if(shift)CTRL|=InputEvent.SHIFT_DOWN_MASK;
-			item.setAccelerator(KeyStroke.getKeyStroke(keyCode, ctrlMask));
+			setAccelerator(item, keyCode, shift);
 		}
 		menu.add(item);
 		item.addActionListener(ij);
@@ -1700,6 +1694,12 @@ public class Menus {
 		menuPath = menuPath.substring(0, index);
 		pluginsTable.put(label, plugin);
 		addItem(getMenu(menuPath), label, 0, false);
+	}
+	
+	public static void setAccelerator(JMenuItem mi, int keycode, boolean shift) {
+		int mods=Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
+		if(shift)mods|=InputEvent.SHIFT_DOWN_MASK;
+		mi.setAccelerator(KeyStroke.getKeyStroke(keycode, mods));
 	}
 	
 }
