@@ -212,13 +212,9 @@ public class ImageCanvas extends JPanel implements MouseListener, MouseMotionLis
 	//	super.repaint();
 	//	//if (IJ.debugMode) IJ.log("repaint: "+imp);
 	//}
-	@Override
-	protected void paintComponent(Graphics g) {
-		super.paintComponent(g);
-		paint(g);
-	}
 	
     public void paint(Graphics g) {
+    	super.paint(g);
 		// if (IJ.debugMode) IJ.log("paint: "+imp);
 		painted = true;
 		Roi roi = imp.getRoi();	

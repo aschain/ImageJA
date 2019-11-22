@@ -655,6 +655,7 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 	}
 
 	public void paint(Graphics g) {
+		super.paint(g);
 		drawButtons(g);
 	}
 

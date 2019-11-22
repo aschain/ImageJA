@@ -1,5 +1,6 @@
 package ij.gui;
 import java.awt.*;
+import javax.swing.*;
 import ij.*;
 
 /** This is a custom layout manager that supports resizing of zoomed
@@ -33,7 +34,7 @@ public class ImageLayout implements LayoutManager {
 			Dimension d = m.getPreferredSize();
 			if (i==0 || !ignoreNonImageWidths)
     			dim.width = Math.max(dim.width, d.width);
-			if (i>0) dim.height += vgap;
+			if (i>2) dim.height += vgap;
 			dim.height += d.height;
 		}
 		Insets insets = target.getInsets();
@@ -62,10 +63,10 @@ public class ImageLayout implements LayoutManager {
 		for (int i=0; i<nmembers; i++) {
 		    Component m = target.getComponent(i);
 		    Dimension d = m.getSize();
-		    if (i==0 || d.height>60)
+		    if (i==1 || d.height>60)
 		    	x2 = x + (width - d.width)/2;
 			m.setLocation(x2, y);
-			y += vgap + d.height;
+			if(i>1)y += vgap + d.height;
 		}
     }
 
@@ -76,10 +77,13 @@ public class ImageLayout implements LayoutManager {
 		int nmembers = target.getComponentCount();
 		Dimension d;
 		int extraHeight = 0;
-		for (int i=1; i<nmembers; i++) {
+		for (int i=0; i<nmembers; i++) {
 			Component m = target.getComponent(i);
-			d = m.getPreferredSize();
-			extraHeight += d.height+vgap;
+			if ((m instanceof ScrollbarWithLabel) || (m instanceof JScrollBar) || m instanceof ImageWindow.InfoPanel) {
+				d = m.getPreferredSize();
+				extraHeight += d.height;
+				if ((m instanceof ScrollbarWithLabel) || (m instanceof JScrollBar)) extraHeight+=vgap;
+			}
 		}
 		d = target.getSize();
 		int preferredImageWidth = d.width - (insets.left + insets.right + hgap*2);
@@ -95,16 +99,16 @@ public class ImageLayout implements LayoutManager {
 		for (int i=0; i<nmembers; i++) {
 			Component m = target.getComponent(i);
 			d = m.getPreferredSize();
-			if ((m instanceof ScrollbarWithLabel) || (m instanceof Scrollbar)) {
-				int scrollbarWidth = target.getComponent(0).getPreferredSize().width;
+			if ((m instanceof ScrollbarWithLabel) || (m instanceof JScrollBar) || m instanceof ImageWindow.InfoPanel) {
+				int scrollbarWidth = target.getComponent(1).getPreferredSize().width;
 				Dimension minSize = m.getMinimumSize();
 				if (scrollbarWidth<minSize.width) scrollbarWidth = minSize.width;
 				m.setSize(scrollbarWidth, d.height);
 			} else
 				m.setSize(d.width, d.height);
-			if (y > 0) y += vgap;
+			if (y > 1) y += vgap;
 			y += d.height;
-			if (i==0 || !ignoreNonImageWidths)
+			if (i==1 || !ignoreNonImageWidths)
 				colw = Math.max(colw, d.width);
 		}
 		moveComponents(target, x, insets.top + vgap, colw, maxheight - y, nmembers);

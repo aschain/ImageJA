@@ -58,6 +58,7 @@ public class ImageWindow extends JFrame implements FocusListener, WindowListener
 	private static Point nextLocation;
 	public static long setMenuBarTime;	
     private int textGap = centerOnScreen?0:TEXT_GAP;
+    private InfoPanel subtitlePanel;
 	
 	/** This variable is set false if the user presses the escape key or closes the window. */
 	public boolean running;
@@ -68,12 +69,11 @@ public class ImageWindow extends JFrame implements FocusListener, WindowListener
 	
 	public ImageWindow(String title) {
 		super(title);
-		
+    	setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 	}
 
     public ImageWindow(ImagePlus imp) {
     	this(imp, null);
-    	setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
    }
     
     public ImageWindow(ImagePlus imp, ImageCanvas ic) {
@@ -103,6 +103,8 @@ public class ImageWindow extends JFrame implements FocusListener, WindowListener
 		this.ic = ic;
 		ImageWindow previousWindow = imp.getWindow();
 		setLayout(new ImageLayout(ic));
+		subtitlePanel=new InfoPanel(getWidth(),TEXT_GAP);
+		add(subtitlePanel);
 		add(ic);
  		addFocusListener(this);
  		addWindowListener(this);
@@ -254,8 +256,22 @@ public class ImageWindow extends JFrame implements FocusListener, WindowListener
 		if (extraWidth<0) extraWidth = 0;
 		int extraHeight = (int)((MIN_HEIGHT - imp.getHeight()*mag)/2.0);
 		if (extraHeight<0) extraHeight = 0;
-		insets = new Insets(insets.top+textGap+extraHeight, insets.left+extraWidth, insets.bottom+extraHeight, insets.right+extraWidth);
+		//insets.top+textGap+extraHeight
+		insets = new Insets(insets.top+extraHeight, insets.left+extraWidth, insets.bottom+extraHeight, insets.right+extraWidth);
 		return insets;
+	}
+	
+	class InfoPanel extends JPanel {
+		
+		public InfoPanel(int x, int y) {
+			setPreferredSize(new Dimension(x,y+3));
+			setMinimumSize(new Dimension(0,y+3));
+		}
+		@Override
+		public void paint(Graphics g) {
+			super.paint(g);
+			drawInfo(g);
+		}
 	}
 
     /** Draws the subtitle. */
@@ -263,7 +279,7 @@ public class ImageWindow extends JFrame implements FocusListener, WindowListener
     	if (imp==null)
     		return;
         if (textGap!=0) {
-			Insets insets = super.getInsets();
+			//Insets insets = super.getInsets();
 			if (imp.isComposite()) {
 				CompositeImage ci = (CompositeImage)imp;
 				if (ci.getMode()==IJ.COMPOSITE) {
@@ -278,7 +294,8 @@ public class ImageWindow extends JFrame implements FocusListener, WindowListener
 				Font font = new Font("SansSerif", Font.PLAIN, (int)(12*SCALE));
 				g.setFont(font);
 			}
-			g.drawString(createSubtitle(), insets.left+5, insets.top+TEXT_GAP);
+			//g.drawString(createSubtitle(), insets.left+5, insets.top+TEXT_GAP);
+			g.drawString(createSubtitle(), getInsets().left+5, g.getClipBounds().height-3);
 		}
     }
     
@@ -379,8 +396,8 @@ public class ImageWindow extends JFrame implements FocusListener, WindowListener
     @Override
     public void paint(Graphics g) {
     	super.paint(g);
-    	update(g);
-		drawInfo(g);
+		//drawInfo(g);
+    	subtitlePanel.repaint();
 		Rectangle r = ic.getBounds();
 		int extraWidth = MIN_WIDTH - r.width;
 		int extraHeight = MIN_HEIGHT - r.height;

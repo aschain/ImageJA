@@ -221,12 +221,6 @@ class ThumbnailsCanvas extends JPanel implements MouseListener, MouseMotionListe
 	public int[] getStackPos() {
 		return new int[]{currentChannel, currentSlice, currentFrame};
 	}
-	
-	@Override
-	protected void paintComponent(Graphics g) {
-		super.paintComponent(g);
-		paint(g);
-	}
 
 	public void paint(Graphics g) {
 		if (g == null)

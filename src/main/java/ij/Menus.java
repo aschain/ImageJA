@@ -442,6 +442,7 @@ public class Menus {
 		JCheckBoxMenuItem item = new JCheckBoxMenuItem(label);
 		menu.add(item);
 		item.addItemListener(ij);
+		item.addActionListener(ij);
 		item.setState(false);
 		return item;
 	}

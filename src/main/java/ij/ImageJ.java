@@ -357,29 +357,31 @@ public class ImageJ extends JFrame implements ActionListener,
 			}
 			lastKeyCommand = null;
 			if (IJ.debugMode) IJ.log("actionPerformed: time="+ellapsedTime+", "+e);
+		}else if(e.getSource() instanceof JCheckBoxMenuItem) {
+			JCheckBoxMenuItem item = (JCheckBoxMenuItem)e.getSource();
+			Container parent = ((Component)item).getParent();
+			String cmd = item.getActionCommand();
+			if ("Autorun Examples".equals(cmd)) // Examples>Autorun Examples
+				Prefs.autoRunExamples = item.getState();
+			else if (parent instanceof JMenu && (JMenu)parent==Menus.window)
+				WindowManager.activateWindow(cmd, item);
+			else
+				doCommand(cmd);
 		}
 	}
 
 	/** Handles CheckboxMenuItem state changes. */
 	public void itemStateChanged(ItemEvent e) {
-		String cmd="";
-		Object item=null;
-		Component parent=null;
-		if(e.getSource() instanceof JCheckBoxMenuItem) {
-			item = (Component)e.getSource();
-			parent = ((Component)item).getParent();
-			cmd = ((JCheckBoxMenuItem)item).getActionCommand();//e.getItem().toString();
-		}else if(e.getSource() instanceof CheckboxMenuItem) {
-			item = (MenuItem)e.getSource();
-			parent = ((Component)item).getParent();
-			cmd=e.getItem().toString();
-		}else {IJ.log("non checkbox "+item);}
-		if ("Autorun Examples".equals(cmd)) // Examples>Autorun Examples
-			Prefs.autoRunExamples = e.getStateChange()==1;
-		else if (parent instanceof JMenu && (JMenu)parent==Menus.window)
-			WindowManager.activateWindow(cmd, item);
-		else
+		if(e.getSource() instanceof CheckboxMenuItem) {
+			MenuItem item = (MenuItem)e.getSource();
+			Container parent = (Container)item.getParent();
+			String cmd=e.getItem().toString();
+			//if ("Autorun Examples".equals(cmd)) // Examples>Autorun Examples
+			//	Prefs.autoRunExamples = e.getStateChange()==1;
+			//else 
 			doCommand(cmd);
+			if (IJ.debugMode) IJ.log("itemStatePerformed: "+e);
+		}//else {IJ.log("ignored itemChange "+e);}
 	}
 
 	public void mousePressed(MouseEvent e) {

@@ -182,6 +182,7 @@ public class ScrollbarWithLabel extends JPanel implements Adjustable, Adjustment
 		}
 		
 		public void paint(Graphics g) {
+			super.paint(g);
 			g.setColor(Color.white);
 			g.fillRect(0, 0, WIDTH, HEIGHT);
 			Graphics2D g2d = (Graphics2D)g;
