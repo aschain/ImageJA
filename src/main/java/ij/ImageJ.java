@@ -647,6 +647,7 @@ public class ImageJ extends JFrame implements ActionListener,
 	}
 
 	public void windowActivated(WindowEvent e) {
+		/*
 		if (IJ.isMacintosh() && !quitting) {
 			IJ.wait(10); // may be needed for Java 1.4 on OS X
 			JMenuBar mb = Menus.getMenuBar();
@@ -656,6 +657,7 @@ public class ImageJ extends JFrame implements ActionListener,
 				if (IJ.debugMode) IJ.log("setJMenuBar: "+Menus.setMenuBarCount);
 			}
 		}
+		*/
 	}
 	
 	public void windowClosed(WindowEvent e) {}

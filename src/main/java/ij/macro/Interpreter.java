@@ -1909,11 +1909,11 @@ public class Interpreter implements MacroConstants {
 		}
 		if (func.unUpdatedTable!=null)
 			func.unUpdatedTable.show(func.unUpdatedTable.getTitle());
-		if (IJ.isMacOSX() && selectCount>0 && debugger==null) {
-			Frame frame = WindowManager.getFrontWindow();
-			if (frame!=null && (frame instanceof ImageWindow))
-				ImageWindow.setImageJMenuBar((ImageWindow)frame);
-		}
+		//if (IJ.isMacOSX() && selectCount>0 && debugger==null) {
+		//	Frame frame = WindowManager.getFrontWindow();
+		//	if (frame!=null && (frame instanceof ImageWindow))
+		//		ImageWindow.setImageJMenuBar((ImageWindow)frame);
+		//}
 	}
 	
 	/** Aborts currently running macro. */

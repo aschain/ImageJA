@@ -4,6 +4,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Event;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Insets;
@@ -289,13 +290,13 @@ public class ImageWindow extends JFrame implements FocusListener, WindowListener
 					g.setColor(c);
 				}
 			}
-			Java2.setAntialiasedText(g, true);			
-			if (SCALE>1.0) {
-				Font font = new Font("SansSerif", Font.PLAIN, (int)(12*SCALE));
-				g.setFont(font);
-			}
+			Java2.setAntialiasedText(g, true);	
+			Font font = new Font("SansSerif", Font.PLAIN, (int)(12*SCALE));
+			g.setFont(font);
+			FontMetrics fm=g.getFontMetrics();
+			subtitlePanel.setPreferredSize(new Dimension(getWidth(),fm.getHeight()));
 			//g.drawString(createSubtitle(), insets.left+5, insets.top+TEXT_GAP);
-			g.drawString(createSubtitle(), getInsets().left+5, g.getClipBounds().height-3);
+			g.drawString(createSubtitle(), getInsets().left+HGAP, g.getClipBounds().height-fm.getDescent());
 		}
     }
     
@@ -399,10 +400,10 @@ public class ImageWindow extends JFrame implements FocusListener, WindowListener
 		//drawInfo(g);
     	subtitlePanel.repaint();
 		Rectangle r = ic.getBounds();
-		int extraWidth = MIN_WIDTH - r.width;
-		int extraHeight = MIN_HEIGHT - r.height;
-		if (extraWidth<=0 && extraHeight<=0 && !Prefs.noBorder && !IJ.isLinux())
-			g.drawRect(r.x-1, r.y-1, r.width+1, r.height+1);
+		Insets is=getInsets();
+		IJ.log("IC Bounds "+r.x+" "+r.y+" "+r.width+" "+r.height);
+		if (r.width>=MIN_WIDTH && r.height>=MIN_HEIGHT && !Prefs.noBorder && !IJ.isLinux())
+			g.drawRect(r.x+is.left, r.y-1+is.top, r.width+1, r.height+1);
     }
     
 	/** Removes this window from the window list and disposes of it.
@@ -586,8 +587,8 @@ public class ImageWindow extends JFrame implements FocusListener, WindowListener
 
 	public void windowActivated(WindowEvent e) {
 		if (IJ.debugMode) IJ.log("windowActivated: "+imp.getTitle());
-		if (IJ.isMacOSX())
-			setImageJMenuBar(this);
+		//if (IJ.isMacOSX())
+		//	setImageJMenuBar(this);
 		if (imp==null)
 			return;
 		ImageJ ij = IJ.getInstance();

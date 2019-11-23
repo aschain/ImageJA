@@ -32,14 +32,14 @@ public class ImageLayout implements LayoutManager {
 		for (int i=0; i<nmembers; i++) {
 		    Component m = target.getComponent(i);
 			Dimension d = m.getPreferredSize();
-			if (i==0 || !ignoreNonImageWidths)
+			if (i==1 || !ignoreNonImageWidths)
     			dim.width = Math.max(dim.width, d.width);
-			if (i>2) dim.height += vgap;
+			if (i>1) dim.height += vgap;
 			dim.height += d.height;
 		}
 		Insets insets = target.getInsets();
 		dim.width += insets.left + insets.right + hgap*2;
-		dim.height += insets.top + insets.bottom + vgap*2;
+		dim.height += insets.top + insets.bottom + vgap+1;
 		return dim;
     }
 
@@ -66,7 +66,9 @@ public class ImageLayout implements LayoutManager {
 		    if (i==1 || d.height>60)
 		    	x2 = x + (width - d.width)/2;
 			m.setLocation(x2, y);
-			if(i>1)y += vgap + d.height;
+			if(i>0)y += vgap;
+			else y++;
+			y+=d.height;
 		}
     }
 
@@ -87,10 +89,10 @@ public class ImageLayout implements LayoutManager {
 		}
 		d = target.getSize();
 		int preferredImageWidth = d.width - (insets.left + insets.right + hgap*2);
-		int preferredImageHeight = d.height - (insets.top + insets.bottom + vgap*2 + extraHeight);
+		int preferredImageHeight = d.height - (insets.top + insets.bottom + vgap + extraHeight+1);
 		ic.resizeCanvas(preferredImageWidth, preferredImageHeight);
-		int maxwidth = d.width - (insets.left + insets.right + hgap*2);
-		int maxheight = d.height - (insets.top + insets.bottom + vgap*2);
+		//int maxwidth = d.width - (insets.left + insets.right + hgap*2);
+		int maxheight = d.height - (insets.top + insets.bottom + vgap);
 		Dimension psize = preferredLayoutSize(target);
 		int x = insets.left + hgap + (d.width - psize.width)/2;
 		int y = 0;
@@ -107,11 +109,12 @@ public class ImageLayout implements LayoutManager {
 			} else
 				m.setSize(d.width, d.height);
 			if (y > 1) y += vgap;
+			else if(y==1)y++;
 			y += d.height;
 			if (i==1 || !ignoreNonImageWidths)
 				colw = Math.max(colw, d.width);
 		}
-		moveComponents(target, x, insets.top + vgap, colw, maxheight - y, nmembers);
+		moveComponents(target, x, insets.top, colw, maxheight - y, nmembers);
     }
     
 }
