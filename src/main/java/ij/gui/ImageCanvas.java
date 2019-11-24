@@ -24,7 +24,7 @@ import javax.swing.JPopupMenu;
 
 
 /** This is a Canvas used to display images in a Window. */
-public class ImageCanvas extends JPanel implements MouseListener, MouseMotionListener, Cloneable {
+public class ImageCanvas extends Canvas implements MouseListener, MouseMotionListener, Cloneable {
 
 	protected static Cursor defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
 	protected static Cursor handCursor = new Cursor(Cursor.HAND_CURSOR);
@@ -214,7 +214,6 @@ public class ImageCanvas extends JPanel implements MouseListener, MouseMotionLis
 	//}
 	
     public void paint(Graphics g) {
-    	super.paint(g);
 		// if (IJ.debugMode) IJ.log("paint: "+imp);
 		painted = true;
 		Roi roi = imp.getRoi();	
@@ -1262,7 +1261,7 @@ public class ImageCanvas extends JPanel implements MouseListener, MouseMotionLis
 		}
 		JPopupMenu popup = Menus.getPopupMenu();
 		if (popup!=null) {
-			add(popup);
+			imp.getWindow().add(popup);
 			if (IJ.isMacOSX()) IJ.wait(10);
 			popup.show(this, x, y);
 		}
@@ -1668,7 +1667,7 @@ public class ImageCanvas extends JPanel implements MouseListener, MouseMotionLis
 				// Cursor must move at least 12 pixels before text
 				// displayed using IJ.showStatus() is overwritten.
 				if ((sx-sx2)*(sx-sx2)+(sy-sy2)*(sy-sy2)>144)
-					showCursorStatus = true;
+					showCursorStatus =  true;
 				if (win!=null&&showCursorStatus) win.mouseMoved(ox, oy);
 			} else
 				IJ.showStatus("");
