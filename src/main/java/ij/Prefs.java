@@ -164,7 +164,7 @@ public class Prefs {
 	/** Ignore stack positions when displaying points. */
 	public static boolean showAllPoints;
 	/** Set MenuBar on Macs running Java 8. */
-	public static boolean setIJMenuBar = IJ.isMacOSX();
+	public static boolean setIJMenuBar = false;//IJ.isMacOSX();
 	/** "ImageJ" window is always on top. */
 	public static boolean alwaysOnTop;
 	/** Automatically spline fit line selections */

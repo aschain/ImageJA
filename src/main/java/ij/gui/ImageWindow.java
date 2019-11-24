@@ -104,7 +104,7 @@ public class ImageWindow extends JFrame implements FocusListener, WindowListener
 		this.ic = ic;
 		ImageWindow previousWindow = imp.getWindow();
 		setLayout(new ImageLayout(ic));
-		subtitlePanel=new InfoPanel(getWidth(),TEXT_GAP);
+		subtitlePanel=new InfoPanel(getWidth()-HGAP*2,TEXT_GAP);
 		add(subtitlePanel);
 		add(ic);
  		addFocusListener(this);
@@ -258,15 +258,15 @@ public class ImageWindow extends JFrame implements FocusListener, WindowListener
 		int extraHeight = (int)((MIN_HEIGHT - imp.getHeight()*mag)/2.0);
 		if (extraHeight<0) extraHeight = 0;
 		//insets.top+textGap+extraHeight
-		insets = new Insets(insets.top+extraHeight, insets.left+extraWidth, insets.bottom+extraHeight, insets.right+extraWidth);
+		insets = new Insets(Math.max(IJ.isMacOSX()?4:0,insets.top+extraHeight), insets.left+extraWidth, insets.bottom+extraHeight, insets.right+extraWidth);
 		return insets;
 	}
 	
 	class InfoPanel extends JPanel {
 		
 		public InfoPanel(int x, int y) {
-			setPreferredSize(new Dimension(x,y+3));
-			setMinimumSize(new Dimension(0,y+3));
+			setPreferredSize(new Dimension(x,y+7));
+			setMinimumSize(new Dimension(0,y+7));
 		}
 		@Override
 		public void paint(Graphics g) {
@@ -295,6 +295,7 @@ public class ImageWindow extends JFrame implements FocusListener, WindowListener
 			g.setFont(font);
 			FontMetrics fm=g.getFontMetrics();
 			subtitlePanel.setPreferredSize(new Dimension(getWidth(),fm.getHeight()));
+			IJ.log("fmgh:"+fm.getHeight());
 			//g.drawString(createSubtitle(), insets.left+5, insets.top+TEXT_GAP);
 			g.drawString(createSubtitle(), getInsets().left+HGAP, g.getClipBounds().height-fm.getDescent());
 		}
@@ -403,7 +404,7 @@ public class ImageWindow extends JFrame implements FocusListener, WindowListener
 		Insets is=getInsets();
 		IJ.log("IC Bounds "+r.x+" "+r.y+" "+r.width+" "+r.height);
 		if (r.width>=MIN_WIDTH && r.height>=MIN_HEIGHT && !Prefs.noBorder && !IJ.isLinux())
-			g.drawRect(r.x+is.left, r.y-1+is.top, r.width+1, r.height+1);
+			g.drawRect(r.x+is.left-1, r.y+is.top-1, r.width+1, r.height+1);
     }
     
 	/** Removes this window from the window list and disposes of it.

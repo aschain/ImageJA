@@ -39,7 +39,7 @@ public class ImageLayout implements LayoutManager {
 		}
 		Insets insets = target.getInsets();
 		dim.width += insets.left + insets.right + hgap*2;
-		dim.height += insets.top + insets.bottom + vgap+1;
+		dim.height += insets.top + insets.bottom + vgap+2;
 		return dim;
     }
 
@@ -58,16 +58,16 @@ public class ImageLayout implements LayoutManager {
 
     /** Centers the elements in the specified column, if there is any slack.*/
     private void moveComponents(Container target, int x, int y, int width, int height, int nmembers) {
-    	int x2 = 0;
+    	int x2 = x + (width - ic.getSize().width)/2;
 	    y += height / 2;
 		for (int i=0; i<nmembers; i++) {
 		    Component m = target.getComponent(i);
 		    Dimension d = m.getSize();
-		    if (i==1 || d.height>60)
+		    if (d.height>60)
 		    	x2 = x + (width - d.width)/2;
 			m.setLocation(x2, y);
 			if(i>0)y += vgap;
-			else y++;
+			else y+=2;
 			y+=d.height;
 		}
     }
@@ -76,6 +76,7 @@ public class ImageLayout implements LayoutManager {
 		to adjust the image canvas size as needed. */
     public void layoutContainer(Container target) {
 		Insets insets = target.getInsets();
+		IJ.log("topis:"+insets.top);
 		int nmembers = target.getComponentCount();
 		Dimension d;
 		int extraHeight = 0;
@@ -89,7 +90,7 @@ public class ImageLayout implements LayoutManager {
 		}
 		d = target.getSize();
 		int preferredImageWidth = d.width - (insets.left + insets.right + hgap*2);
-		int preferredImageHeight = d.height - (insets.top + insets.bottom + vgap + extraHeight+1);
+		int preferredImageHeight = d.height - (insets.top + insets.bottom + vgap + extraHeight+2);
 		ic.resizeCanvas(preferredImageWidth, preferredImageHeight);
 		//int maxwidth = d.width - (insets.left + insets.right + hgap*2);
 		int maxheight = d.height - (insets.top + insets.bottom + vgap);
@@ -102,6 +103,7 @@ public class ImageLayout implements LayoutManager {
 			Component m = target.getComponent(i);
 			d = m.getPreferredSize();
 			if ((m instanceof ScrollbarWithLabel) || (m instanceof JScrollBar) || m instanceof ImageWindow.InfoPanel) {
+				if(m instanceof ImageWindow.InfoPanel) IJ.log("IPh:"+d.height);
 				int scrollbarWidth = target.getComponent(1).getPreferredSize().width;
 				Dimension minSize = m.getMinimumSize();
 				if (scrollbarWidth<minSize.width) scrollbarWidth = minSize.width;

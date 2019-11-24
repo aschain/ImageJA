@@ -879,8 +879,8 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	
 	/** Override windowActivated in PlugInFrame. */
 	public void windowActivated(WindowEvent e) {
-		if (IJ.isMacintosh() && !IJ.isJava17())
-			this.setJMenuBar(Menus.getMenuBar());
+		//if (IJ.isMacintosh() && !IJ.isJava17())
+			//this.setJMenuBar(Menus.getMenuBar());
 		WindowManager.setWindow(this);
 	}
 	
