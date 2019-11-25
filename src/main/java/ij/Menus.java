@@ -68,7 +68,7 @@ public class Menus {
 	
 	private static int nPlugins, nMacros;
 	private static Hashtable shortcuts;
-	private static Hashtable<Integer,String> macroShortcuts;
+	private static Hashtable macroShortcuts;
 	private static Vector pluginsPrefs; // commands saved in IJ_Prefs
 	static int windowMenuItems2; // non-image windows listed in Window menu + separator
 	private String error;
@@ -383,6 +383,7 @@ public class Menus {
 		JCheckBoxMenuItem item = new JCheckBoxMenuItem("Autorun Examples");
 		menu.add(item);
 		item.addItemListener(ij);
+		item.addActionListener(ij);
 		item.setState(Prefs.autoRunExamples);
 		return menu;
 	}
@@ -837,9 +838,9 @@ public class Menus {
 				result = new JMenu(menuName);
 				if (mbar == null)
 					mbar = new JMenuBar();
-				if (menuName.equals("Help"))
-					;//mbar.setHelpMenu(result);
-				else
+				//if (menuName.equals("Help"))
+				//	mbar.setHelpMenu(result);
+				//else
 					mbar.add(result);
 				if (menuName.equals("Window"))
 					window = result;
@@ -853,9 +854,10 @@ public class Menus {
 				addPluginSeparatorIfNeeded(parentMenu);
 				if (readFromProps)
 					result = addSubMenu(parentMenu, menuItemName);
-				else if (parentName.startsWith("Plugins") && menuSeparators != null)
+				else if (parentName.startsWith("Plugins") && menuSeparators != null) {
+					System.out.println("getMenu additemSorted: "+parentMenu+" "+result+" "+parentName);
 					addItemSorted(parentMenu, result, parentName.equals("Plugins")?userPluginsIndex:0);
-				else
+				}else
 					parentMenu.add(result);
 				if (menuName.equals("File>Open Recent"))
 					openRecentMenu = result;
@@ -891,7 +893,7 @@ public class Menus {
 		boolean inserted = false;
 		for (int i=startingIndex; i<count; i++) {
 			JMenuItem mi = menu.getItem(i);
-			String label = mi.getLabel();
+			String label = mi.getText();
 			//IJ.log(i+ "  "+itemLabel+"  "+label + "  "+(itemLabel.compareTo(label)));
 			if (itemLabel.compareTo(label)<0) {
 				menu.insert(item, i);
@@ -1328,9 +1330,9 @@ public class Menus {
         
 	/** Returns the hashtable that associates keyboard shortcuts with macros. The keys
 		in the hashtable are Integer keycodes, or keycode+200 for uppercase. */
-	public static Hashtable<Integer,String> getMacroShortcuts() {
+	public static Hashtable getMacroShortcuts() {
 		if (macroShortcuts==null)
-			macroShortcuts = new Hashtable<Integer,String>();
+			macroShortcuts = new Hashtable();
 		return macroShortcuts;
 	}
         
@@ -1341,6 +1343,7 @@ public class Menus {
 		String title = win instanceof Frame?((Frame)win).getTitle():((Dialog)win).getTitle();
 		JCheckBoxMenuItem item = new JCheckBoxMenuItem(title);
 		item.addItemListener(ij);
+		item.addActionListener(ij);
 		int index = WINDOW_MENU_ITEMS+windowMenuItems2;
 		if (windowMenuItems2>=2)
 			index--;
