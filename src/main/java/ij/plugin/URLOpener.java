@@ -186,7 +186,7 @@ public class URLOpener implements PlugIn {
 			return new String[0];
 		for (int i=0; i<samplesMenu.getItemCount(); i++) {
 			JMenuItem menuItem = samplesMenu.getItem(i);
-			if (menuItem.getActionListeners().length == 0) continue; // separator?
+			if (menuItem ==null || menuItem.getActionListeners().length == 0) continue; // separator?
 			String label = menuItem.getLabel();
 			if (label.contains("Cache Sample Images")) continue;
 			String command = (String)commands.get(label);

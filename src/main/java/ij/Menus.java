@@ -699,7 +699,8 @@ public class Menus {
 		String label = item.getLabel();
 		int start = addPluginSeparatorIfNeeded(menu);
 		for (int i=start; i<menu.getItemCount(); i++) {
-			if (label.compareTo(menu.getItem(i).getLabel())<0) {
+			JMenuItem mi=menu.getItem(i);
+			if (mi!=null && label.compareTo(mi.getLabel())<0) {
 				menu.insert(item, i);
 				return;
 			}
@@ -855,7 +856,7 @@ public class Menus {
 				if (readFromProps)
 					result = addSubMenu(parentMenu, menuItemName);
 				else if (parentName.startsWith("Plugins") && menuSeparators != null) {
-					System.out.println("getMenu additemSorted: "+parentMenu+" "+result+" "+parentName);
+					//System.out.println("getMenu additemSorted: "+parentMenu.getText()+" "+result.getText()+" "+parentName);
 					addItemSorted(parentMenu, result, parentName.equals("Plugins")?userPluginsIndex:0);
 				}else
 					parentMenu.add(result);
@@ -888,17 +889,19 @@ public class Menus {
     }
 
 	static void addItemSorted(JMenu menu, JMenuItem item, int startingIndex) {
-		String itemLabel = item.getLabel();
+		String itemLabel = item.getText();
 		int count = menu.getItemCount();
 		boolean inserted = false;
 		for (int i=startingIndex; i<count; i++) {
 			JMenuItem mi = menu.getItem(i);
-			String label = mi.getText();
-			//IJ.log(i+ "  "+itemLabel+"  "+label + "  "+(itemLabel.compareTo(label)));
-			if (itemLabel.compareTo(label)<0) {
-				menu.insert(item, i);
-				inserted = true;
-				break;
+			if(mi!=null) {
+				String label = mi.getText();
+				//IJ.log(i+ "  "+itemLabel+"  "+label + "  "+(itemLabel.compareTo(label)));
+				if (itemLabel.compareTo(label)<0) {
+					menu.insert(item, i);
+					inserted = true;
+					break;
+				}
 			}
 		}
 		if (!inserted) menu.add(item);
@@ -1273,7 +1276,7 @@ public class Menus {
     	try {  // workaround for Linux/Java 5.0/bug
 			for (int i=start; i<nItems; i++) {
 				JCheckBoxMenuItem item = (JCheckBoxMenuItem)window.getItem(i);
-				item.setState(i==index);
+				if(item!=null)item.setState(i==index);
 			}
 		} catch (Exception e) {}
 	}
@@ -1399,13 +1402,14 @@ public class Menus {
 		try {  // workaround for Linux/Java 5.0/bug
 			for (int i=first; i<count; i++) {
 				JMenuItem item = window.getItem(i);
-				String label = item.getLabel();
+				if(item==null)continue;
+				String label = item.getText();
 				if (imp!=null) {  //remove size (e.g. " 24MB")
 					int index = label.lastIndexOf(" ");
 					if (index>-1)
 						label = label.substring(0, index);
 				}
-				if (item!=null && label.equals(oldLabel)) {
+				if (label.equals(oldLabel)) {
 					String size = "";
 					if (imp!=null)
 						size =  " " + ImageWindow.getImageSize(imp);
@@ -1421,7 +1425,9 @@ public class Menus {
 		if (ij==null) return;
 		int count = openRecentMenu.getItemCount();
 		for (int i=0; i<count; ) {
-			if (openRecentMenu.getItem(i).getLabel().equals(path)) {
+			JMenuItem mi=openRecentMenu.getItem(i);
+			if(mi==null) {i++;continue;}
+			if (mi.getLabel().equals(path)) {
 				openRecentMenu.remove(i);
 				count--;
 			} else
@@ -1659,7 +1665,8 @@ public class Menus {
 			String key = ""+i;
 			if (key.length()==1) key = "0"+key;
 			key = "recent"+key;
-			prefs.put(key, openRecentMenu.getItem(i).getLabel());
+			JMenuItem mi=openRecentMenu.getItem(i);
+			if(mi!=null)prefs.put(key, mi.getText());
 		}
 		prefs.put(Prefs.MENU_SIZE, Integer.toString(fontSize));
 	}

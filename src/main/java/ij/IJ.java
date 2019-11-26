@@ -2322,7 +2322,7 @@ public class IJ {
 			return new String[0];
 		for (int i=0; i<lutsMenu.getItemCount(); i++) {
 			JMenuItem menuItem = lutsMenu.getItem(i);
-			if (menuItem.getActionListeners().length == 0) // separator?
+			if (menuItem==null || menuItem.getActionListeners().length == 0) // separator?
 				continue;
 			String label = menuItem.getLabel();
 			if (label.equals("Invert LUT") || label.equals("Apply LUT"))

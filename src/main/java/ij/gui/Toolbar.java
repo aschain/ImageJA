@@ -1204,7 +1204,7 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 		JMenu toolsMenu = null;
 		for (int i=0; i<n; ++i) {
 			JMenuItem m = pluginsMenu.getItem(i);
-			if ("Tools".equals(m.getLabel()) && (m instanceof JMenu)) {
+			if (m!=null && "Tools".equals(m.getLabel()) && (m instanceof JMenu)) {
 				toolsMenu = (JMenu)m;
 				break;
 			}
@@ -1217,7 +1217,7 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 		boolean separatorAdded = false;
 		for (int i=0; i<n; ++i) {
 			JMenuItem m = toolsMenu.getItem(i);
-			String label = m.getLabel();
+			String label = m==null?null:m.getText();
 			if (label!=null && (label.endsWith(" Tool")||label.endsWith(" JMenu"))) {
 				if (!separatorAdded) {
 					switchPopup.addSeparator();

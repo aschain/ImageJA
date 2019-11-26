@@ -9,6 +9,8 @@ import java.io.*;
 import java.util.*;
 
 import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+
 import java.awt.event.KeyEvent;
 
 
@@ -216,7 +218,8 @@ public class Executer implements Runnable {
 		JMenu menu = Menus.getOpenRecentMenu();
 		if (menu==null) return false;
 		for (int i=0; i<menu.getItemCount(); i++) {
-			if (menu.getItem(i).getLabel().equals(cmd)) {
+			JMenuItem mi=menu.getItem(i);
+			if (mi!=null && mi.getLabel().equals(cmd)) {
 				IJ.open(cmd);
 				return true;
 			}

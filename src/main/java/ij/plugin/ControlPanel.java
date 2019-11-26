@@ -117,6 +117,7 @@ public class ControlPanel implements PlugIn {
 		if(items==0) return;
 		for (int i=0; i<items; i++) {
 			JMenuItem mItem = menu.getItem(i);
+			if(mItem==null)continue;
 			String label = mItem.getActionCommand();
 			if (mItem instanceof JMenu) {
 				DefaultMutableTreeNode subNode = new DefaultMutableTreeNode(label);

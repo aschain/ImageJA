@@ -21,15 +21,18 @@ public class RecentOpener implements Runnable {
 		int n = menu.getItemCount();
 		int index = 0;
 		for (int i=0; i<n; i++) {
-			if (menu.getItem(i).getLabel().equals(path)) {
+			JMenuItem mi=menu.getItem(i);
+			if (mi!=null && mi.getLabel().equals(path)) {
 				index = i;
 				break;
 			}
 		}
 		if (index>0) {
 			JMenuItem item = menu.getItem(index);
-			menu.remove(index);
-			menu.insert(item, 0);
+			if(item!=null) {
+				menu.remove(index);
+				menu.insert(item, 0);
+			}
 		}
 	}
 
