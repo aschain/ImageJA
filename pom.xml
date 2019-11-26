@@ -136,7 +136,7 @@
 				      <arguments>
 				    	  <argument>jars</argument>
 				    	  <argument>ij</argument>
-				    	  <argument>${basedir}/target</argument>
+				    	  <argument>${basedir}/target/${project.build.finalName}.jar</argument>
 				      </arguments>
 				    </configuration>
 				  </execution>
