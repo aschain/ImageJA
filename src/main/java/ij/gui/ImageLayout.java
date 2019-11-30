@@ -32,8 +32,10 @@ public class ImageLayout implements LayoutManager {
 		for (int i=0; i<nmembers; i++) {
 		    Component m = target.getComponent(i);
 			Dimension d = m.getPreferredSize();
-			if (i==1 || !ignoreNonImageWidths)
+			if (i==1 || !ignoreNonImageWidths  && !(m instanceof ImageWindow.InfoPanel)) {
+				//IJ.log("il width: "+d.width+" "+m);
     			dim.width = Math.max(dim.width, d.width);
+			}
 			if (i>1) dim.height += vgap;
 			dim.height += d.height;
 		}
@@ -76,7 +78,6 @@ public class ImageLayout implements LayoutManager {
 		to adjust the image canvas size as needed. */
     public void layoutContainer(Container target) {
 		Insets insets = target.getInsets();
-		IJ.log("topis:"+insets.top);
 		int nmembers = target.getComponentCount();
 		Dimension d;
 		int extraHeight = 0;
@@ -103,7 +104,7 @@ public class ImageLayout implements LayoutManager {
 			Component m = target.getComponent(i);
 			d = m.getPreferredSize();
 			if ((m instanceof ScrollbarWithLabel) || (m instanceof JScrollBar) || m instanceof ImageWindow.InfoPanel) {
-				if(m instanceof ImageWindow.InfoPanel) IJ.log("IPh:"+d.height);
+				//if(m instanceof ImageWindow.InfoPanel) IJ.log("IPh:"+d.height);
 				int scrollbarWidth = target.getComponent(1).getPreferredSize().width;
 				Dimension minSize = m.getMinimumSize();
 				if (scrollbarWidth<minSize.width) scrollbarWidth = minSize.width;

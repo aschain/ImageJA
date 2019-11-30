@@ -295,7 +295,6 @@ public class ImageWindow extends JFrame implements FocusListener, WindowListener
 			g.setFont(font);
 			FontMetrics fm=g.getFontMetrics();
 			subtitlePanel.setPreferredSize(new Dimension(getWidth(),fm.getHeight()));
-			IJ.log("fmgh:"+fm.getHeight());
 			//g.drawString(createSubtitle(), insets.left+5, insets.top+TEXT_GAP);
 			g.drawString(createSubtitle(), getInsets().left+HGAP, g.getClipBounds().height-fm.getDescent());
 		}
@@ -402,7 +401,7 @@ public class ImageWindow extends JFrame implements FocusListener, WindowListener
     	subtitlePanel.repaint();
 		Rectangle r = ic.getBounds();
 		Insets is=getInsets();
-		IJ.log("IC Bounds "+r.x+" "+r.y+" "+r.width+" "+r.height);
+		//IJ.log("IC Bounds "+r.x+" "+r.y+" "+r.width+" "+r.height);
 		if (r.width>=MIN_WIDTH && r.height>=MIN_HEIGHT && !Prefs.noBorder && !IJ.isLinux())
 			g.drawRect(r.x+is.left-1, r.y+is.top-1, r.width+1, r.height+1);
     }
