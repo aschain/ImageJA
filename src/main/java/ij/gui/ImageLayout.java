@@ -99,22 +99,23 @@ public class ImageLayout implements LayoutManager {
 		int x = insets.left + hgap + (d.width - psize.width)/2;
 		int y = 0;
 		int colw = 0;
+		int scrollbarWidth = ic.getPreferredSize().width;
 		
 		for (int i=0; i<nmembers; i++) {
 			Component m = target.getComponent(i);
 			d = m.getPreferredSize();
 			if ((m instanceof ScrollbarWithLabel) || (m instanceof JScrollBar) || m instanceof ImageWindow.InfoPanel) {
 				//if(m instanceof ImageWindow.InfoPanel) IJ.log("IPh:"+d.height);
-				int scrollbarWidth = target.getComponent(1).getPreferredSize().width;
+				//int scrollbarWidth = target.getComponent(1).getPreferredSize().width;
 				Dimension minSize = m.getMinimumSize();
 				if (scrollbarWidth<minSize.width) scrollbarWidth = minSize.width;
 				m.setSize(scrollbarWidth, d.height);
 			} else
 				m.setSize(d.width, d.height);
 			if (y > 1) y += vgap;
-			else if(y==1)y++;
+			else if(y==1)y+=2;
 			y += d.height;
-			if (i==1 || !ignoreNonImageWidths)
+			if (i==1 || !ignoreNonImageWidths && !(m instanceof ImageWindow.InfoPanel))
 				colw = Math.max(colw, d.width);
 		}
 		moveComponents(target, x, insets.top, colw, maxheight - y, nmembers);
