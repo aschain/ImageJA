@@ -13,6 +13,7 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Scrollbar;
 import java.awt.Toolkit;
 import java.awt.Window;
 
@@ -23,6 +24,7 @@ public class GUI {
 	private static final Font DEFAULT_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 12);
 	private static Color lightGray = new Color(240,240,240);
 	private static boolean isWindows8;
+	private static Color scrollbarBackground = new Color(245,245,245);
 
 	static {
 		if (IJ.isWindows()) {
@@ -259,5 +261,19 @@ public class GUI {
 		component.setFont(font.deriveFont((float) guiScale * font.getSize()));
 		return true;
 	}
+	
+		/** Works around an OpenJDK bug on Windows that
+		 * causes the scrollbar thumb color and background
+		 * color to be almost identical.
+		*/
+	public static final void fixScrollbar(Scrollbar sb) {
+		if (IJ.isWindows())
+			sb.setBackground(scrollbarBackground);
+	}	
+
+	public static final void fixScrollbar(JScrollBar sb) {
+		if (IJ.isWindows())
+			sb.setBackground(scrollbarBackground);
+	}	
 
 }

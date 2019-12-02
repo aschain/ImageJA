@@ -1,5 +1,5 @@
 package ij.gui;
-
+import ij.ImageJ;
 import ij.IJ;
 import ij.Prefs;
 
@@ -36,8 +36,7 @@ public class ScrollbarWithLabel extends JPanel implements Adjustable, Adjustment
 		super(new BorderLayout(2, 0));
 		this.stackWindow = stackWindow;
 		bar = new JScrollBar(JScrollBar.HORIZONTAL, value, visible, minimum, maximum);
-		if (IJ.isWindows())
-			bar.setBackground(Color.gray);
+		GUI.fixScrollbar(bar);
 		icon = new Icon(label);
 		add(icon, BorderLayout.WEST);
 		add(bar, BorderLayout.CENTER);

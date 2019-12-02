@@ -540,6 +540,8 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 	}
 	
 	private void showMessage(int tool) {
+		if (IJ.statusBarProtected())
+			return;
 		if (tool>=UNUSED && tool<getNumTools() && names[tool]!=null) {
 			String name = names[tool];
 			int index = name.indexOf("Action Tool");
