@@ -85,7 +85,7 @@
 		<main-class>ij.ImageJ</main-class>
 		<license.licenseName>N/A</license.licenseName>
 		<license.copyrightOwners>N/A</license.copyrightOwners>
-		<scijava.jvm.version>1.8</scijava.jvm.version>
+		<scijava.jvm.version>1.6</scijava.jvm.version>
 		<javac.path>${java.home}/../lib/tools.jar</javac.path>
 	</properties>
 
@@ -118,4 +118,30 @@
 			</dependencies>
 		</profile>
 	</profiles>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<executions>
+				  <execution>
+				  	<id>first-execution</id>
+				    <phase>install</phase>
+				    <goals>
+				       <goal>exec</goal>
+				    </goals>
+				    <configuration>
+				      <executable>../copyToFiji.bat</executable>
+				      <workingDirectory>${basedir}</workingDirectory>
+				      <arguments>
+				    	  <argument>jars</argument>
+				    	  <argument>ij</argument>
+				    	  <argument>${basedir}/target/${project.build.finalName}.jar</argument>
+				      </arguments>
+				    </configuration>
+				  </execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 </project>
