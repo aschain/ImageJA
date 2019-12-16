@@ -1710,6 +1710,10 @@ public class Menus {
 		mi.setAccelerator(KeyStroke.getKeyStroke(keycode, mods));
 	}
 	
+	public static void addJMenuItemWithShortcut(JMenu menu, String label, int keycode) {
+		addJMenuItemWithShortcut(menu, label, keycode, false);
+	}
+	
 	public static void addJMenuItemWithShortcut(JMenu menu, String label, int keycode, boolean shift) {
 		JMenuItem mi=new JMenuItem(label);
 		setAccelerator(mi, keycode, shift);

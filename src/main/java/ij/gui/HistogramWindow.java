@@ -1,6 +1,7 @@
 package ij.gui;
 
 import java.awt.*;
+import javax.swing.*;
 import java.awt.image.*;
 import java.awt.event.*;
 import java.io.*;
@@ -30,8 +31,8 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 	protected long[] histogram;
 	protected LookUpTable lut;
 	protected Rectangle frame = null;
-	protected Button list, save, copy, log, live, rgb;
-	protected Label value, count;
+	protected JButton list, save, copy, log, live, rgb;
+	protected JLabel value, count;
 	protected static String defaultDirectory = null;
 	protected int decimalPlaces;
 	protected int digits;
@@ -169,7 +170,7 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 
 	private void setup(ImagePlus imp) {
 		boolean isRGB = imp.getType()==ImagePlus.COLOR_RGB;
- 		Panel buttons = new Panel();
+ 		JPanel buttons = new JPanel();
  		int hgap = IJ.isMacOSX()||isRGB?1:5;
 		buttons.setLayout(new FlowLayout(FlowLayout.RIGHT,hgap,0));
 		int trim = IJ.isMacOSX()?6:0;
@@ -193,14 +194,14 @@ public class HistogramWindow extends ImageWindow implements Measurements, Action
 			buttons.add(rgb);
 		}
 		if (!(IJ.isMacOSX()&&isRGB)) {
-			Panel valueAndCount = new Panel();
+			JPanel valueAndCount = new JPanel();
 			valueAndCount.setLayout(new GridLayout(2,1,0,0));
 			blankLabel = IJ.isMacOSX()?"           ":"                ";
-			value = new Label(blankLabel);
+			value = new JLabel(blankLabel);
 			Font font = new Font("Monospaced", Font.PLAIN, 12);
 			value.setFont(font);
 			valueAndCount.add(value);
-			count = new Label(blankLabel);
+			count = new JLabel(blankLabel);
 			count.setFont(font);
 			valueAndCount.add(count);
 			buttons.add(valueAndCount);

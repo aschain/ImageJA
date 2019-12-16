@@ -1,6 +1,7 @@
 package ij.text;
 
 import java.awt.*;
+import javax.swing.*;
 import java.io.*;
 import java.awt.event.*;
 import java.util.*;
@@ -21,7 +22,7 @@ labeled and resizable columns. It is based on the hGrid
 class at
     http://www.lynx.ch/contacts/~/thomasm/Grid/index.html.
 */
-public class TextPanel extends Panel implements AdjustmentListener,
+public class TextPanel extends JPanel implements AdjustmentListener,
 	MouseListener, MouseMotionListener, KeyListener,  ClipboardOwner,
 	ActionListener, MouseWheelListener, Runnable {
 
@@ -36,7 +37,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	int iColCount,iRowCount;
 	int iRowHeight,iFirstRow;
 	// scrolling
-	Scrollbar sbHoriz,sbVert;
+	JScrollBar sbHoriz,sbVert;
 	int iSbWidth,iSbHeight;
 	boolean bDrag;
 	int iXDrag,iColDrag;
@@ -49,14 +50,14 @@ public class TextPanel extends Panel implements AdjustmentListener,
   	Cursor defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
 	int selStart=-1, selEnd=-1,selOrigin=-1, selLine=-1;
 	TextCanvas tc;
-	PopupMenu pm;
+	JPopupMenu pm;
 	boolean columnsManuallyAdjusted;
 	long mouseDownTime;
     String filePath;
     ResultsTable rt;
     boolean unsavedLines;
     String searchString;
-    Menu fileMenu, editMenu;
+    JMenu fileMenu, editMenu;
     boolean menusExtended;
     boolean saveAsCSV;
 
@@ -66,12 +67,12 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		tc = new TextCanvas(this);
 		setLayout(new BorderLayout());
 		add("Center",tc);
-		sbHoriz=new Scrollbar(Scrollbar.HORIZONTAL);
+		sbHoriz=new JScrollBar(JScrollBar.HORIZONTAL);
 		GUI.fixScrollbar(sbHoriz);
 		sbHoriz.addAdjustmentListener(this);
 		sbHoriz.setFocusable(false); // prevents scroll bar from blinking on Windows
 		add("South", sbHoriz);
-		sbVert=new Scrollbar(Scrollbar.VERTICAL);
+		sbVert=new JScrollBar(JScrollBar.VERTICAL);
 		GUI.fixScrollbar(sbVert);
 		sbVert.addAdjustmentListener(this);
 		sbVert.setFocusable(false);
@@ -98,7 +99,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	}
 
 	void addPopupMenu() {
-		pm=new PopupMenu();
+		pm=new JPopupMenu();
 		addPopupItem("Save As...");
 		pm.addSeparator();
 		addPopupItem("Cut");
@@ -109,7 +110,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	}
 
 	void addPopupItem(String s) {
-		MenuItem mi=new MenuItem(s);
+		JMenuItem mi=new JMenuItem(s);
 		mi.addActionListener(this);
 		pm.add(mi);
 	}
@@ -301,10 +302,10 @@ public class TextPanel extends Panel implements AdjustmentListener,
 					if (titles[i].equals(owner)) {
 						ImagePlus imp = WindowManager.getImage(owner);
 						WindowManager.setTempCurrentImage(imp);//?
-						Frame frame = imp.getWindow();
+						JFrame frame = imp.getWindow();
 						frame.toFront();
-						if (frame.getState()==Frame.ICONIFIED)
-							frame.setState(Frame.NORMAL);
+						if (frame.getState()==JFrame.ICONIFIED)
+							frame.setState(JFrame.NORMAL);
 						handleDoubleClickInOverlayList(s);
 						break;
 					}
@@ -497,7 +498,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
  		else if (cmd.equals("Sort..."))
 			sort();
  		else if (cmd.equals("Plot..."))
-			new PlotContentsDialog(title, rt).showDialog(getParent() instanceof Frame ? (Frame)getParent() : null);
+			new PlotContentsDialog(title, rt).showDialog(getParent() instanceof JFrame ? (JFrame)getParent() : null);
 	}
 
  	public void lostOwnership (Clipboard clip, Transferable cont) {}

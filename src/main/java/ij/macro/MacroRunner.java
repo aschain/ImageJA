@@ -3,6 +3,8 @@ import ij.*;
 import ij.text.*;
 import ij.util.*;
 import ij.gui.ImageCanvas;
+import ij.gui.ImageWindow;
+
 import java.io.*;
 
 import javax.swing.JPopupMenu;
@@ -148,6 +150,8 @@ public class MacroRunner implements Runnable {
 						Object parent = popup.getParent();
 						if (parent instanceof ImageCanvas)
 							imp = ((ImageCanvas)parent).getImage();
+						if(parent instanceof ImageWindow)
+							imp = ((ImageWindow)parent).getImagePlus();
 						if (imp!=null)
 							WindowManager.setTempCurrentImage(Thread.currentThread(), imp);
 					}

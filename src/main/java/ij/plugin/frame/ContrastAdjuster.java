@@ -1,9 +1,8 @@
 package ij.plugin.frame;
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.image.*;
 import ij.*;
-import ij.plugin.*;
 import ij.process.*;
 import ij.gui.*;
 import ij.measure.*;
@@ -23,6 +22,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 	static final String[] channelLabels = {"Red", "Green", "Blue", "Cyan", "Magenta", "Yellow", "All"};
 	static final String[] altChannelLabels = {"Channel 1", "Channel 2", "Channel 3", "Channel 4", "Channel 5", "Channel 6", "All"};
 	static final int[] channelConstants = {4, 2, 1, 3, 5, 6, 7};
+	private boolean settingItem=false;
 
 	ContrastPlot plot = new ContrastPlot();
 	Thread thread;
@@ -32,8 +32,8 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 	int sliderRange = 256;
 	boolean doAutoAdjust,doReset,doSet,doApplyLut;
 
-	Panel panel, tPanel;
-	Button autoB, resetB, setB, applyB;
+	JPanel panel, tPanel;
+	JButton autoB, resetB, setB, applyB;
 	int previousImageID;
 	int previousType;
 	int previousSlice = 1;
@@ -43,8 +43,8 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 	double defaultMin, defaultMax;
 	int contrast, brightness;
 	boolean RGBImage;
-	Scrollbar minSlider, maxSlider, contrastSlider, brightnessSlider;
-	Label minLabel, maxLabel, windowLabel, levelLabel;
+	JScrollBar minSlider, maxSlider, contrastSlider, brightnessSlider;
+	JLabel minLabel, maxLabel, windowLabel, levelLabel;
 	boolean done;
 	int autoThreshold;
 	GridBagLayout gridbag;
@@ -54,7 +54,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 	Font monoFont = new Font("Monospaced", Font.PLAIN, 11);
 	Font sanFont = ImageJ.SansSerif12;
 	int channels = 7; // RGB
-	Choice choice;
+	JComboBox<String> choice;
 	private String blankMinLabel = "-------";
 	private String blankMaxLabel = "--------";
 	private double scale = Prefs.getGuiScale();
@@ -109,16 +109,16 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		// min and max labels
 
 		if (!windowLevel) {
-			panel = new Panel();
+			panel = new JPanel();
 			c.gridy = y++;
 			c.insets = new Insets(0, 10, 0, 10);
 			gridbag.setConstraints(panel, c);
 			panel.setLayout(new BorderLayout());
-			minLabel = new Label(blankMinLabel, Label.LEFT);
+			minLabel = new JLabel(blankMinLabel, JLabel.LEFT);
 			minLabel.setFont(monoFont);
 			if (IJ.debugMode) minLabel.setBackground(Color.yellow);
 			panel.add("West", minLabel);
-			maxLabel = new Label(blankMaxLabel, Label.RIGHT);
+			maxLabel = new JLabel(blankMaxLabel, JLabel.RIGHT);
 			maxLabel.setFont(monoFont);
 			if (IJ.debugMode) maxLabel.setBackground(Color.yellow);
 			panel.add("East", maxLabel);
@@ -129,7 +129,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 
 		// min slider
 		if (!windowLevel) {
-			minSlider = new Scrollbar(Scrollbar.HORIZONTAL, sliderRange/2, 1, 0, sliderRange);
+			minSlider = new JScrollBar(JScrollBar.HORIZONTAL, sliderRange/2, 1, 0, sliderRange);
 			GUI.fixScrollbar(minSlider);
 			c.gridy = y++;
 			c.insets = new Insets(2, 10, 0, 10);
@@ -144,7 +144,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 
 		// max slider
 		if (!windowLevel) {
-			maxSlider = new Scrollbar(Scrollbar.HORIZONTAL, sliderRange/2, 1, 0, sliderRange);
+			maxSlider = new JScrollBar(JScrollBar.HORIZONTAL, sliderRange/2, 1, 0, sliderRange);
 			GUI.fixScrollbar(maxSlider);
 			c.gridy = y++;
 			c.insets = new Insets(2, 10, 0, 10);
@@ -158,7 +158,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		}
 
 		// brightness slider
-		brightnessSlider = new Scrollbar(Scrollbar.HORIZONTAL, sliderRange/2, 1, 0, sliderRange);
+		brightnessSlider = new JScrollBar(JScrollBar.HORIZONTAL, sliderRange/2, 1, 0, sliderRange);
 		GUI.fixScrollbar(brightnessSlider);
 		c.gridy = y++;
 		c.insets = new Insets(windowLevel?12:2, 10, 0, 10);
@@ -175,7 +175,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 
 		// contrast slider
 		if (!balance) {
-			contrastSlider = new Scrollbar(Scrollbar.HORIZONTAL, sliderRange/2, 1, 0, sliderRange);
+			contrastSlider = new JScrollBar(JScrollBar.HORIZONTAL, sliderRange/2, 1, 0, sliderRange);
 			GUI.fixScrollbar(contrastSlider);
 			c.gridy = y++;
 			c.insets = new Insets(2, 10, 0, 10);
@@ -195,7 +195,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		if (balance) {
 			c.gridy = y++;
 			c.insets = new Insets(5, 10, 0, 10);
-			choice = new Choice();
+			choice = new JComboBox<String>();
 			addBalanceChoices();
 			gridbag.setConstraints(choice, c);
 			choice.addItemListener(this);
@@ -212,7 +212,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 			setFont(font);
 		}
 		int trim = IJ.isMacOSX()?20:0;
-		panel = new Panel();
+		panel = new JPanel();
 		panel.setLayout(new GridLayout(0,2, 0, 0));
 		autoB = new TrimmedButton("Auto",trim);
 		autoB.addActionListener(this);
@@ -243,7 +243,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		else
 			GUI.centerOnImageJScreen(this);
 		if (IJ.isMacOSX()) setResizable(false);
-		show();
+		setVisible(true);
 
 		thread = new Thread(this, "ContrastAdjuster");
 		//thread.setPriority(thread.getPriority()-1);
@@ -262,20 +262,20 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		}
 	}
 
-	void addLabel(String text, Label label2) {
+	void addLabel(String text, JLabel label2) {
 		if (label2==null&&IJ.isMacOSX()) text += "    ";
-		panel = new Panel();
+		panel = new JPanel();
 		c.gridy = y++;
 		int bottomInset = IJ.isMacOSX()?4:0;
 		c.insets = new Insets(0, 10, bottomInset, 0);
 		gridbag.setConstraints(panel, c);
         panel.setLayout(new FlowLayout(label2==null?FlowLayout.CENTER:FlowLayout.LEFT, 0, 0));
-		Label label= new TrimmedLabel(text);
+		JLabel label= new TrimmedLabel(text);
 		label.setFont(sanFont);
 		panel.add(label);
 		if (label2!=null) {
 			label2.setFont(monoFont);
-			label2.setAlignment(Label.LEFT);
+			label2.setAlignmentX(JLabel.LEFT);
 			panel.add(label2);
 		}
 		add(panel);
@@ -307,7 +307,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 	}
 
 	public synchronized  void actionPerformed(ActionEvent e) {
-		Button b = (Button)e.getSource();
+		JButton b = (JButton)e.getSource();
 		if (b==null) return;
 		if (b==resetB)
 			doReset = true;
@@ -390,15 +390,15 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 			if (imp.isComposite()) {
 				int channel = imp.getChannel();
 				if (channel<=4) {
-					choice.select(channel-1);
+					choice.setSelectedIndex(channel-1);
 					channels = channelConstants[channel-1];
 				}
-				if (choice.getItem(0).equals("Red")) {
+				if (choice.getItemAt(0).equals("Red")) {
 					choice.removeAll();
 					addBalanceChoices();
 				}
 			} else { // not composite
-				if (choice.getItem(0).equals("Channel 1")) {
+				if (choice.getItemAt(0).equals("Channel 1")) {
 					choice.removeAll();
 					addBalanceChoices();
 				}
@@ -462,7 +462,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		}
 	}
 
-	void updateScrollBars(Scrollbar sb, boolean newRange) {
+	void updateScrollBars(JScrollBar sb, boolean newRange) {
 		if (sb==null || sb!=contrastSlider) {
 			double mid = sliderRange/2;
 			double c = ((defaultMax-defaultMin)/(max-min))*mid;
@@ -671,7 +671,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 		ip.setRoi(imp.getRoi());
 		if (imp.getStackSize()>1 && !imp.isComposite()) {
 			ImageStack stack = imp.getStack();
-			YesNoCancelDialog d = new YesNoCancelDialog(new Frame(),
+			YesNoCancelDialog d = new YesNoCancelDialog(new JFrame(),
 				"Entire Stack?", "Apply LUT to all "+stack.size()+" stack slices?");
 			if (d.cancelPressed())
 				{imp.unlock(); return;}
@@ -1161,6 +1161,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 	}
 	
 	public synchronized  void itemStateChanged(ItemEvent e) {
+		if(settingItem)return;
 		int index = choice.getSelectedIndex();
 		channels = channelConstants[index];
 		ImagePlus imp = WindowManager.getCurrentImage();
@@ -1168,8 +1169,10 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 			if (index+1<=imp.getNChannels())
 				imp.setPosition(index+1, imp.getSlice(), imp.getFrame());
 			else {
-				choice.select(channelLabels.length-1);
+				settingItem=true;
+				choice.setSelectedIndex(channelLabels.length-1);
 				channels = 7;
+				settingItem=false;
 			}
 		} else
 			doReset = true;
@@ -1193,7 +1196,7 @@ public class ContrastAdjuster extends PlugInDialog implements Runnable,
 } // ContrastAdjuster class
 
 
-class ContrastPlot extends Canvas implements MouseListener {
+class ContrastPlot extends JPanel implements MouseListener {
 
 	static final int WIDTH=128, HEIGHT=64;
 	double defaultMin = 0;
@@ -1252,11 +1255,12 @@ class ContrastPlot extends Canvas implements MouseListener {
 		os = null;
 	}
 
-	public void update(Graphics g) {
-		paint(g);
-	}
+	//public void update(Graphics g) {
+	//	paint(g);
+	//}
 
-	public void paint(Graphics g) {
+	public void paintComponent(Graphics g) {
+		super.paintComponent(g);
 		int x1, y1, x2, y2;
 		double scale = (double)width/(defaultMax-defaultMin);
 		double slope = 0.0;
@@ -1315,7 +1319,7 @@ class ContrastPlot extends Canvas implements MouseListener {
 
 } // ContrastPlot class
 
-class TrimmedLabel extends Label {
+class TrimmedLabel extends JLabel {
 	int trim = IJ.isMacOSX()?0:6;
 
     public TrimmedLabel(String title) {

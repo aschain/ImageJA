@@ -8,6 +8,9 @@ import ij.io.FileOpener;
 import java.awt.*;
 import java.awt.event.*;
 
+import javax.swing.JLabel;
+import javax.swing.JTextField;
+
 /** Implements the Analyze/Set Scale command. */
 public class ScaleDialog implements PlugInFilter {
 
@@ -144,20 +147,20 @@ class SetScaleDialog extends GenericDialog {
 		Object source = e.getSource();
 		if (source==numberField.elementAt(0) || source==numberField.elementAt(1))
 			scaleChanged = true;
- 		Double d = getValue(((TextField)numberField.elementAt(0)).getText());
+ 		Double d = getValue(((JTextField)numberField.elementAt(0)).getText());
  		if (d==null)
  			{setScale(NO_SCALE); return;}
  		double measured = d.doubleValue();
- 		d = getValue(((TextField)numberField.elementAt(1)).getText());
+ 		d = getValue(((JTextField)numberField.elementAt(1)).getText());
  		if (d==null)
  			{setScale(NO_SCALE); return;}
  		double known = d.doubleValue();
  		String theScale;
- 		String unit = ((TextField)stringField.elementAt(0)).getText();
+ 		String unit = ((JTextField)stringField.elementAt(0)).getText();
  		boolean noUnit = unit.startsWith("pixel")||unit.startsWith("Pixel")||unit.equals("");
  		if (known>0.0 && noUnit && e.getSource()==numberField.elementAt(1)) {
  			unit = "unit";
-			((TextField)stringField.elementAt(0)).setText(unit);
+			((JTextField)stringField.elementAt(0)).setText(unit);
  		}
  		boolean noScale = measured<=0||known<=0||noUnit;
  		if (noScale)
@@ -173,10 +176,10 @@ class SetScaleDialog extends GenericDialog {
 	public void actionPerformed(ActionEvent e) { 
 		super.actionPerformed(e);
 		if (e.getSource()==unscaleButton) {
-			((TextField)numberField.elementAt(0)).setText(length);
-			((TextField)numberField.elementAt(1)).setText("0.00");
-			((TextField)numberField.elementAt(2)).setText("1.0");
-			((TextField)stringField.elementAt(0)).setText("pixel");
+			((JTextField)numberField.elementAt(0)).setText(length);
+			((JTextField)numberField.elementAt(1)).setText("0.00");
+			((JTextField)numberField.elementAt(2)).setText("1.0");
+			((JTextField)stringField.elementAt(0)).setText("pixel");
 			setScale(NO_SCALE);
 			scaleChanged = true;
 			if (IJ.isMacOSX())
@@ -185,7 +188,7 @@ class SetScaleDialog extends GenericDialog {
 	}
 
 	void setScale(String theScale) {
- 		((Label)theLabel).setText("Scale: "+theScale);
+ 		((JLabel)theLabel).setText("Scale: "+theScale);
 	}
 
 }

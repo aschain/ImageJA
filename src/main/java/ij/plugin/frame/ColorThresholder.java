@@ -2,6 +2,7 @@ package ij.plugin.frame;
 import ij.*;
 import ij.process.*;
 import ij.gui.*;
+import javax.swing.*;
 import java.awt.*;
 import java.awt.image.*;
 import java.util.*;
@@ -52,24 +53,23 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 	private boolean flag = false;
 	private int colorSpace = HSB;
 	private Thread thread;
-	private static Frame instance;
+	private static JFrame instance;
 
 	private BandPlot plot = new BandPlot();
 	private BandPlot splot = new BandPlot();
 	private BandPlot bplot = new BandPlot();
 	private int sliderRange = 256;
-	private Panel panel, panelt;
-	private Button  originalB, filteredB, stackB, helpB, sampleB, resetallB, newB, macroB, selectB;
-	private Checkbox bandPassH, bandPassS, bandPassB, darkBackground;
-	private CheckboxGroup colourMode;
-	private Choice colorSpaceChoice, methodChoice, modeChoice;
+	private JPanel panel, panelt;
+	private JButton  originalB, filteredB, stackB, helpB, sampleB, resetallB, newB, macroB, selectB;
+	private JCheckBox bandPassH, bandPassS, bandPassB, darkBackground;
+	private JComboBox<String> colorSpaceChoice, methodChoice, modeChoice;
 	private int previousImageID = -1;
 	private int previousSlice = -1;
 	private ImageJ ij;
 	private int minHue = 0, minSat = 0, minBri = 0;
 	private int maxHue = 255, maxSat = 255, maxBri = 255;
-	private Scrollbar minSlider, maxSlider, minSlider2, maxSlider2, minSlider3, maxSlider3;
-	private Label label1, label2, label3, label4, label5, label6, labelh, labels, labelb, labelf;
+	private JScrollBar minSlider, maxSlider, minSlider2, maxSlider2, minSlider3, maxSlider3;
+	private JLabel label1, label2, label3, label4, label5, label6, labelh, labels, labelb, labelf;
 	private boolean done;
 	private byte[] hSource, sSource, bSource;
 	private boolean applyingStack;
@@ -108,7 +108,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		c.gridwidth = 1;
 		c.weightx = 0;
 		c.insets = new Insets(5, 0, 0, 0);
-		labelh = new Label("Hue", Label.CENTER);
+		labelh = new JLabel("Hue", JLabel.CENTER);
 		add(labelh, c);
 
 		c.gridx = 1;
@@ -116,7 +116,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		c.gridwidth = 1;
 		c.weightx = 0;
 		c.insets = new Insets(7, 0, 0, 0);
-		labelf = new Label("", Label.RIGHT);
+		labelf = new JLabel("", JLabel.RIGHT);
 		add(labelf, c);
 
 		// plot
@@ -129,9 +129,9 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		add(plot, c);
 
 		// checkboxes
-		bandPassH = new Checkbox("Pass");
+		bandPassH = new JCheckBox("Pass");
 		bandPassH.addItemListener(this);
-		bandPassH.setState(true);
+		bandPassH.setSelected(true);
 		c.gridx = 1;
 		c.gridy = y++;
 		c.gridwidth = 2;
@@ -139,7 +139,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		add(bandPassH, c);
 
 		// minHue slider
-		minSlider = new Scrollbar(Scrollbar.HORIZONTAL, 0, 1, 0, sliderRange);
+		minSlider = new JScrollBar(JScrollBar.HORIZONTAL, 0, 1, 0, sliderRange);
 		GUI.fixScrollbar(minSlider);
 		c.gridx = 0;
 		c.gridy = y++;
@@ -157,12 +157,12 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		c.gridwidth = 1;
 		c.weightx = IJ.isMacintosh()?10:0;
 		c.insets = new Insets(5, 0, 0, 0);
-		label1 = new Label("       ", Label.LEFT);
+		label1 = new JLabel("       ", JLabel.LEFT);
 		label1.setFont(font);
 		add(label1, c);
 
 		// maxHue sliderHue
-		maxSlider = new Scrollbar(Scrollbar.HORIZONTAL, 0, 1, 0, sliderRange);
+		maxSlider = new JScrollBar(JScrollBar.HORIZONTAL, 0, 1, 0, sliderRange);
 		GUI.fixScrollbar(maxSlider);
 		c.gridx = 0;
 		c.gridy = y;
@@ -179,7 +179,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		c.gridy = y++;
 		c.weightx = 0;
 		c.insets = new Insets(5, 0, 0, 0);
-		label2 = new Label("       ", Label.LEFT);
+		label2 = new JLabel("       ", JLabel.LEFT);
 		label2.setFont(font);
 		add(label2, c);
 
@@ -189,7 +189,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		c.gridwidth = 1;
 		c.weightx = 0;
 		c.insets = new Insets(10, 0, 0, 0);
-		labels = new Label("Saturation", Label.CENTER);
+		labels = new JLabel("Saturation", JLabel.CENTER);
 		add(labels, c);
 
 		// plot
@@ -202,9 +202,9 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		add(splot, c);
 
 		// checkboxes
-		bandPassS = new Checkbox("Pass");
+		bandPassS = new JCheckBox("Pass");
 		bandPassS.addItemListener(this);
-		bandPassS.setState(true);
+		bandPassS.setSelected(true);
 		c.gridx = 1;
 		c.gridy = y++;
 		c.gridwidth = 2;
@@ -212,7 +212,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		add(bandPassS, c);
 
 		// minSat slider
-		minSlider2 = new Scrollbar(Scrollbar.HORIZONTAL, 0, 1, 0, sliderRange);
+		minSlider2 = new JScrollBar(JScrollBar.HORIZONTAL, 0, 1, 0, sliderRange);
 		GUI.fixScrollbar(minSlider2);
 		c.gridx = 0;
 		c.gridy = y++;
@@ -229,12 +229,12 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		c.gridwidth = 1;
 		c.weightx = IJ.isMacintosh()?10:0;
 		c.insets = new Insets(5, 0, 0, 0);
-		label3 = new Label("       ", Label.LEFT);
+		label3 = new JLabel("       ", JLabel.LEFT);
 		label3.setFont(font);
 		add(label3, c);
 
 		// maxSat slider
-		maxSlider2 = new Scrollbar(Scrollbar.HORIZONTAL, 0, 1, 0, sliderRange);
+		maxSlider2 = new JScrollBar(JScrollBar.HORIZONTAL, 0, 1, 0, sliderRange);
 		GUI.fixScrollbar(maxSlider2);
 		c.gridx = 0;
 		c.gridy = y++;
@@ -250,7 +250,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		c.gridwidth = 1;
 		c.weightx = 0;
 		c.insets = new Insets(5, 0, 0, 0);
-		label4 = new Label("       ", Label.LEFT);
+		label4 = new JLabel("       ", JLabel.LEFT);
 		label4.setFont(font);
 		add(label4, c);
 
@@ -260,7 +260,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		c.gridy = y++;
 		c.weightx = 0;
 		c.insets = new Insets(10, 0, 0, 0);
-		labelb = new Label("Brightness", Label.CENTER);
+		labelb = new JLabel("Brightness", JLabel.CENTER);
 		add(labelb, c);
 
 		c.gridx = 0;
@@ -272,9 +272,9 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		add(bplot, c);
 
 		// checkboxes
-		bandPassB = new Checkbox("Pass");
+		bandPassB = new JCheckBox("Pass");
 		bandPassB.addItemListener(this);
-		bandPassB.setState(true);
+		bandPassB.setSelected(true);
 		c.gridx = 1;
 		c.gridy = y++;
 		c.gridwidth = 2;
@@ -282,7 +282,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		add(bandPassB, c);
 
 		// minBri slider
-		minSlider3 = new Scrollbar(Scrollbar.HORIZONTAL, 0, 1, 0, sliderRange);
+		minSlider3 = new JScrollBar(JScrollBar.HORIZONTAL, 0, 1, 0, sliderRange);
 		GUI.fixScrollbar(minSlider3);
 		c.gridx = 0;
 		c.gridy = y++;
@@ -299,12 +299,12 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		c.gridwidth = 1;
 		c.weightx = IJ.isMacintosh()?10:0;
 		c.insets = new Insets(5, 0, 0, 0);
-		label5 = new Label("       ", Label.LEFT);
+		label5 = new JLabel("       ", JLabel.LEFT);
 		label5.setFont(font);
 		add(label5, c);
 
 		// maxBri slider
-		maxSlider3 = new Scrollbar(Scrollbar.HORIZONTAL, 0, 1, 0, sliderRange);
+		maxSlider3 = new JScrollBar(JScrollBar.HORIZONTAL, 0, 1, 0, sliderRange);
 		GUI.fixScrollbar(maxSlider3);
 		c.gridx = 0;
 		c.gridy = y++;
@@ -320,14 +320,14 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		c.gridwidth = 1;
 		c.weightx = 0;
 		c.insets = new Insets(5, 0, 0, 0);
-		label6 = new Label("       ", Label.LEFT);
+		label6 = new JLabel("       ", JLabel.LEFT);
 		label6.setFont(font);
 		add(label6, c);
 
 		GridBagLayout gridbag2 = new GridBagLayout();
 		GridBagConstraints c2 = new GridBagConstraints();
 		int y2 = 0;
-		Panel panel = new Panel();
+		JPanel panel = new JPanel();
 		panel.setLayout(gridbag2);
 		
 		// threshoding method choice
@@ -335,13 +335,13 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		c2.anchor = GridBagConstraints.EAST;
 		c2.gridwidth = 1;
 		c2.insets = new Insets(5, 0, 0, 0);
-		Label theLabel = new Label("Thresholding method:");
+		JLabel theLabel = new JLabel("Thresholding method:");
 		gridbag2.setConstraints(theLabel, c2);
 		panel.add(theLabel);
-		methodChoice = new Choice();
+		methodChoice = new JComboBox<String>();
 		for (int i=0; i<methodNames.length; i++)
 			methodChoice.addItem(methodNames[i]);
-		methodChoice.select(method);
+		methodChoice.setSelectedItem(method);
 		methodChoice.addItemListener(this);
 		c2.gridx = 1; c2.gridy = y2;
 		c2.anchor = GridBagConstraints.WEST;
@@ -353,13 +353,13 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		c2.gridx = 0; c2.gridy = y2;
 		c2.anchor = GridBagConstraints.EAST;
 		c2.insets = new Insets(0, 0, 0, 0);
-		theLabel = new Label("Threshold color:");
+		theLabel = new JLabel("Threshold color:");
 		gridbag2.setConstraints(theLabel, c2);
 		panel.add(theLabel);
-		modeChoice = new Choice();
+		modeChoice = new JComboBox<String>();
 		for (int i=0; i<modes.length; i++)
 			modeChoice.addItem(modes[i]);
-		modeChoice.select(mode);
+		modeChoice.setSelectedItem(mode);
 		modeChoice.addItemListener(this);
 		c2.gridx = 1; c2.gridy = y2;
 		c2.anchor = GridBagConstraints.WEST;
@@ -370,13 +370,13 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		// color space choice
 		c2.gridx = 0; c2.gridy = y2;
 		c2.anchor = GridBagConstraints.EAST;
-		theLabel = new Label("Color space:");
+		theLabel = new JLabel("Color space:");
 		gridbag2.setConstraints(theLabel, c2);
 		panel.add(theLabel);
-		colorSpaceChoice = new Choice();
+		colorSpaceChoice = new JComboBox<String>();
 		for (int i=0; i<colorSpaces.length; i++)
 			colorSpaceChoice.addItem(colorSpaces[i]);
-		colorSpaceChoice.select(HSB);
+		colorSpaceChoice.setSelectedItem(HSB);
 		colorSpaceChoice.addItemListener(this);
 		c2.gridx = 1; c2.gridy = y2;
 		c2.anchor = GridBagConstraints.WEST;
@@ -393,9 +393,9 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		add(panel, c);
 
 		//=====
-		panelt = new Panel();
+		panelt = new JPanel();
 		boolean db = Prefs.get("cthresholder.dark", true);
-		darkBackground = new Checkbox("Dark background", db);
+		darkBackground = new JCheckBox("Dark background", db);
 		darkBackground.addItemListener(this);
 		panelt.add(darkBackground);
 
@@ -407,7 +407,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 
 		// buttons
 		int trim = IJ.isMacOSX()?10:0;
-		panel = new Panel();
+		panel = new JPanel();
 		panel.setLayout(new GridLayout(0, 4, 0, 0));
 		originalB = new TrimmedButton("Original", trim);
 		//originalB.setEnabled(false);
@@ -510,19 +510,19 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		if (imp==null) return;
 		Object source = e.getSource();
 		if (source==methodChoice) {
-			method = methodChoice.getSelectedItem();
+			method = (String)methodChoice.getSelectedItem();
 		} else if (source==modeChoice) {
 			mode = modeChoice.getSelectedIndex();
 		} else if (source==colorSpaceChoice) {
-			colorSpace = ((Choice)source).getSelectedIndex();
+			colorSpace = colorSpaceChoice.getSelectedIndex();
 			flag = true;
 			//originalB.setEnabled(false);
 			filteredB.setEnabled(false);
 			minHue=minSat=minBri=0;
 			maxHue=maxSat=maxBri=255;
-			bandPassH.setState(true);
-			bandPassS.setState(true);
-			bandPassB.setState(true);
+			bandPassH.setSelected(true);
+			bandPassS.setSelected(true);
+			bandPassB.setSelected(true);
 		} else if (source==darkBackground) {
 		}
 		reset(imp);
@@ -543,7 +543,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 
 	public void actionPerformed(ActionEvent e) {
 		if (IJ.debugMode) IJ.log("ColorThresholder.actionPerformed");
-		Button b = (Button)e.getSource();
+		JButton b = (JButton)e.getSource();
 		if (b==null) return;
 		boolean imageThere = b==sampleB || checkImage();
 		if (imageThere) {
@@ -633,7 +633,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		Recorder.recordString("min[0]="+minSlider.getValue()+";\n");
 		Recorder.recordString("max[0]="+maxSlider.getValue()+";\n");
 
-		if (bandPassH.getState())
+		if (bandPassH.isSelected())
 			Recorder.recordString("filter[0]=\"pass\";\n");
 		else
 			Recorder.recordString("filter[0]=\"stop\";\n");
@@ -641,14 +641,14 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		Recorder.recordString("min[1]="+minSlider2.getValue()+";\n");
 		Recorder.recordString("max[1]="+maxSlider2.getValue()+";\n");
 
-		if (bandPassS.getState())
+		if (bandPassS.isSelected())
 			Recorder.recordString("filter[1]=\"pass\";\n");
 		else
 			Recorder.recordString("filter[1]=\"stop\";\n");
 		Recorder.recordString("min[2]="+minSlider3.getValue()+";\n");
 		Recorder.recordString("max[2]="+maxSlider3.getValue()+";\n");
 
-		if (bandPassB.getState())
+		if (bandPassB.isSelected())
 			Recorder.recordString("filter[2]=\"pass\";\n");
 		else
 			Recorder.recordString("filter[2]=\"stop\";\n");
@@ -830,18 +830,18 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 				}
 			}
 			if ((rangePassH-rangePassL)<maxgap){
-				bandPassH.setState(true);
+				bandPassH.setSelected(true);
 				iminhue=rangePassL;
 				imaxhue=rangePassH;
 			}
 			else{
-				bandPassH.setState(false);
+				bandPassH.setSelected(false);
 				iminhue=maxgapst;
 				imaxhue=maxgapen;
 			}
 		}
 		else {
-			bandPassH.setState(true);
+			bandPassH.setSelected(true);
 		}
 
 		adjustMinHue(iminhue);
@@ -956,7 +956,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 
 	void autoSetThreshold() {
 		if (IJ.debugMode) IJ.log("ColorThresholder.autoSetThreshold");
-		boolean darkb = darkBackground!=null && darkBackground.getState();
+		boolean darkb = darkBackground!=null && darkBackground.isSelected();
 		switch (colorSpace) {
 			case HSB:
 				int[] histogram = bplot.getHistogram();
@@ -1122,7 +1122,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		byte fill = (byte)255;
 		byte keep = (byte)0;
 
-		if (bandPassH.getState() && bandPassS.getState() && bandPassB.getState()){ //PPP All pass
+		if (bandPassH.isSelected() && bandPassS.isSelected() && bandPassB.isSelected()){ //PPP All pass
 			for (int j = 0; j < numPixels; j++){
 				int hue = hSource[j]&0xff;
 				int sat = sSource[j]&0xff;
@@ -1132,7 +1132,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 				else
 					fillMask[j] = fill;
 			}
-		} else if(!bandPassH.getState() && !bandPassS.getState() && !bandPassB.getState()){ //SSS All stop
+		} else if(!bandPassH.isSelected() && !bandPassS.isSelected() && !bandPassB.isSelected()){ //SSS All stop
 			for (int j = 0; j < numPixels; j++){
 				int hue = hSource[j]&0xff;
 				int sat = sSource[j]&0xff;
@@ -1142,7 +1142,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 				else
 					fillMask[j] = fill;
 			}
-		} else if(bandPassH.getState() && bandPassS.getState() && !bandPassB.getState()){ //PPS
+		} else if(bandPassH.isSelected() && bandPassS.isSelected() && !bandPassB.isSelected()){ //PPS
 			for (int j = 0; j < numPixels; j++){
 				int hue = hSource[j]&0xff;
 				int sat = sSource[j]&0xff;
@@ -1152,7 +1152,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 				else
 					fillMask[j] = fill;
 			}
-		} else if(!bandPassH.getState() && !bandPassS.getState() && bandPassB.getState()){ //SSP
+		} else if(!bandPassH.isSelected() && !bandPassS.isSelected() && bandPassB.isSelected()){ //SSP
 			for (int j = 0; j < numPixels; j++){
 				int hue = hSource[j]&0xff;
 				int sat = sSource[j]&0xff;
@@ -1162,7 +1162,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 				else
 					fillMask[j] = fill;
 			}
-		} else if (bandPassH.getState() && !bandPassS.getState() && !bandPassB.getState()){ //PSS
+		} else if (bandPassH.isSelected() && !bandPassS.isSelected() && !bandPassB.isSelected()){ //PSS
 			for (int j = 0; j < numPixels; j++){
 				int hue = hSource[j]&0xff;
 				int sat = sSource[j]&0xff;
@@ -1172,7 +1172,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 				else
 					fillMask[j] = fill;
 			}
-		} else if(!bandPassH.getState() && bandPassS.getState() && bandPassB.getState()){ //SPP
+		} else if(!bandPassH.isSelected() && bandPassS.isSelected() && bandPassB.isSelected()){ //SPP
 			for (int j = 0; j < numPixels; j++){
 				int hue = hSource[j]&0xff;
 				int sat = sSource[j]&0xff;
@@ -1182,7 +1182,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 				else
 					fillMask[j] = fill;
 			}
-		} else if (!bandPassH.getState() && bandPassS.getState() && !bandPassB.getState()){ //SPS
+		} else if (!bandPassH.isSelected() && bandPassS.isSelected() && !bandPassB.isSelected()){ //SPS
 			for (int j = 0; j < numPixels; j++){
 				int hue = hSource[j]&0xff;
 				int sat = sSource[j]&0xff;
@@ -1192,7 +1192,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 				else
 					fillMask[j] = fill;
 			}
-		} else if(bandPassH.getState() && !bandPassS.getState() && bandPassB.getState()){ //PSP
+		} else if(bandPassH.isSelected() && !bandPassS.isSelected() && bandPassB.isSelected()){ //PSP
 			for (int j = 0; j < numPixels; j++){
 				int hue = hSource[j]&0xff;
 				int sat = sSource[j]&0xff;
@@ -1281,7 +1281,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		super.close();
 		instance = null;
 		done = true;
-		Prefs.set("cthresholder.dark", darkBackground.getState());
+		Prefs.set("cthresholder.dark", darkBackground.isSelected());
 		synchronized(this) {
 			notify();
 		}
@@ -1408,7 +1408,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 
 
 	
-	class BandPlot extends Canvas implements Measurements, MouseListener {
+	class BandPlot extends JPanel implements Measurements, MouseListener {
 	
 		final int WIDTH = 256, HEIGHT=64;
 		double minHue = 0, minSat=0, minBri=0;
@@ -1521,11 +1521,12 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 			return histogram;
 		}
 	
-		public void update(Graphics g) {
-			paint(g);
-		}
+		//public void update(Graphics g) {
+		//	paint(g);
+		//}
 	
-		public void paint(Graphics g ) {
+		public void paintComponent(Graphics g ) {
+			super.paintComponent(g);
 			int hHist=0;
 			if (histogram!=null) {
 				if (os==null) {

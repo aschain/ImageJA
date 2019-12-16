@@ -4,6 +4,9 @@ import java.awt.*;
 import java.awt.image.*;
 import java.awt.event.*;
 import java.io.*;
+
+import javax.swing.JTextField;
+
 import java.awt.datatransfer.*;
 import ij.gui.*;
 import ij.process.*;
@@ -400,7 +403,7 @@ public class CalibrationBar implements PlugIn {
 			if (fieldNames == null) {
 				fieldNames = new String[4];
 				for(int i=0;i<4;i++)
-					fieldNames[i] = ((TextField)numberField.elementAt(i)).getName();
+					fieldNames[i] = ((JTextField)numberField.elementAt(i)).getName();
 			}
 
 			TextField tf = (TextField)e.getSource();

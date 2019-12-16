@@ -2331,7 +2331,7 @@ public class IJ {
 	
 	/** Returns, as an array of strings, a list of the LUTs in the Image/Lookup Tables menu. */
 	public static String[] getLuts() {
-		ArrayList list = new ArrayList();
+		ArrayList<String> list = new ArrayList<String>();
 		Hashtable commands = Menus.getCommands();
 		JMenu lutsMenu = Menus.getImageJMenu("Image>Lookup Tables");
 		if (commands==null || lutsMenu==null)
@@ -2340,7 +2340,7 @@ public class IJ {
 			JMenuItem menuItem = lutsMenu.getItem(i);
 			if (menuItem==null || menuItem.getActionListeners().length == 0) // separator?
 				continue;
-			String label = menuItem.getLabel();
+			String label = menuItem.getText();
 			if (label.equals("Invert LUT") || label.equals("Apply LUT"))
 				continue;
 			String command = (String)commands.get(label);

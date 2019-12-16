@@ -3,6 +3,9 @@ import java.awt.*;
 import java.awt.image.*;
 import java.net.URL;
 import java.util.*;
+
+import javax.swing.JPanel;
+
 import ij.process.*;
 import ij.io.*;
 import ij.gui.*;
@@ -239,7 +242,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 		if (comp==null) {
 			comp = IJ.getInstance();
 			if (comp==null)
-				comp = new Canvas();
+				comp = new JPanel();
 		}
 		imageLoaded = false;
 		if (!comp.prepareImage(image, this)) {

@@ -5,8 +5,6 @@ import java.awt.event.*;
 import ij.*;
 import ij.gui.*;
 import ij.macro.*;
-import ij.text.*;
-import ij.util.Tools;
 import ij.io.*;
 import ij.macro.MacroConstants;
 import ij.plugin.frame.*;
@@ -24,10 +22,8 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 	
 	private int[] macroStarts;
 	private String[] macroNames;
-	private JMenuBar mb = new JMenuBar();
 	private int nMacros;
 	private Program pgm;
-	private boolean firstEvent = true;
 	private String shortcutsInUse;
 	private int inUseCount;
 	private int nShortcuts;
@@ -42,7 +38,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 	private static String defaultDir, fileName;
 	private static MacroInstaller instance, listener;
 	private Thread macroToolThread;
-	private ArrayList<JMenu> subMenus = new ArrayList();
+	private ArrayList<JMenu> subMenus = new ArrayList<JMenu>();
 	
 	private static Program autoRunPgm;
 	private static int autoRunAddress;
@@ -98,7 +94,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		}
 		if (pgm.hasVars() && pgm.macroCount()>0 && pgm.getGlobals()==null)
 			new Interpreter().saveGlobals(pgm);
-		ArrayList tools = new ArrayList();
+		ArrayList<String> tools = new ArrayList<String>();
 		for (int i=0; i<code.length; i++) {
 			token = code[i]&TOK_MASK;
 			if (token==MACRO) {
@@ -144,7 +140,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 								String childStr = name.substring(pos + 1).trim();
 								JMenuItem mnuItem = new JMenuItem();
 								mnuItem.setActionCommand(name);
-								mnuItem.setLabel(childStr);
+								mnuItem.setText(childStr);
 								for (int jj = 0; jj < subMenus.size(); jj++) {
 									String aName = subMenus.get(jj).getName();
 									if (aName.equals(parentStr))

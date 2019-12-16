@@ -219,7 +219,7 @@ public class Executer implements Runnable {
 		if (menu==null) return false;
 		for (int i=0; i<menu.getItemCount(); i++) {
 			JMenuItem mi=menu.getItem(i);
-			if (mi!=null && mi.getLabel().equals(cmd)) {
+			if (mi!=null && mi.getText().equals(cmd)) {
 				IJ.open(cmd);
 				return true;
 			}

@@ -4,6 +4,9 @@ import ij.plugin.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Vector;
+
+import javax.swing.JPanel;
+
 import ij.process.*;
 import ij.gui.*;
 
@@ -31,7 +34,7 @@ public class ColorPicker extends PlugInDialog {
 		setLayout(new BorderLayout());
         ColorGenerator cg = new ColorGenerator(width, height, new int[width*height]);
         cg.drawColors(colorWidth, colorHeight, columns, rows);
-        Canvas colorCanvas = new ColorCanvas(width, height, null, cg, scale);
+        JPanel colorCanvas = new ColorCanvas(width, height, null, cg, scale);
 		//new ImagePlus("cp",cg.duplicate()).show();
         Panel panel = new Panel();
         panel.add(colorCanvas);
@@ -43,7 +46,7 @@ public class ColorPicker extends PlugInDialog {
 			setLocation(loc);
 		else
 			GUI.centerOnImageJScreen(this);
-		show();
+		setVisible(true);
     }
     
     public void close() {
@@ -212,7 +215,7 @@ class ColorGenerator extends ColorProcessor {
     
 } 
 
-class ColorCanvas extends Canvas implements MouseListener, MouseMotionListener {
+class ColorCanvas extends JPanel implements MouseListener, MouseMotionListener {
 	int width, height;
 	Vector colors;
 	boolean background;
@@ -235,11 +238,12 @@ class ColorCanvas extends Canvas implements MouseListener, MouseMotionListener {
 		return new Dimension(width, height);
 	}
 	
-	public void update(Graphics g) {
-		paint(g);
-	}
+	//public void update(Graphics g) {
+	//	paint(g);
+	//}
 	
-	public void paint(Graphics g) {
+	public void paintComponent(Graphics g) {
+		super.paintComponent(g);
 		g.drawImage(ip.createImage(), 0, 0, (int)(ip.getWidth()*scale), (int)(ip.getHeight()*scale), null);
 	}
 

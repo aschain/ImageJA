@@ -3,7 +3,9 @@ import ij.util.Java2;
 import java.awt.*;
 import java.awt.event.*;
 
-class TextCanvas extends Canvas {
+import javax.swing.JPanel;
+
+class TextCanvas extends JPanel {
 
 	TextPanel tp;
 	Font fFont;
@@ -27,11 +29,12 @@ class TextCanvas extends Canvas {
     	iImage = null;
     }
 
-	public void update(Graphics g) {
-		paint(g);
-	}
+	//public void update(Graphics g) {
+	//	paint(g);
+	//}
   
-	public void paint(Graphics g) {
+	public void paintComponent(Graphics g) {
+		super.paintComponent(g);
 		if (tp==null || g==null) return;
 		Dimension d = getSize();
 		int iWidth = d.width;

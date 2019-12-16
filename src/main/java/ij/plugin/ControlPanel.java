@@ -2,21 +2,13 @@ package ij.plugin;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.*;
-import java.io.*;
 import java.util.*;
-import java.net.*;
-import java.net.URL;
 import javax.swing.*;
 import javax.swing.tree.*;
 import javax.swing.event.*;
 import ij.*;
 import ij.gui.*;
-import ij.io.*;
-import ij.plugin.*;
-import ij.plugin.filter.*;
-import ij.plugin.frame.PlugInFrame;
 import ij.util.*;
-import ij.text.TextWindow;
 
 /**ControlPanel.
  * This plugin displays a panel with ImageJ commands in a hierarchical tree structure.
@@ -92,7 +84,7 @@ public class ControlPanel implements PlugIn {
 		JMenuBar menuBar = Menus.getMenuBar();
 		for (int i=0; i<menuBar.getMenuCount(); i++) {
 			JMenu menu = menuBar.getMenu(i);
-			DefaultMutableTreeNode menuNode = new DefaultMutableTreeNode(menu.getLabel());
+			DefaultMutableTreeNode menuNode = new DefaultMutableTreeNode(menu.getText());
 			recurseSubMenu(menu, menuNode);
 			node.add(menuNode);
 		}

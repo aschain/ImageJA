@@ -8,6 +8,9 @@ import ij.plugin.frame.Recorder;
 import ij.util.Tools;
 import java.awt.*;
 import java.util.*;
+
+import javax.swing.JTextArea;
+
 import java.awt.event.*;
 import java.io.*;
 
@@ -367,7 +370,7 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 	}
 
 	void save() {
-		TextArea ta1 = gd.getTextArea1();
+		JTextArea ta1 = gd.getTextArea1();
 		ta1.selectAll();
 		String text = ta1.getText();
 		ta1.select(0, 0);

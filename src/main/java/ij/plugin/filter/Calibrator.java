@@ -9,6 +9,9 @@ import ij.plugin.TextReader;
 import ij.plugin.frame.Fitter;
 import java.awt.*;
 import java.util.*;
+
+import javax.swing.JTextArea;
+
 import java.awt.event.*;
 import java.io.*;
 
@@ -396,8 +399,8 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 	}
 	
 	void save() {
-		TextArea ta1 = gd.getTextArea1();
-		TextArea ta2 = gd.getTextArea2();
+		JTextArea ta1 = gd.getTextArea1();
+		JTextArea ta2 = gd.getTextArea2();
 		ta1.selectAll();
 		String text1 = ta1.getText();
 		ta1.select(0, 0);
@@ -465,11 +468,11 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 		} else
 			s2 = new String(sb);
 		if (s1!=null) {
-			TextArea ta1 = gd.getTextArea1();
+			JTextArea ta1 = gd.getTextArea1();
 			ta1.selectAll();
 			ta1.setText(s1);
 		}
-		TextArea ta2 = gd.getTextArea2();
+		JTextArea ta2 = gd.getTextArea2();
 		ta2.selectAll();
 		ta2.setText(s2);
 		importedValues = true;

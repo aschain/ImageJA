@@ -2,14 +2,14 @@ package ij.gui;
 
 import ij.macro.Interpreter;
 import java.awt.*;
-import java.awt.image.*;
+import javax.swing.JPanel;
 
 /**
  * This is the progress bar that is displayed in the lower right hand corner of
  * the ImageJ window. Use one of the static IJ.showProgress() methods to display
  * and update the progress bar.
  */
-public class ProgressBar extends Canvas {
+public class ProgressBar extends JPanel {
 
     public static final int WIDTH = 120;
     public static final int HEIGHT = 20;
@@ -125,11 +125,12 @@ public class ProgressBar extends Canvas {
         show(progress);
     }
 
-    public void update(Graphics g) {
-        paint(g);
-    }
+    //public void update(Graphics g) {
+    //    paint(g);
+    //}
 
-    public void paint(Graphics g) {
+    public void paintComponent(Graphics g) {
+    	super.paintComponent(g);
         if (showBar) {
             fill3DRect(g, x - 1, y - 1, width + 1, height + 1);
             drawBar(g);

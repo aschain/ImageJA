@@ -4,6 +4,11 @@ import java.io.*;
 import java.awt.event.*;
 import java.awt.image.ColorModel;
 import java.util.Properties;
+
+import javax.swing.JTextField;
+
+import javax.swing.JLabel;
+
 import ij.*;
 import ij.io.*;
 import ij.gui.*;
@@ -645,7 +650,7 @@ public class FolderOpener implements PlugIn {
 			if (start+n-1>fileCount)
 				n = fileCount-start+1;
 			if (inc<1) inc = 1;
-			TextField tf = (TextField)stringField.elementAt(0);
+			JTextField tf = (JTextField)stringField.elementAt(0);
 			String filter = tf.getText();
 			int n3 = Integer.MAX_VALUE;
 			String[] filteredList = getFilteredList(list, filter, null);
@@ -672,7 +677,7 @@ public class FolderOpener implements PlugIn {
 			if (n2<0) n2 = 0;
 			if (n2>n) n2 = n;
 			double size = ((double)width*height*n2*bytesPerPixel)/(1024*1024);
-			((Label)theLabel).setText(width+" x "+height+" x "+n2+" ("+IJ.d2s(size,1)+"MB)");
+			((JLabel)theLabel).setText(width+" x "+height+" x "+n2+" ("+IJ.d2s(size,1)+"MB)");
 		}
 	
 		public int getNumber(Object field) {

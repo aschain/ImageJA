@@ -7,6 +7,8 @@ import java.awt.event.*;
 import java.io.*;
 import java.util.Vector;
 
+import javax.swing.JTextArea;
+
 /** This plugin implements the Edit/Options/Startup command. */
 	public class Startup implements PlugIn, ItemListener {
 		private static String NAME = "RunAtStartup.ijm";
@@ -89,7 +91,7 @@ import java.util.Vector;
 		else if (item.equals(code[5]))
 			statement = "call(\"ij.ImagePlus.setDefault16bitRange\", 12);\n";
 		if (statement!=null) {
-			TextArea ta = gd.getTextArea1();
+			JTextArea ta = gd.getTextArea1();
 			ta.insert(statement, ta.getCaretPosition());
 			if (IJ.isMacOSX()) ta.requestFocus();
 		}

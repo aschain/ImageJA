@@ -10,7 +10,6 @@ import ij.util.Tools;
 import ij.text.*;
 import ij.macro.*;
 import ij.plugin.MacroInstaller;
-import ij.plugin.Commands;
 import ij.plugin.Macro_Runner;
 import ij.plugin.JavaScriptEvaluator;
 import ij.io.SaveDialog;

@@ -1,9 +1,9 @@
 package ij.gui;
 import ij.*;
-import ij.process.*;
 import ij.plugin.frame.Recorder;
 import java.awt.*;
 import java.util.Vector;
+import javax.swing.*;
 
 /*
  * This class contains dialogs for formatting of plots (range, axes, labels, legend, creating a high-resolution plot)
@@ -34,7 +34,7 @@ public class PlotDialog implements DialogListener {
 	private boolean dialogShowing;			//when the dialog is showing, ignore the last call with event null
 	private Plot[]  templatePlots;
 
-	private Checkbox xLogCheckbox, yLogCheckbox;
+	private JCheckBox xLogCheckbox, yLogCheckbox;
 
 	//saved dialog options: legend
 	private static int legendPosNumber = 0;
@@ -58,7 +58,7 @@ public class PlotDialog implements DialogListener {
 
 	/** Asks the user for axis scaling; then replot with new scale on the same ImageProcessor.
 	 *	The 'parent' frame may be null */
-	public void showDialog(Frame parent) {
+	public void showDialog(JFrame parent) {
 		if (dialogType == HI_RESOLUTION) {	//'make high-resolution plot' dialog has no preview, handled separately
 			doHighResolutionDialog(parent);
 			return;
@@ -477,7 +477,7 @@ public class PlotDialog implements DialogListener {
 	}
 
 	/** The dialog for "Make High Resolution Plot"; it has no preview*/
-	private void doHighResolutionDialog(Frame parent) {
+	private void doHighResolutionDialog(JFrame parent) {
 		GenericDialog gd = parent == null ? new GenericDialog(HEADINGS[dialogType]) :
 				new GenericDialog(HEADINGS[dialogType], parent);
 		String title = plot.getTitle() +"_HiRes";
@@ -508,7 +508,7 @@ public class PlotDialog implements DialogListener {
 
 	/** Disables switching on a checkbox for log range if the axis limits do not allow it.
 	 *  The checkbox can be always switched off. */
-	void enableDisableLogCheckbox(Checkbox checkbox, double limit1, double limit2) {
+	void enableDisableLogCheckbox(JCheckBox checkbox, double limit1, double limit2) {
 		boolean logPossible = limit1 > 0 && limit2 > 0 && (limit1 > 3*limit2 || limit2 > 3*limit1);
 		checkbox.setEnabled(logPossible);
 	}
@@ -524,9 +524,9 @@ public class PlotDialog implements DialogListener {
 		return flags;
 	}
 
-	Checkbox lastCheckboxAdded(GenericDialog gd) {
+	JCheckBox lastCheckboxAdded(GenericDialog gd) {
 		Vector checkboxes = gd.getCheckboxes();
-		return (Checkbox)(checkboxes.get(checkboxes.size() - 1));
+		return (JCheckBox)(checkboxes.get(checkboxes.size() - 1));
 	}
 
 }

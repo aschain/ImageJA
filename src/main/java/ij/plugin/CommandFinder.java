@@ -312,7 +312,7 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 	}
 
 	/* This function recurses down through a menu, adding to
-	   commandsHash the location and MenuItem of any items it
+	   commandsHash the location and JMenuItem of any items it
 	   finds that aren't submenus. */
 
 	public void parseMenu(String path, JMenu topLevelMenu) {

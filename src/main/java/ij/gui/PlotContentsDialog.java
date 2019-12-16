@@ -12,6 +12,9 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.Arrays;
 import java.util.Vector;
+
+import javax.swing.JFrame;
+
 import java.util.ArrayList;
 
 /** This class implements the Plot Window's Data>"Add from Plot", "Add form Table", "Add Fit" and
@@ -116,7 +119,7 @@ public class PlotContentsDialog implements DialogListener {
 	}
 
 	/** Shows the dialog, with a given parent Frame (may be null) */
-	public void showDialog(Frame parent) {
+	public void showDialog(JFrame parent) {
 		if (dialogType == ERROR) return;
 		if (!creatingPlot) savedLimits = plot.getLimits();
 		plot.savePlotObjects();

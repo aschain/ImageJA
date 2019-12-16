@@ -1,12 +1,11 @@
 package ij.measure;
 import ij.plugin.filter.Analyzer;
 import ij.plugin.frame.Recorder;
-import ij.plugin.*;
 import ij.*;
 import ij.gui.*;
-import ij.text.*;
 import java.awt.*;
 import java.awt.event.*;
+import javax.swing.*;
 
 
 /** This class implements the Apply Macro command in tables.
@@ -17,10 +16,10 @@ public class ResultsTableMacros implements Runnable, DialogListener, ActionListe
 	private String defaultMacro = "Sin=sin(row*0.1);\nCos=cos(row*0.1);\nSqr=Sin*Sin+Cos*Cos;";
 	private GenericDialog gd;
 	private ResultsTable rt, rtBackup;
-	private Button runButton, resetButton, openButton, saveButton;
+	private JButton runButton, resetButton, openButton, saveButton;
 	private String title;
 	private int runCount;
-	private TextArea ta;
+	private JTextArea ta;
 
 	public ResultsTableMacros(ResultsTable rt) {
 		this.rt = rt;
@@ -45,7 +44,7 @@ public class ResultsTableMacros implements Runnable, DialogListener, ActionListe
 		String dialogTitle = "Apply Macro to "+(title!=null?"\""+title+"\"":"Table");
 		Frame parent = title!=null?WindowManager.getFrame(title):null;
 		if (parent!=null)
-			gd = new GenericDialog(dialogTitle, parent);
+			gd = new GenericDialog(dialogTitle, (JFrame)parent);
 		else
 			gd = new GenericDialog(dialogTitle);
 		gd.setInsets(5, 5, 0);
@@ -53,19 +52,19 @@ public class ResultsTableMacros implements Runnable, DialogListener, ActionListe
 		ta = gd.getTextArea1();
 		ta.addKeyListener(this);
 
-		Panel panel = new Panel();
+		JPanel panel = new JPanel();
 		if (IJ.isMacOSX())
 			panel.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
-		runButton = new Button("Run");
+		runButton = new JButton("Run");
 		runButton.addActionListener(this);
 		panel.add(runButton);
-		resetButton = new Button("Reset");
+		resetButton = new JButton("Reset");
 		resetButton.addActionListener(this);
 		panel.add(resetButton);
-		openButton = new Button("Open");
+		openButton = new JButton("Open");
 		openButton.addActionListener(this);
 		panel.add(openButton);
-		saveButton = new Button("Save");
+		saveButton = new JButton("Save");
 		saveButton.addActionListener(this);
 		panel.add(saveButton);
 		gd.addPanel(panel);
@@ -130,10 +129,10 @@ public class ResultsTableMacros implements Runnable, DialogListener, ActionListe
 	
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {
 		final String variableName = gd.getNextChoice();
-		if (e!=null && (e.getSource() instanceof Choice) && !variableName.equals("Insert...")) {
+		if (e!=null && (e.getSource() instanceof JComboBox) && !variableName.equals("Insert...")) {
 			final int pos = ta.getCaretPosition();
-			((Choice)e.getSource()).select(0);
-			final TextArea textArea = ta;
+			((JComboBox)e.getSource()).setSelectedIndex(0);
+			final JTextArea textArea = ta;
 			new Thread(new Runnable() {
 					public void run() {
 						IJ.wait(100);

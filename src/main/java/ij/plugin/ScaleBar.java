@@ -6,6 +6,8 @@ import java.awt.*;
 import ij.measure.*;
 import java.awt.event.*;
 
+import javax.swing.JTextField;
+
 /** This plugin implements the Analyze/Tools/Draw Scale Bar command.
 	Divakar Ramachandran added options to draw a background 
 	and use a serif font on 23 April 2006.
@@ -390,17 +392,17 @@ public class ScaleBar implements PlugIn {
 		}
 
 		public void textValueChanged(TextEvent e) {
-			TextField widthField = ((TextField)numberField.elementAt(0));
+			JTextField widthField = ((JTextField)numberField.elementAt(0));
 			Double d = getValue(widthField.getText());
 			if (d==null)
 				return;
 			barWidth = d.doubleValue();
-			TextField heightField = ((TextField)numberField.elementAt(1));
+			JTextField heightField = ((JTextField)numberField.elementAt(1));
 			d = getValue(heightField.getText());
 			if (d==null)
 				return;
 			barHeightInPixels = (int)d.doubleValue();
-			TextField fontSizeField = ((TextField)numberField.elementAt(2));
+			JTextField fontSizeField = ((JTextField)numberField.elementAt(2));
 			d = getValue(fontSizeField.getText());
 			if (d==null)
 				return;

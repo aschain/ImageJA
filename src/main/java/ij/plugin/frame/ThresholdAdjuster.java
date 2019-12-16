@@ -1,5 +1,6 @@
 package ij.plugin.frame;
 import java.awt.*;
+import javax.swing.*;
 import java.awt.event.*;
 import java.awt.image.*;
 import ij.*;
@@ -44,8 +45,8 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 	int sliderRange = 256;
 	boolean doAutoAdjust,doReset,doApplyLut,doStateChange,doSet,doBackground; //actions required from user interface
 
-	Panel panel;
-	Button autoB, resetB, applyB, setB;
+	JPanel panel;
+	JButton autoB, resetB, applyB, setB;
 	int previousImageID;
 	int previousImageType;
 	int previousRoiHashCode;
@@ -54,13 +55,13 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 	boolean imageWasUpdated;
 	ImageJ ij;
 	double minThreshold, maxThreshold;  // 0-255
-	Scrollbar minSlider, maxSlider;
-	TextField minLabel, maxLabel;           // for current threshold
-	Label percentiles;
+	JScrollBar minSlider, maxSlider;
+	JTextField minLabel, maxLabel;           // for current threshold
+	JLabel percentiles;
 	boolean done;
 	int lutColor;
-	Choice methodChoice, modeChoice;
-	Checkbox darkBackground, stackHistogram, noResetButton;
+	JComboBox<String> methodChoice, modeChoice;
+	JCheckBox darkBackground, stackHistogram, noResetButton;
 	boolean firstActivation = true;
 	boolean setButtonPressed;
 	boolean noReset;
@@ -115,12 +116,12 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		c.gridx = 0;
 		c.gridy = y++;
 		c.insets = new Insets(1, 10, 0, 10);
-		percentiles = new Label("");
+		percentiles = new JLabel("");
 		percentiles.setFont(font);
 		add(percentiles, c);
 
 		// minThreshold slider
-		minSlider = new Scrollbar(Scrollbar.HORIZONTAL, sliderRange/3, 1, 0, sliderRange);
+		minSlider = new JScrollBar(JScrollBar.HORIZONTAL, sliderRange/3, 1, 0, sliderRange);
 		GUI.fixScrollbar(minSlider);
 		c.gridx = 0;
 		c.gridy = y++;
@@ -142,7 +143,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		c.insets = new Insets(5, 0, 0, 10);
 		String text = "000000";
 		int columns = 4;
-		minLabel = new TextField(text,columns);
+		minLabel = new JTextField(text,columns);
 		minLabel.setFont(font);
 		add(minLabel, c);
 		minLabel.addFocusListener(this);
@@ -150,7 +151,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		minLabel.addKeyListener(this);
 
 		// maxThreshold slider
-		maxSlider = new Scrollbar(Scrollbar.HORIZONTAL, sliderRange*2/3, 1, 0, sliderRange);
+		maxSlider = new JScrollBar(JScrollBar.HORIZONTAL, sliderRange*2/3, 1, 0, sliderRange);
 		GUI.fixScrollbar(maxSlider);
 		c.gridx = 0;
 		c.gridy = y++;
@@ -169,7 +170,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		c.gridwidth = 1;
 		c.weightx = 0;
 		c.insets = new Insets(2, 0, 0, 10);
-		maxLabel = new TextField(text,columns);
+		maxLabel = new JTextField(text,columns);
 		maxLabel.setFont(font);
 		add(maxLabel, c);
 		maxLabel.addFocusListener(this);
@@ -177,18 +178,18 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		maxLabel.addKeyListener(this);
 
 		// choices
-		panel = new Panel();
-		methodChoice = new Choice();
+		panel = new JPanel();
+		methodChoice = new JComboBox<String>();
 		for (int i=0; i<methodNames.length; i++)
 			methodChoice.addItem(methodNames[i]);
-		methodChoice.select(method);
+		methodChoice.setSelectedItem(method);
 		methodChoice.addItemListener(this);
 		//methodChoice.addKeyListener(ij);
 		panel.add(methodChoice);
-		modeChoice = new Choice();
+		modeChoice = new JComboBox<String>();
 		for (int i=0; i<modes.length; i++)
 			modeChoice.addItem(modes[i]);
-		modeChoice.select(mode);
+		modeChoice.setSelectedIndex(mode);
 		modeChoice.addItemListener(this);
 		//modeChoice.addKeyListener(ij);
 		panel.add(modeChoice);
@@ -201,20 +202,20 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		add(panel, c);
 
 		// checkboxes
-		panel = new Panel();
+		panel = new JPanel();
 		panel.setLayout(new GridLayout(2, 2));
 		boolean db = Prefs.get(DARK_BACKGROUND, Prefs.blackBackground?true:false);
-		darkBackground = new Checkbox("Dark background");
-		darkBackground.setState(db);
+		darkBackground = new JCheckBox("Dark background");
+		darkBackground.setSelected(db);
 		darkBackground.addItemListener(this);
 		panel.add(darkBackground);
-		stackHistogram = new Checkbox("Stack histogram");
-		stackHistogram.setState(false);
+		stackHistogram = new JCheckBox("Stack histogram");
+		stackHistogram.setSelected(false);
 		stackHistogram.addItemListener(this);
 		panel.add(stackHistogram); 
 		noReset = Prefs.get(NO_RESET, false);
-		noResetButton = new Checkbox("Don't reset range");
-		noResetButton.setState(noReset);
+		noResetButton = new JCheckBox("Don't reset range");
+		noResetButton.setSelected(noReset);
 		noResetButton.addItemListener(this);
 		panel.add(noResetButton);
 		c.gridx = 0;
@@ -225,7 +226,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 
 		// buttons
 		int trim = IJ.isMacOSX()?11:0;
-		panel = new Panel();
+		panel = new JPanel();
 		int hgap = IJ.isMacOSX()?1:5;
 		panel.setLayout(new FlowLayout(FlowLayout.RIGHT,hgap,0));
 		autoB = new TrimmedButton("Auto",trim);
@@ -279,7 +280,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 	}
 
 	public synchronized void actionPerformed(ActionEvent e) {
-		Button b = (Button)e.getSource();
+		JButton b = (JButton)e.getSource();
 		if (b==null) return;
 		if (b==resetB)
 			doReset = true;
@@ -361,7 +362,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 	public synchronized void itemStateChanged(ItemEvent e) {
 		Object source = e.getSource();
 		if (source==methodChoice) {
-			method = methodChoice.getSelectedItem();
+			method = (String)methodChoice.getSelectedItem();
 			doAutoAdjust = true;
 		} else if (source==modeChoice) {
 			mode = modeChoice.getSelectedIndex();
@@ -376,7 +377,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		} else if (source==darkBackground) {
 			doBackground = true;
 		} else if (source==noResetButton) {
-			noReset = noResetButton.getState();
+			noReset = noResetButton.isSelected();
 			noResetChanged = true;
 			doReset = true;
 		} else
@@ -464,7 +465,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 	}
 
 	boolean entireStack(ImagePlus imp) {
-		return stackHistogram!=null && stackHistogram.getState() && imp.getStackSize()>1;
+		return stackHistogram!=null && stackHistogram.isSelected() && imp.getStackSize()>1;
 	}
 
 	void autoSetLevels(ImageProcessor ip, ImageStatistics stats) {
@@ -485,13 +486,13 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		if (minThreshold>255)
 			minThreshold = 255;
 		if (Recorder.record) {
-			boolean stack = stackHistogram!=null && stackHistogram.getState();
+			boolean stack = stackHistogram!=null && stackHistogram.isSelected();
 			if (noReset && ip.getBitDepth()!=8) {
 				ImageStatistics stats2 = ip.getStats();
 				if (ip.getMin()>stats2.min || ip.getMax()<stats2.max)
 					ContrastAdjuster.recordSetMinAndMax(ip.getMin(),ip.getMax());
 			}
-			boolean darkb = darkBackground!=null && darkBackground.getState();
+			boolean darkb = darkBackground!=null && darkBackground.isSelected();
 			String options = method+(darkb?" dark":"")+(noReset?" no-reset":"")+(stack?" stack":"");
 			if (Recorder.scriptMode())
 				Recorder.recordCall("IJ.setAutoThreshold(imp, \""+options+"\");");
@@ -505,7 +506,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 	 * (E.g. dark background and non-inverting LUT)
 	*/
 	boolean thresholdHigh(ImageProcessor ip) {
-		boolean darkb = darkBackground!=null && darkBackground.getState();
+		boolean darkb = darkBackground!=null && darkBackground.isSelected();
 		boolean invertedLut = ip.isInvertedLut();
 		return invertedLut ? !darkb : darkb;
 	}
@@ -837,7 +838,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 
  	void runThresholdCommand() {
 		Thresholder.setMethod(method);
-		Thresholder.setBackground(darkBackground.getState()?"Dark":"Light");
+		Thresholder.setBackground(darkBackground.isSelected()?"Dark":"Light");
 		if (Recorder.record) {
 			Recorder.setCommand("Convert to Mask");
 			(new Thresholder()).run("mask");
@@ -918,8 +919,8 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		done = true;
 		Prefs.saveLocation(LOC_KEY, getLocation());
 		Prefs.set(MODE_KEY, mode);
-		Prefs.set(DARK_BACKGROUND, darkBackground.getState());
-		Prefs.set(NO_RESET, noResetButton.getState());
+		Prefs.set(DARK_BACKGROUND, darkBackground.isSelected());
+		Prefs.set(NO_RESET, noResetButton.isSelected());
 		synchronized(this) {
 			notify();
 		}
@@ -972,7 +973,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 		if (valid) {
 			method = thresholdingMethod;
 			if (instance!=null)
-				instance.methodChoice.select(method);
+				instance.methodChoice.setSelectedItem(method);
 		}
 	}
 
@@ -995,7 +996,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 				return;
 			ta.setLutColor(mode);
 			ta.doStateChange = true;
-			ta.modeChoice.select(mode);
+			ta.modeChoice.setSelectedIndex(mode);
 			ta.notify();
 		}
 	}
@@ -1003,7 +1004,7 @@ public class ThresholdAdjuster extends PlugInDialog implements PlugIn, Measureme
 } // ThresholdAdjuster class
 
 
-class ThresholdPlot extends Canvas implements Measurements, MouseListener {
+class ThresholdPlot extends JPanel implements Measurements, MouseListener {
 	double scale = Prefs.getGuiScale();
 	int width = (int)Math.round(256*scale);
 	int height= (int)Math.round(48*scale);
@@ -1122,11 +1123,12 @@ class ThresholdPlot extends Canvas implements Measurements, MouseListener {
 		return stats;
 	}
 
-	public void update(Graphics g) {
-		paint(g);
-	}
+	//public void update(Graphics g) {
+	//	paint(g);
+	//}
 
-	public void paint(Graphics g) {
+	public void paintComponent(Graphics g) {
+		super.paintComponent(g);
 		if (g==null) return;
 		if (histogram!=null) {
 			if (os==null && hmax>0) {

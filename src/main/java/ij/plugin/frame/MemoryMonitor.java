@@ -4,6 +4,9 @@ import ij.gui.*;
 import ij.process.*;
 import java.awt.*;
 import java.awt.image.*;
+
+import javax.swing.JPanel;
+
 import java.awt.event.*;
 
 /** This plugin continuously plots ImageJ's memory utilization. 
@@ -35,7 +38,7 @@ public class MemoryMonitor extends PlugInFrame {
 		WindowManager.addWindow(this);
 		
 		setLayout(new BorderLayout());
-		Canvas ic = new PlotCanvas();
+		JPanel ic = new PlotCanvas();
 		ic.setSize(width, height);
 		add(ic);
 		setResizable(false);
@@ -51,7 +54,7 @@ public class MemoryMonitor extends PlugInFrame {
 		g.setColor(Color.white);
 		g.fillRect(0, 0, width, height);
 		g.setFont(new Font("SansSerif",Font.PLAIN,(int)(12*Prefs.getGuiScale())));
-		show();
+		setVisible(true);
 		ImageJ ij = IJ.getInstance();
 		if (ij!=null) {
 			addKeyListener(ij);
@@ -117,11 +120,11 @@ public class MemoryMonitor extends PlugInFrame {
 		done = true;
 	}
 	
-	class PlotCanvas extends Canvas {
+	class PlotCanvas extends JPanel {
 	
-		public void update(Graphics g) {
-			paint(g);
-		}
+		//public void update(Graphics g) {
+		//	paint(g);
+		//}
 		
 		public void paint(Graphics g) {
 			g.drawImage(image, 0, 0, null);

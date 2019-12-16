@@ -179,7 +179,7 @@ public class URLOpener implements PlugIn {
 	}
 	 
 	public static String[] getSampleImageNames() {
-		ArrayList list = new ArrayList();
+		ArrayList<String> list = new ArrayList<String>();
 		Hashtable commands = Menus.getCommands();
 		JMenu samplesMenu = Menus.getImageJMenu("File>Open Samples");
 		if (samplesMenu==null)
@@ -187,7 +187,7 @@ public class URLOpener implements PlugIn {
 		for (int i=0; i<samplesMenu.getItemCount(); i++) {
 			JMenuItem menuItem = samplesMenu.getItem(i);
 			if (menuItem ==null || menuItem.getActionListeners().length == 0) continue; // separator?
-			String label = menuItem.getLabel();
+			String label = menuItem.getText();
 			if (label.contains("Cache Sample Images")) continue;
 			String command = (String)commands.get(label);
 			if (command==null) continue;

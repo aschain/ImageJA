@@ -10,6 +10,8 @@ import java.awt.event.*;
 import java.io.*;
 import java.util.Vector;
 
+import javax.swing.JTextArea;
+
 /** This plugin implements the File/Batch/Macro and File/Batch/Virtual Stack commands. */
 	public class BatchProcessor implements PlugIn, ActionListener, ItemListener, Runnable {
 		private static final String MACRO_FILE_NAME = "BatchMacro.ijm";
@@ -337,7 +339,7 @@ import java.util.Vector;
 		else if (item.equals("Print Index and Title"))
 			code =  "if (i==0) print(\"\\\\Clear\"); print(IJ.pad(i,4)+\": \"+getTitle());\n";
 		if (code!=null) {
-			TextArea ta = gd.getTextArea1();
+			JTextArea ta = gd.getTextArea1();
 			ta.insert(code, ta.getCaretPosition());
 			if (IJ.isMacOSX()) ta.requestFocus();
 		}
@@ -408,7 +410,7 @@ import java.util.Vector;
 	}
 	
 	public void run() {
-		TextArea ta = gd.getTextArea1();
+		JTextArea ta = gd.getTextArea1();
 		//ta.selectAll();
 		String macro = ta.getText();
 		if (macro.equals("")) {
