@@ -10,7 +10,7 @@ import java.applet.Applet;
 /** Displays the Java system properties in a text window. */
 public class JavaProperties implements PlugIn {
 
-	ArrayList list = new ArrayList();
+	ArrayList<String> list = new ArrayList<String>();
 	
 	public void run(String arg) {
 		show("java.version");

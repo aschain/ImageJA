@@ -58,27 +58,27 @@ public class Menus {
 
 	private static ImageJ ij;
 	private static Applet applet;
-	private Hashtable demoImagesTable = new Hashtable();
+	//private Hashtable<String,String> demoImagesTable = new Hashtable<String,String>();
 	private static String ImageJPath, pluginsPath, macrosPath;
 	private static Properties menus;
 	private static Properties menuSeparators;
 	private static JMenu pluginsMenu, saveAsMenu, shortcutsMenu, utilitiesMenu, macrosMenu;
 	static JMenu window, openRecentMenu;
-	private static Hashtable pluginsTable;
+	private static Hashtable<String,String> pluginsTable;
 	
 	private static int nPlugins, nMacros;
-	private static Hashtable shortcuts;
-	private static Hashtable macroShortcuts;
-	private static Vector pluginsPrefs; // commands saved in IJ_Prefs
+	private static Hashtable<Integer,String> shortcuts;
+	private static Hashtable<Integer,String> macroShortcuts;
+	private static Vector<String> pluginsPrefs; // commands saved in IJ_Prefs
 	static int windowMenuItems2; // non-image windows listed in Window menu + separator
 	private String error;
 	private String jarError;
 	private String pluginError;
     private boolean isJarErrorHeading;
 	private static boolean installingJars, duplicateCommand;
-	private static Vector jarFiles;  // JAR files in plugins folder with "_" in their name
-	private Map menuEntry2jarFile = new HashMap();
-	private static Vector macroFiles;  // Macros and scripts in the plugins folder
+	private static Vector<String> jarFiles;  // JAR files in plugins folder with "_" in their name
+	private Map<String,String> menuEntry2jarFile = new HashMap<String,String>();
+	private static Vector<String> macroFiles;  // Macros and scripts in the plugins folder
 	private static int userPluginsIndex; // First user plugin or submenu in Plugins menu
 	private static boolean addSorted;
 	private static int defaultFontSize = IJ.isWindows()?15:0;
@@ -91,7 +91,7 @@ public class Menus {
 		
 	Menus(ImageJ ijInstance, Applet appletInstance) {
 		ij = ijInstance;
-		String title = ij!=null?ij.getTitle():null;
+		//String title = ij!=null?ij.getTitle():null;
 		applet = appletInstance;
 		instance = this;
 	}
@@ -105,9 +105,9 @@ public class Menus {
 		error = null;
 		mbar = null;
 		menus = new Properties();
-		pluginsTable = new Hashtable();
-		shortcuts = new Hashtable();
-		pluginsPrefs = new Vector();
+		pluginsTable = new Hashtable<String,String>();
+		shortcuts = new Hashtable<Integer,String>();
+		pluginsPrefs = new Vector<String>();
 		macroShortcuts = null;
 		setupPluginsAndMacrosPaths();
 		JMenu file = getMenu("File");
@@ -543,8 +543,8 @@ public class Menus {
 	}
 	
 	void addPluginsMenu() {
-		String value,label,className;
-		int index;
+		String value;//,label,className;
+		//int index;
 		//pluginsMenu = new JMenu("Plugins");
 		pluginsMenu = getMenu("Plugins");
 		for (int count=1; count<100; count++) {
@@ -581,7 +581,7 @@ public class Menus {
 		JMenu menu;
 		String[] pluginList = getPlugins();
 		String[] pluginsList2 = null;
-		Hashtable skipList = new Hashtable();
+		Hashtable<String,String> skipList = new Hashtable<String,String>();
  		for (int index=0; index<100; index++) {
 			value = Prefs.getString("plugin" + (index/10)%10 + index%10);
 			if (value==null)
@@ -696,11 +696,11 @@ public class Menus {
 
 	/** Inserts 'item' into 'menu' in alphanumeric order. */
 	static void addOrdered(JMenu menu, JMenuItem item) {
-		String label = item.getLabel();
+		String label = item.getText();
 		int start = addPluginSeparatorIfNeeded(menu);
 		for (int i=start; i<menu.getItemCount(); i++) {
 			JMenuItem mi=menu.getItem(i);
-			if (mi!=null && label.compareTo(mi.getLabel())<0) {
+			if (mi!=null && label.compareTo(mi.getText())<0) {
 				menu.insert(item, i);
 				return;
 			}
@@ -724,7 +724,7 @@ public class Menus {
 			String jar = (String)jarFiles.elementAt(i);
 			InputStream is = getConfigurationFile(jar);
             if (is==null) continue;
-            ArrayList entries = new ArrayList(20);
+            ArrayList<String> entries = new ArrayList<String>(20);
             LineNumberReader lnr = new LineNumberReader(new InputStreamReader(is));
             try {
                 while(true) {
@@ -1055,7 +1055,7 @@ public class Menus {
 		String[] list = f.list();
 		if (list==null)
 			return null;
-		Vector v = new Vector();
+		Vector<String> v = new Vector<String>();
 		jarFiles = null;
 		macroFiles = null;
 		for (int i=0; i<list.length; i++) {
@@ -1066,10 +1066,10 @@ public class Menus {
 				name = name.substring(0, name.length()-6); // remove ".class"
 				v.addElement(name);
 			} else if (hasUnderscore && (name.endsWith(".jar") || name.endsWith(".zip"))) {
-				if (jarFiles==null) jarFiles = new Vector();
+				if (jarFiles==null) jarFiles = new Vector<String>();
 				jarFiles.addElement(pluginsPath + name);
 			} else if (validMacroName(name,hasUnderscore)) {
-				if (macroFiles==null) macroFiles = new Vector();
+				if (macroFiles==null) macroFiles = new Vector<String>();
 				macroFiles.addElement(name);
 			} else {
 				if (!isClassFile)
@@ -1083,7 +1083,7 @@ public class Menus {
 	}
 	
 	/** Looks for plugins and jar files in a subdirectory of the plugins directory. */
-	private static void checkSubdirectory(String path, String dir, Vector v) {
+	private static void checkSubdirectory(String path, String dir, Vector<String> v) {
 		if (dir.endsWith(".java"))
 			return;
 		File f = new File(path, dir);
@@ -1104,11 +1104,11 @@ public class Menus {
 				classCount++;
 				className = name;
 			} else if (hasUnderscore && (name.endsWith(".jar") || name.endsWith(".zip"))) {
-				if (jarFiles==null) jarFiles = new Vector();
+				if (jarFiles==null) jarFiles = new Vector<String>();
 				jarFiles.addElement(f.getPath() + File.separator + name);
 				otherCount++;
 			} else if (validMacroName(name,hasUnderscore)) {
-				if (macroFiles==null) macroFiles = new Vector();
+				if (macroFiles==null) macroFiles = new Vector<String>();
 				macroFiles.addElement(dir + name);
 				otherCount++;
 			} else {
@@ -1130,7 +1130,7 @@ public class Menus {
 			String name = list[i];
 			boolean hasUnderscore = name.indexOf('_')>=0;
 			if (validMacroName(name,hasUnderscore)) {
-				if (macroFiles==null) macroFiles = new Vector();
+				if (macroFiles==null) macroFiles = new Vector<String>();
 				macroFiles.addElement(dir+"/"+name);
 			}
 		}
@@ -1321,21 +1321,21 @@ public class Menus {
 	}
         
 	/** Returns the hashtable that associates commands with plugins. */
-	public static Hashtable getCommands() {
+	public static Hashtable<String,String> getCommands() {
 		return pluginsTable;
 	}
         
 	/** Returns the hashtable that associates shortcuts with commands. The keys
 		in the hashtable are Integer keycodes, or keycode+200 for uppercase. */
-	public static Hashtable getShortcuts() {
+	public static Hashtable<Integer,String> getShortcuts() {
 		return shortcuts;
 	}
         
 	/** Returns the hashtable that associates keyboard shortcuts with macros. The keys
 		in the hashtable are Integer keycodes, or keycode+200 for uppercase. */
-	public static Hashtable getMacroShortcuts() {
+	public static Hashtable<Integer,String> getMacroShortcuts() {
 		if (macroShortcuts==null)
-			macroShortcuts = new Hashtable();
+			macroShortcuts = new Hashtable<Integer,String>();
 		return macroShortcuts;
 	}
         
@@ -1413,7 +1413,7 @@ public class Menus {
 					String size = "";
 					if (imp!=null)
 						size =  " " + ImageWindow.getImageSize(imp);
-					item.setLabel(newLabel+size);
+					item.setText(newLabel+size);
 					return;
 				}
 			}
@@ -1427,7 +1427,7 @@ public class Menus {
 		for (int i=0; i<count; ) {
 			JMenuItem mi=openRecentMenu.getItem(i);
 			if(mi==null) {i++;continue;}
-			if (mi.getLabel().equals(path)) {
+			if (mi.getText().equals(path)) {
 				openRecentMenu.remove(i);
 				count--;
 			} else
@@ -1510,7 +1510,7 @@ public class Menus {
 	/** Deletes a command installed by Plugins/Shortcuts/Add Shortcut. */
 	public static int uninstallPlugin(String command) {
 		boolean found = false;
-		for (Enumeration en=pluginsPrefs.elements(); en.hasMoreElements();) {
+		for (Enumeration<String> en=pluginsPrefs.elements(); en.hasMoreElements();) {
 			String cmd = (String)en.nextElement();
 			if (cmd.contains(command)) {
 				boolean ok = pluginsPrefs.removeElement((Object)cmd);
@@ -1654,7 +1654,7 @@ public class Menus {
 	/** Called once when ImageJ quits. */
 	public static void savePreferences(Properties prefs) {
 		int index = 0;
-		for (Enumeration en=pluginsPrefs.elements(); en.hasMoreElements();) {
+		for (Enumeration<String> en=pluginsPrefs.elements(); en.hasMoreElements();) {
 			String key = "plugin" + (index/10)%10 + index%10;
 			String value = (String)en.nextElement();
 			prefs.put(key, value);
@@ -1679,7 +1679,7 @@ public class Menus {
 		m.installStartupMacroSet();
 		IJ.resetClassLoader();
 		IJ.runPlugIn("ij.plugin.ClassChecker", "");
-		IJ.showStatus("Menus updated: "+m.nPlugins + " commands, " + m.nMacros + " macros");
+		IJ.showStatus("Menus updated: "+ m.nPlugins + " commands, " + m.nMacros + " macros");
 	}
 	
 	public static void updateFont() {
@@ -1711,12 +1711,25 @@ public class Menus {
 	}
 	
 	public static void addJMenuItemWithShortcut(JMenu menu, String label, int keycode) {
-		addJMenuItemWithShortcut(menu, label, keycode, false);
+		addJMenuItemWithShortcut(menu, label, keycode, false, null);
+	}
+	
+	public static void addJMenuItemWithShortcut(JMenu menu, String label, ActionListener al) {
+		addJMenuItemWithShortcut(menu, label, 0, false, al);
+	}
+	
+	public static void addJMenuItemWithShortcut(JMenu menu, String label, int keycode, ActionListener al) {
+		addJMenuItemWithShortcut(menu, label, keycode, false, al);
 	}
 	
 	public static void addJMenuItemWithShortcut(JMenu menu, String label, int keycode, boolean shift) {
+		addJMenuItemWithShortcut(menu, label, keycode, shift, null);
+	}
+	
+	public static void addJMenuItemWithShortcut(JMenu menu, String label, int keycode, boolean shift, ActionListener al) {
 		JMenuItem mi=new JMenuItem(label);
-		setAccelerator(mi, keycode, shift);
+		if(keycode!=0)setAccelerator(mi, keycode, shift);
+		if(al!=null)mi.addActionListener(al);
 		menu.add(mi);
 	}
 	

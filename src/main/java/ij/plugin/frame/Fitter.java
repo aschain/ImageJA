@@ -1,11 +1,13 @@
 package ij.plugin.frame;
-import java.awt.*;
+//import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 
-import javax.swing.JMenuItem;
+import javax.swing.*;
 
 import java.io.*;
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.datatransfer.*;	
 import ij.*;
 import ij.plugin.PlugIn;
@@ -26,11 +28,11 @@ import ij.measure.*;
  */
 public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionListener, KeyListener, ClipboardOwner {
 
-	Choice fit;
-	Button doIt, open, apply;
-	Checkbox settings;
+	JComboBox<String> fit;
+	JButton doIt, open, apply;
+	JCheckBox settings;
 	String fitTypeStr = CurveFitter.fitList[0];
-	TextArea textArea;
+	JTextArea textArea;
 
 	double[] dx = {0,1,2,3,4,5};
 	double[] dy = {0,.9,4.5,8,18,24};
@@ -45,34 +47,37 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 		super("Curve Fitter");
 		WindowManager.addWindow(this);
 		addKeyListener(this);
-		Panel panel = new Panel();
-		fit = new Choice();
+		JPanel panel = new JPanel();
+		fit = new JComboBox<String>();
 		for (int i=0; i<CurveFitter.fitList.length; i++)
 			fit.addItem(CurveFitter.fitList[CurveFitter.sortedTypes[i]]);
 		fit.addItem("*User-defined*");
 		fit.addItemListener(this);
 		panel.add(fit);
-		doIt = new Button(" Fit ");
+		doIt = new JButton(" Fit ");
 		doIt.addActionListener(this);
 		doIt.addKeyListener(this);
 		panel.add(doIt);
-		open = new Button("Open");
+		open = new JButton("Open");
 		open.addActionListener(this);
 		panel.add(open);
-		apply = new Button("Apply");
+		apply = new JButton("Apply");
 		apply.addActionListener(this);
 		panel.add(apply);
-		settings = new Checkbox("Show settings", false);
+		settings = new JCheckBox("Show settings", false);
 		panel.add(settings);
 		add("North", panel);
 		String text = "";
 		for (int i=0; i<dx.length; i++)
 			text += IJ.d2s(dx[i],2)+"  "+IJ.d2s(dy[i],2)+"\n";
-		textArea = new TextArea("",15,30,TextArea.SCROLLBARS_VERTICAL_ONLY);
+		textArea = new JTextArea("",15,30);
+		JScrollPane sp=new JScrollPane(textArea);
+		sp.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+		sp.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		textArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
 		if (IJ.isLinux()) textArea.setBackground(Color.white);
 		textArea.append(text);
-		add("Center", textArea);
+		getContentPane().add("Center", textArea);
 		GUI.scale(this);
 		pack();
 		GUI.centerOnImageJScreen(this);
@@ -95,14 +100,14 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
             if (fitType==USER_DEFINED) {
                 String eqn = getEquation();
                 if (eqn==null) return false;
-                int params = cf.doCustomFit(eqn, null, settings.getState());
+                int params = cf.doCustomFit(eqn, null, settings.isSelected());
                 if (params==0) {
                     IJ.beep();
                     IJ.log("Bad formula; should be:\n   y = function(x, a, ...)");
                     return false;
                 }
             } else
-                cf.doFit(fitType, settings.getState());
+                cf.doFit(fitType, settings.isSelected());
             if (cf.getStatus() == Minimizer.INITIALIZATION_FAILURE) {
                 IJ.beep();
                 IJ.showStatus(cf.getStatusString());
@@ -231,7 +236,7 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 	}
 	
 	public void itemStateChanged(ItemEvent e) {
-		fitTypeStr = fit.getSelectedItem();
+		fitTypeStr = (String)fit.getSelectedItem();
 	}
 	
 	public void actionPerformed(ActionEvent e) {
@@ -248,7 +253,7 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 		}
 		try {
             if (e.getSource()==doIt) {
-                final int fitType = CurveFitter.getFitCode(fit.getSelectedItem());
+                final int fitType = CurveFitter.getFitCode((String)fit.getSelectedItem());
 	            Thread thread = new Thread(
 	                new Runnable() {
                         final public void run() {

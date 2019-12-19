@@ -1,17 +1,18 @@
 package ij.plugin.frame;
-import java.awt.*;
+import java.awt.FlowLayout;
 import java.awt.event.*;
 import ij.*;
 import ij.plugin.*;
 import ij.gui.*;
 import ij.process.*;
+import javax.swing.*;
 
 /** Implements ImageJ's Paste Control window. */
 public class PasteController extends PlugInFrame implements PlugIn, ItemListener {
 
-	private Panel panel;
-	private Choice pasteMode;
-	private static Frame instance;
+	//private JPanel panel;
+	private JComboBox<String> pasteMode;
+	private static JFrame instance;
 	
 	public PasteController() {
 		super("Paste Control");
@@ -22,10 +23,10 @@ public class PasteController extends PlugInFrame implements PlugIn, ItemListener
 		WindowManager.addWindow(this);
 		instance = this;
 		IJ.register(PasteController.class);
-		setLayout(new FlowLayout(FlowLayout.CENTER, 2, 5));
+		getContentPane().setLayout(new FlowLayout(FlowLayout.CENTER, 2, 5));
 		
-		add(new Label(" Transfer Mode:"));
-		pasteMode = new Choice();
+		add(new JLabel(" Transfer Mode:"));
+		pasteMode = new JComboBox<String>();
 		pasteMode.addItem("Copy");
 		pasteMode.addItem("Blend");
 		pasteMode.addItem("Difference");
@@ -40,7 +41,7 @@ public class PasteController extends PlugInFrame implements PlugIn, ItemListener
 		pasteMode.addItem("Divide");
 		pasteMode.addItem("Min");
 		pasteMode.addItem("Max");
-		pasteMode.select("Copy");
+		pasteMode.setSelectedItem("Copy");
 		pasteMode.addItemListener(this);
 		add(pasteMode);
 		Roi.setPasteMode(Blitter.COPY);
@@ -73,7 +74,7 @@ public class PasteController extends PlugInFrame implements PlugIn, ItemListener
 		}
 		Roi.setPasteMode(mode);
 		if (Recorder.record)
-			Recorder.record("setPasteMode", pasteMode.getSelectedItem());
+			Recorder.record("setPasteMode", (String)pasteMode.getSelectedItem());
 		ImagePlus imp = WindowManager.getCurrentImage();
 	}
 	

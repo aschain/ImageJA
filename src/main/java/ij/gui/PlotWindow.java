@@ -445,7 +445,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 	/** Called if the user activates/deactivates a JCheckBoxMenuItem */
 	public void itemStateChanged(ItemEvent e) {
 		if (e.getSource()==menuItems[FREEZE]) {
-			boolean frozen = ((JCheckBoxMenuItem)menuItems[FREEZE]).getState();
+			boolean frozen = ((JCheckBoxMenuItem)menuItems[FREEZE]).isSelected();
 			plot.setFrozen(frozen);
 		}
 	}

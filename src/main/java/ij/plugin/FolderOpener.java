@@ -1,12 +1,12 @@
 package ij.plugin;
-import java.awt.*;
 import java.io.*;
+import java.awt.Color;
 import java.awt.event.*;
 import java.awt.image.ColorModel;
 import java.util.Properties;
 
 import javax.swing.JTextField;
-
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 
 import ij.*;
@@ -620,8 +620,8 @@ public class FolderOpener implements PlugIn {
 		}
 	
 		protected void setup() {
-			eightBits = ((Checkbox)checkbox.elementAt(0)).getState();
-			rgb = ((Checkbox)checkbox.elementAt(1)).getState();
+			eightBits = ((JCheckBox)checkbox.elementAt(0)).isSelected();
+			rgb = ((JCheckBox)checkbox.elementAt(1)).isSelected();
 			setStackInfo();
 		}
 		
@@ -681,7 +681,7 @@ public class FolderOpener implements PlugIn {
 		}
 	
 		public int getNumber(Object field) {
-			TextField tf = (TextField)field;
+			JTextField tf = (JTextField)field;
 			String theText = tf.getText();
 			double value;
 			Double d;

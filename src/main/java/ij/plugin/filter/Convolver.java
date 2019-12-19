@@ -6,11 +6,15 @@ import ij.io.*;
 import ij.plugin.TextReader;
 import ij.plugin.frame.Recorder;
 import ij.util.Tools;
-import java.awt.*;
 import java.util.*;
 
+import javax.swing.JButton;
+import javax.swing.JPanel;
 import javax.swing.JTextArea;
 
+import java.awt.AWTEvent;
+import java.awt.FlowLayout;
+import java.awt.Rectangle;
 import java.awt.event.*;
 import java.io.*;
 
@@ -22,15 +26,15 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 	private boolean canceled;
 	private float[] kernel;
 	private boolean isLineRoi;
-	private Button open, save;
+	private JButton open, save;
 	private GenericDialog gd;
 	private MultiLineLabel messageLabel;
 	private boolean normalize = true;
-	private int nSlices;
+	//private int nSlices;
 	private int flags = DOES_ALL|CONVERT_TO_FLOAT|SUPPORTS_MASKING|KEEP_PREVIEW|FINAL_PROCESSING|SNAPSHOT;
 	private int nPasses = 1;
 	private boolean kernelError;
-	private PlugInFilterRunner pfr;
+	//private PlugInFilterRunner pfr;
 	private Thread mainThread;
 	private int pass;
 	private static String defaultKernelText = "-1 -1 -1 -1 -1\n-1 -1 -1 -1 -1\n-1 -1 24 -1 -1\n-1 -1 -1 -1 -1\n-1 -1 -1 -1 -1\n";
@@ -53,7 +57,7 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 		IJ.resetEscape();
 		Roi roi = imp.getRoi();
 		isLineRoi= roi!=null && roi.isLine();
-		nSlices = imp.getStackSize();
+		//nSlices = imp.getStackSize();
 		if (imp.getStackSize()==1)
 			flags |= PARALLELIZE_IMAGES;
 		else
@@ -88,7 +92,7 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return DONE;
-		this.pfr = pfr;
+		//this.pfr = pfr;
 		if (interactive) {
 			lastKernelText = kernelText;
 			lastNormalizeFlag = normalizeFlag;
@@ -178,13 +182,13 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 	}
 
 	/** Creates a panel containing "Save...", "Save..." and "Preview" buttons. */
-	Panel makeButtonPanel(GenericDialog gd) {
-		Panel buttons = new Panel();
+	JPanel makeButtonPanel(GenericDialog gd) {
+		JPanel buttons = new JPanel();
     	buttons.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
-		open = new Button("Open...");
+		open = new JButton("Open...");
 		open.addActionListener(this);
 		buttons.add(open);
-		save = new Button("Save...");
+		save = new JButton("Save...");
 		save.addActionListener(this);
 		buttons.add(save);
 		return buttons;

@@ -7,6 +7,10 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.Vector;
 
+import javax.swing.JComboBox;
+import javax.swing.JScrollBar;
+import javax.swing.JTextField;
+
 // Versions
 // 2012-07-22 shift to confine horizontally or vertically, ctrl-shift to resize, ctrl to pick
 
@@ -176,11 +180,11 @@ public class BrushTool extends PlugInTool implements Runnable {
 	private void setWidth(int width) {
 		if (gd==null)
 			return;
-		Vector numericFields = gd.getNumericFields();
-		TextField widthField  = (TextField)numericFields.elementAt(0);
+		Vector<JTextField> numericFields = gd.getNumericFields();
+		JTextField widthField  = (JTextField)numericFields.elementAt(0);
 		widthField.setText(""+width);
-		Vector sliders = gd.getSliders();
-		Scrollbar sb = (Scrollbar)sliders.elementAt(0);
+		Vector<JScrollBar> sliders = gd.getSliders();
+		JScrollBar sb = (JScrollBar)sliders.elementAt(0);
 		sb.setValue(width);
 	}
 			
@@ -189,9 +193,9 @@ public class BrushTool extends PlugInTool implements Runnable {
 			return;
 		String name = Colors.colorToString2(c);
 		if (name.length()>0) {
-			Vector choices = gd.getChoices();
-			Choice ch = (Choice)choices.elementAt(0);
-			ch.select(name);
+			Vector<JComboBox<String>> choices = gd.getChoices();
+			JComboBox<String> ch = (JComboBox<String>)choices.elementAt(0);
+			ch.setSelectedItem(name);
 		}
 	}
 

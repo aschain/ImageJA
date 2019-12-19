@@ -4,12 +4,18 @@ import ij.gui.*;
 import ij.process.*;
 import ij.measure.*;
 import ij.util.Tools;
-import java.awt.*;
+
+import java.awt.Color;
+import java.awt.Rectangle;
 import java.awt.event.*;
 import java.util.*;
+import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.Document;
 
 /** This plugin implements the Image/Scale command. */
-public class Scaler implements PlugIn, TextListener, FocusListener {
+public class Scaler implements PlugIn, DocumentListener, FocusListener {
 	private ImagePlus imp;
 	private static String xstr = "0.5";
 	private static String ystr = "0.5";
@@ -25,10 +31,10 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 	private static boolean processStack = true;
 	private double xscale, yscale, zscale;
 	private String title = "Untitled";
-	private Vector fields;
+	private Vector<JTextField> fields;
 	private double bgValue;
 	private boolean constainAspectRatio = true;
-	private TextField xField, yField, zField, widthField, heightField, depthField;
+	private JTextField xField, yField, zField, widthField, heightField, depthField;
 	private Rectangle r;
 	private Object fieldWithFocus;
 	private int oldDepth;
@@ -261,19 +267,19 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		fields = gd.getStringFields();
 		if (fields!=null) {
 			for (int i=0; i<fields.size(); i++) {
-				((TextField)fields.elementAt(i)).addTextListener(this);
-				((TextField)fields.elementAt(i)).addFocusListener(this);
+				((JTextField)fields.elementAt(i)).getDocument().addDocumentListener(this);
+				((JTextField)fields.elementAt(i)).addFocusListener(this);
 			}
-			xField = (TextField)fields.elementAt(0);
-			yField = (TextField)fields.elementAt(1);
+			xField = (JTextField)fields.elementAt(0);
+			yField = (JTextField)fields.elementAt(1);
 			if (isStack) {
-				zField = (TextField)fields.elementAt(2);
-				widthField = (TextField)fields.elementAt(3);
-				heightField = (TextField)fields.elementAt(4);
-				depthField = (TextField)fields.elementAt(5);
+				zField = (JTextField)fields.elementAt(2);
+				widthField = (JTextField)fields.elementAt(3);
+				heightField = (JTextField)fields.elementAt(4);
+				depthField = (JTextField)fields.elementAt(5);
 			} else {
-				widthField = (TextField)fields.elementAt(2);
-				heightField = (TextField)fields.elementAt(3);
+				widthField = (JTextField)fields.elementAt(2);
+				heightField = (JTextField)fields.elementAt(3);
 			}
 		}
 		fieldWithFocus = xField;
@@ -351,11 +357,11 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 	public void textValueChanged(TextEvent e) {
 		if (xField==null || yField==null)
 			return;
-		Object source = e.getSource();
+		Document source = (Document)e.getSource();
 		double newXScale = xscale;
 		double newYScale = yscale;
 		double newZScale = zscale;
-		if (source==xField && fieldWithFocus==xField) {
+		if (source==xField.getDocument() && fieldWithFocus==xField) {
 			String newXText = xField.getText();
 			newXScale = Tools.parseDouble(newXText,0);
 			if (newXScale==0) return;
@@ -368,7 +374,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 					heightField.setText(""+newHeight);
 				}
 			}
-		} else if (source==yField && fieldWithFocus==yField) {
+		} else if (source==yField.getDocument() && fieldWithFocus==yField) {
 			String newYText = yField.getText();
 			newYScale = Tools.parseDouble(newYText,0);
 			if (newYScale==0) return;
@@ -376,7 +382,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 				int newHeight = (int)Math.round(newYScale*r.height);
 				heightField.setText(""+newHeight);
 			}
-		} else if (source==zField && fieldWithFocus==zField) {
+		} else if (source==zField.getDocument() && fieldWithFocus==zField) {
 			String newZText = zField.getText();
 			newZScale = Tools.parseDouble(newZText,0);
 			if (newZScale==0) return;
@@ -393,7 +399,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 				int newDepth= (int)Math.round(newZScale*nSlices);
 				depthField.setText(""+newDepth);
 			}
-		} else if (source==widthField && fieldWithFocus==widthField) {
+		} else if (source==widthField.getDocument() && fieldWithFocus==widthField) {
 			int newWidth = (int)Math.round(Tools.parseDouble(widthField.getText(), 0.0));
 			if (newWidth!=0) {
 				int newHeight = (int)Math.round(newWidth*(double)r.height/r.width);
@@ -403,7 +409,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 				newXScale = 0.0;
 				newYScale = 0.0;
 			}
-       } else if (source==depthField && fieldWithFocus==depthField) {
+       } else if (source==depthField.getDocument() && fieldWithFocus==depthField) {
             int newDepth = (int)Math.round(Tools.parseDouble(depthField.getText(), 0.0));
             if (newDepth!=0) {
                 zField.setText("-");
@@ -414,6 +420,13 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 		yscale = newYScale;
 		zscale = newZScale;
 	}
+
+	@Override
+	public void insertUpdate(DocumentEvent e) {textValueChanged(new TextEvent(e.getDocument(),TextEvent.TEXT_VALUE_CHANGED));}
+	@Override
+	public void removeUpdate(DocumentEvent e) {textValueChanged(new TextEvent(e.getDocument(),TextEvent.TEXT_VALUE_CHANGED));}
+	@Override
+	public void changedUpdate(DocumentEvent e) {textValueChanged(new TextEvent(e.getDocument(),TextEvent.TEXT_VALUE_CHANGED));}
 
 	public void focusGained(FocusEvent e) {
 		fieldWithFocus = e.getSource();

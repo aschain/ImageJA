@@ -4,24 +4,29 @@ import ij.process.*;
 import ij.gui.*;
 import ij.util.Tools;
 import ij.io.FileOpener;
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
+import java.awt.Color;
+import java.awt.event.TextEvent;
+import java.util.Vector;
+import java.util.Locale;
+
+import javax.swing.*;
+import javax.swing.event.*;
+
 import ij.measure.Calibration;
 import ij.plugin.frame.Recorder;
 
-public class ImageProperties implements PlugInFilter, TextListener {
+public class ImageProperties implements PlugInFilter, DocumentListener {
 	private final String SAME = "-";
 	ImagePlus imp;
 	static final int NANOMETER=0, MICROMETER=1, MILLIMETER=2, CENTIMETER=3,
 		 METER=4, KILOMETER=5, INCH=6, FOOT=7, MILE=8, PIXEL=9, OTHER_UNIT=10;
 	int oldUnitIndex;
 	double oldUnitsPerCm;
-	Vector nfields, sfields;
+	Vector<JTextField> nfields, sfields;
 	boolean duplicatePixelWidth = true;
 	String calUnit;
 	double calPixelWidth, calPixelHeight, calPixelDepth;
-	TextField pixelWidthField, pixelHeightField, pixelDepthField;
+	JTextField pixelWidthField, pixelHeightField, pixelDepthField;
 	int textChangedCount;
 
 	public int setup(String arg, ImagePlus imp) {
@@ -92,16 +97,16 @@ public class ImageProperties implements PlugInFilter, TextListener {
 		gd.addCheckbox("Global", global1);
 		nfields = gd.getNumericFields();
 		if (nfields!=null) {
-			pixelWidthField  = (TextField)nfields.elementAt(3);
-			pixelHeightField  = (TextField)nfields.elementAt(4);
-			pixelDepthField  = (TextField)nfields.elementAt(5);
+			pixelWidthField  = (JTextField)nfields.elementAt(3);
+			pixelHeightField  = (JTextField)nfields.elementAt(4);
+			pixelDepthField  = (JTextField)nfields.elementAt(5);
 			for (int i=0; i<nfields.size(); i++)
-				((TextField)nfields.elementAt(i)).addTextListener(this);
+				((JTextField)nfields.elementAt(i)).getDocument().addDocumentListener(this);
         }
         sfields = gd.getStringFields();
         if (sfields!=null) {
         	for (int i=0; i<sfields.size(); i++)
-            	((TextField)sfields.elementAt(i)).addTextListener(this);
+            	((JTextField)sfields.elementAt(i)).getDocument().addDocumentListener(this);
         }
 		calUnit = cal.getUnit();
 		calPixelWidth = cal.pixelWidth;
@@ -130,7 +135,7 @@ public class ImageProperties implements PlugInFilter, TextListener {
  		String yunit2 = gd.getNextString();
  		double pixelDepth = gd.getNextNumber();
  		String zunit2 = gd.getNextString();
- 		boolean reset = false;
+ 		//boolean reset = false;
  		boolean xUnitChanged=false,yUnitChanged=false,zUnitChanged=false;
  		if (legacyMacro) {
 			if (!unit.equals(cal.getUnit())) {
@@ -286,24 +291,23 @@ public class ImageProperties implements PlugInFilter, TextListener {
    	public void textValueChanged(TextEvent e) {
    		textChangedCount++;
 		Object source = e.getSource();
-        
-        int channels = (int)Tools.parseDouble(((TextField)nfields.elementAt(2)).getText(),-99);
-        int depth = (int)Tools.parseDouble(((TextField)nfields.elementAt(3)).getText(),-99);
-        int frames = (int)Tools.parseDouble(((TextField)nfields.elementAt(4)).getText(),-99);
+        //int channels = (int)Tools.parseDouble(((JTextField)nfields.elementAt(2)).getText(),-99);
+        //int depth = (int)Tools.parseDouble(((JTextField)nfields.elementAt(3)).getText(),-99);
+        //int frames = (int)Tools.parseDouble(((JTextField)nfields.elementAt(4)).getText(),-99);
         
 		double newPixelWidth = calPixelWidth;
 		String newWidthText = pixelWidthField.getText();
-		if (source==pixelWidthField)
+		if (source==pixelWidthField.getDocument())
 			newPixelWidth = Tools.parseDouble(newWidthText,-99);
 		double newPixelHeight = calPixelHeight;
-		if (source==pixelHeightField) {
+		if (source==pixelHeightField.getDocument()) {
 			String newHeightText = pixelHeightField.getText();
 			newPixelHeight = Tools.parseDouble(newHeightText,-99);
 			if (!newHeightText.equals(newWidthText))
 				duplicatePixelWidth = false;
 		}
 		double newPixelDepth = calPixelDepth;
-		if (source==pixelDepthField) {
+		if (source==pixelDepthField.getDocument()) {
 			String newDepthText = pixelDepthField.getText();
 			newPixelDepth = Tools.parseDouble(newDepthText,-99);
 			if (!newDepthText.equals(newWidthText))
@@ -311,7 +315,7 @@ public class ImageProperties implements PlugInFilter, TextListener {
 		}
 		if (textChangedCount==1 && (calPixelHeight!=1.0||calPixelDepth!=1.0))
 			duplicatePixelWidth = false;
-		if (source==pixelWidthField && newPixelWidth!=-99 && duplicatePixelWidth) {
+		if (source==pixelWidthField.getDocument() && newPixelWidth!=-99 && duplicatePixelWidth) {
 			pixelHeightField.setText(newWidthText);
 			pixelDepthField.setText(newWidthText);
 			calPixelHeight = calPixelWidth;
@@ -320,7 +324,7 @@ public class ImageProperties implements PlugInFilter, TextListener {
 		calPixelWidth = newPixelWidth;
 		calPixelHeight = newPixelHeight;
  		calPixelDepth = newPixelDepth;
- 		TextField unitField = (TextField)sfields.elementAt(0);
+ 		JTextField unitField = (JTextField)sfields.elementAt(0);
  		String newUnit = unitField.getText();
  		if (!newUnit.equals(calUnit)) {
 			double oldXScale = newPixelWidth!=0?1.0/newPixelWidth:0;
@@ -346,5 +350,12 @@ public class ImageProperties implements PlugInFilter, TextListener {
 			calUnit = newUnit;
 		}
  	}
+
+	@Override
+	public void insertUpdate(DocumentEvent e) {textValueChanged(new TextEvent(e.getDocument(),TextEvent.TEXT_VALUE_CHANGED));}
+	@Override
+	public void removeUpdate(DocumentEvent e) {/*textValueChanged(new TextEvent(e.getDocument(),TextEvent.TEXT_VALUE_CHANGED));*/}
+	@Override
+	public void changedUpdate(DocumentEvent e) {textValueChanged(new TextEvent(e.getDocument(),TextEvent.TEXT_VALUE_CHANGED));}
 
 }

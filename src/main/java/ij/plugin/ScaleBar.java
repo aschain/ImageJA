@@ -6,6 +6,8 @@ import java.awt.*;
 import ij.measure.*;
 import java.awt.event.*;
 
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JTextField;
 
 /** This plugin implements the Analyze/Tools/Draw Scale Bar command.
@@ -413,16 +415,16 @@ public class ScaleBar implements PlugIn {
 		}
 
 		public void itemStateChanged(ItemEvent e) {
-			Choice col = (Choice)(choice.elementAt(0));
-			color = col.getSelectedItem();
-			Choice bcol = (Choice)(choice.elementAt(1));
-			bcolor = bcol.getSelectedItem();
-			Choice loc = (Choice)(choice.elementAt(2));
-			location = loc.getSelectedItem();
-			boldText = ((Checkbox)(checkbox.elementAt(0))).getState();
-			hideText = ((Checkbox)(checkbox.elementAt(1))).getState();
-			serifFont = ((Checkbox)(checkbox.elementAt(2))).getState();
-			createOverlay = ((Checkbox)(checkbox.elementAt(3))).getState();
+			JComboBox<String> col = (JComboBox<String>)(choice.elementAt(0));
+			color = (String)col.getSelectedItem();
+			JComboBox<String> bcol = (JComboBox<String>)(choice.elementAt(1));
+			bcolor = (String)bcol.getSelectedItem();
+			JComboBox<String> loc = (JComboBox<String>)(choice.elementAt(2));
+			location = (String)loc.getSelectedItem();
+			boldText = ((JCheckBox)(checkbox.elementAt(0))).isSelected();
+			hideText = ((JCheckBox)(checkbox.elementAt(1))).isSelected();
+			serifFont = ((JCheckBox)(checkbox.elementAt(2))).isSelected();
+			createOverlay = ((JCheckBox)(checkbox.elementAt(3))).isSelected();
 			updateScalebar();
 		}
 

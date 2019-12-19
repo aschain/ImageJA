@@ -10,18 +10,23 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.Vector;
 
+import javax.swing.JCheckBox;
+import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+
 /**
 This plugin implements the Analyze/Distribution command.
 It reads the data from the ResultsTable and plots a frequency histogram.
 @author G. Landini at bham. ac. uk
 */
-public class Distribution implements PlugIn, TextListener {
+public class Distribution implements PlugIn, DocumentListener {
 	static String parameter = "Area";
 	static boolean autoBinning = true;
 	static int nBins = 10;
 	static String range = "0-0";
-	Checkbox checkbox;
-	TextField nBinsField, rangeField;
+	JCheckBox checkbox;
+	JTextField nBinsField, rangeField;
 	String defaultNBins, defaultRange;
 
 	public void run(String arg) {
@@ -51,17 +56,17 @@ public class Distribution implements PlugIn, TextListener {
 		gd.addNumericField ("or specify bins:", nBins, 0);
 		gd.addStringField ("and range:", range);
 
-		Vector v = gd.getNumericFields();
+		Vector<JTextField> v = gd.getNumericFields();
 		if (v!=null) {
-			nBinsField = (TextField)v.elementAt(0);
-			nBinsField.addTextListener(this);
+			nBinsField = (JTextField)v.elementAt(0);
+			nBinsField.getDocument().addDocumentListener(this);
 		}
 		v = gd.getStringFields();
 		if (v!=null) {
-			rangeField = (TextField)v.elementAt(0);
-			rangeField.addTextListener(this);
+			rangeField = (JTextField)v.elementAt(0);
+			rangeField.getDocument().addDocumentListener(this);
 		}
-		checkbox = (Checkbox)(gd.getCheckboxes().elementAt(0));
+		checkbox = (JCheckBox)(gd.getCheckboxes().elementAt(0));
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
@@ -121,9 +126,9 @@ public class Distribution implements PlugIn, TextListener {
 
 	public void textValueChanged(TextEvent e) {
 		if (!defaultNBins.equals(nBinsField.getText()))
-			checkbox.setState(false);
+			checkbox.setSelected(false);
 		if (!defaultRange.equals(rangeField.getText()))
-			checkbox.setState(false);
+			checkbox.setSelected(false);
 	}
 
 	void stats(int nc, float[] data, float[] pars){
@@ -170,6 +175,21 @@ public class Distribution implements PlugIn, TextListener {
 		pars[9]=skew;
 		pars[10]=kurt;
 
+	}
+
+	@Override
+	public void insertUpdate(DocumentEvent e) {
+		textValueChanged(new TextEvent(e.getDocument(),0));
+	}
+
+	@Override
+	public void removeUpdate(DocumentEvent e) {
+		textValueChanged(new TextEvent(e.getDocument(),1));
+	}
+
+	@Override
+	public void changedUpdate(DocumentEvent e) {
+		textValueChanged(new TextEvent(e.getDocument(),2));
 	}
 
 }

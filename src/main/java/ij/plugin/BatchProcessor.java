@@ -2,13 +2,13 @@ package ij.plugin;
 import ij.*;
 import ij.process.*;
 import ij.gui.*;
-import ij.util.Tools;
 import ij.io.*;
 import ij.macro.Interpreter;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.util.Vector;
+import javax.swing.*;
 
 import javax.swing.JTextArea;
 
@@ -53,8 +53,8 @@ import javax.swing.JTextArea;
 
 		private String macro = "";
 		private int testImage;
-		private Button input, output, open, save, test;
-		private TextField inputDir, outputDir;
+		private JButton input, output, open, save, test;
+		private JTextField inputDir, outputDir;
 		private GenericDialog gd;
 		private Thread thread;
 		private ImagePlus virtualStack;
@@ -135,8 +135,8 @@ import javax.swing.JTextArea;
 		gd.addTextAreas(macro, null, screen.width<=600?10:15, 60);
 		addButtons(gd);
 		gd.setOKLabel("Process");
-		Vector choices = gd.getChoices();
-		Choice choice = (Choice)choices.elementAt(1);
+		Vector<JComboBox<String>> choices = gd.getChoices();
+		JComboBox<String> choice = choices.elementAt(1);
 		if (virtualStack!=null)
 			gd.addHelp(help);
 		choice.addItemListener(this);
@@ -271,44 +271,44 @@ import javax.swing.JTextArea;
 	}
 
 	void addPanels(GenericDialog gd) {
-		Panel p = new Panel();
+		JPanel p = new JPanel();
     	p.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
 		if (virtualStack==null) {
-			input = new Button("Input...");
+			input = new JButton("Input...");
 			input.addActionListener(this);
 			p.add(input);
-			inputDir = new TextField(Prefs.get("batch.input", ""), 45);
+			inputDir = new JTextField(Prefs.get("batch.input", ""), 45);
 			p.add(inputDir);
 			gd.addPanel(p);
 		}
-		p = new Panel();
+		p = new JPanel();
     	p.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
-		output = new Button("Output...");
+		output = new JButton("Output...");
 		output.addActionListener(this);
 		p.add(output);
-		outputDir = new TextField(Prefs.get("batch.output", ""), 45);
+		outputDir = new JTextField(Prefs.get("batch.output", ""), 45);
 		p.add(outputDir);
 		gd.addPanel(p);
 	}
 	
 	void addButtons(GenericDialog gd) {
-		Panel p = new Panel();
+		JPanel p = new JPanel();
     	p.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
-		test = new Button("Test");
+		test = new JButton("Test");
 		test.addActionListener(this);
 		p.add(test);
-		open = new Button("Open...");
+		open = new JButton("Open...");
 		open.addActionListener(this);
 		p.add(open);
-		save = new Button("Save...");
+		save = new JButton("Save...");
 		save.addActionListener(this);
 		p.add(save);
 		gd.addPanel(p);
 	}
 
 	public void itemStateChanged(ItemEvent e) {
-		Choice choice = (Choice)e.getSource();
-		String item = choice.getSelectedItem();
+		JComboBox<String> choice = (JComboBox<String>)e.getSource();
+		String item = (String)choice.getSelectedItem();
 		String code = null;
 		if (item.equals("Convert to RGB"))
 			code = "run(\"RGB Color\");\n";

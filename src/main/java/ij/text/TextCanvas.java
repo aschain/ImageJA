@@ -29,12 +29,11 @@ class TextCanvas extends JPanel {
     	iImage = null;
     }
 
-	//public void update(Graphics g) {
-	//	paint(g);
-	//}
+	public void update(Graphics g) {
+		paint(g);
+	}
   
-	public void paintComponent(Graphics g) {
-		super.paintComponent(g);
+	public void paint(Graphics g) {
 		if (tp==null || g==null) return;
 		Dimension d = getSize();
 		int iWidth = d.width;

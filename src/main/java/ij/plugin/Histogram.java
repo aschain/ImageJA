@@ -6,13 +6,16 @@ import ij.util.Tools;
 import ij.plugin.filter.PlugInFilter;
 import ij.plugin.frame.Recorder;
 import ij.measure.Calibration;
-import java.awt.*;
+import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+
 import java.awt.event.*;
 import java.util.Vector;
 
 
 /** This plugin implements the Analyze/Histogram command. */
-public class Histogram implements PlugIn, TextListener {
+public class Histogram implements PlugIn, DocumentListener {
 
 	private static boolean staticUseImageMinAndMax = true;
 	private static double staticXMin, staticXMax;
@@ -24,8 +27,8 @@ public class Histogram implements PlugIn, TextListener {
 	private double xMin, xMax;
 	private String yMax = "Auto";
 	private boolean stackHistogram;
-	private Checkbox checkbox;
-	private TextField minField, maxField;
+	private JCheckBox checkbox;
+	private JTextField minField, maxField;
 	private String defaultMin, defaultMax;
 
  	public void run(String arg) {
@@ -120,14 +123,14 @@ public class Histogram implements PlugIn, TextListener {
 		if (stackSize>1)
 			gd.addCheckbox("Stack histogram", stackHistogram);
 		
-		Vector numbers = gd.getNumericFields();
+		Vector<JTextField> numbers = gd.getNumericFields();
 		if (numbers!=null) {
-			minField = (TextField)numbers.elementAt(1);
-			minField.addTextListener(this);
-			maxField = (TextField)numbers.elementAt(2);
-			maxField.addTextListener(this);
+			minField = (JTextField)numbers.elementAt(1);
+			minField.getDocument().addDocumentListener(this);
+			maxField = (JTextField)numbers.elementAt(2);
+			maxField.getDocument().addDocumentListener(this);
 		}
-		checkbox = (Checkbox)(gd.getCheckboxes().elementAt(0));
+		checkbox = (JCheckBox)(gd.getCheckboxes().elementAt(0));
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return false;			
@@ -153,7 +156,7 @@ public class Histogram implements PlugIn, TextListener {
 		boolean rangeChanged = !defaultMin.equals(minField.getText())
 			|| !defaultMax.equals(maxField.getText());
 		if (rangeChanged)
-			checkbox.setState(false);
+			checkbox.setSelected(false);
 	}
 	
 	int setupDialog(ImagePlus imp, int flags) {
@@ -179,6 +182,21 @@ public class Histogram implements PlugIn, TextListener {
 				Recorder.recordOption("slice");
 		}
 		return flags;
+	}
+	
+	@Override
+	public void insertUpdate(DocumentEvent e) {
+		textValueChanged(new TextEvent(e.getDocument(),0));
+	}
+
+	@Override
+	public void removeUpdate(DocumentEvent e) {
+		textValueChanged(new TextEvent(e.getDocument(),1));
+	}
+
+	@Override
+	public void changedUpdate(DocumentEvent e) {
+		textValueChanged(new TextEvent(e.getDocument(),2));
 	}
 
 }

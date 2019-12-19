@@ -52,6 +52,7 @@ public class TextWindow extends JFrame implements ActionListener, FocusListener,
 	*/
 	public TextWindow(String title, String headings, String text, int width, int height) {
 		super(title);
+		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		textPanel = new TextPanel(title);
 		textPanel.setColumnHeadings(headings);
 		if (text!=null && !text.equals(""))
@@ -67,7 +68,7 @@ public class TextWindow extends JFrame implements ActionListener, FocusListener,
 	* @param width	width of the window in pixels
 	* @param height	height of the window in pixels
 	*/
-	public TextWindow(String title, String headings, ArrayList text, int width, int height) {
+	public TextWindow(String title, String headings, ArrayList<String> text, int width, int height) {
 		super(title);
 		textPanel = new TextPanel(title);
 		textPanel.setColumnHeadings(headings);
@@ -79,7 +80,7 @@ public class TextWindow extends JFrame implements ActionListener, FocusListener,
 	private void create(String title, TextPanel textPanel, int width, int height) {
 		enableEvents(AWTEvent.WINDOW_EVENT_MASK);
 		if (IJ.isLinux()) setBackground(ImageJ.backgroundColor);
-		add("Center", textPanel);
+		getContentPane().add(textPanel);
 		addKeyListener(textPanel);
 		ImageJ ij = IJ.getInstance();
 		if (ij!=null) {
@@ -132,7 +133,7 @@ public class TextWindow extends JFrame implements ActionListener, FocusListener,
 		enableEvents(AWTEvent.WINDOW_EVENT_MASK);
 		textPanel = new TextPanel();
 		textPanel.addKeyListener(IJ.getInstance());
-		add("Center", textPanel);
+		getContentPane().add(textPanel);
 		if (openFile(path)) {
 			WindowManager.addWindow(this);
 			setSize(width, height);
@@ -142,53 +143,49 @@ public class TextWindow extends JFrame implements ActionListener, FocusListener,
 			dispose();
 	}
 	
-	void addMenuBar() {
+	private void addMenuBar() {
 		mb = new JMenuBar();
 		if (Menus.getFontSize()!=0)
 			mb.setFont(Menus.getFont());
 		JMenu m = new JMenu("File");
-		Menus.addJMenuItemWithShortcut(m,"Save As...",KeyEvent.VK_S);
+		Menus.addJMenuItemWithShortcut(m,"Save As...",KeyEvent.VK_S,this);
 		if (getTitle().equals("Results")) {
-			m.add(new JMenuItem("Rename..."));
-			m.add(new JMenuItem("Duplicate..."));
+			Menus.addJMenuItemWithShortcut(m, "Rename...", this);
+			Menus.addJMenuItemWithShortcut(m, "Duplicate...", this);
 		}
-		m.addActionListener(this);
 		mb.add(m);
 		textPanel.fileMenu = m;
 		m = new JMenu("Edit");
-		Menus.addJMenuItemWithShortcut(m, "Cut", KeyEvent.VK_X);
-		Menus.addJMenuItemWithShortcut(m, "Copy", KeyEvent.VK_C);
-		m.add(new JMenuItem("Clear"));
-		Menus.addJMenuItemWithShortcut(m, "Select All", KeyEvent.VK_A);
+		Menus.addJMenuItemWithShortcut(m, "Cut", KeyEvent.VK_X, this);
+		Menus.addJMenuItemWithShortcut(m, "Copy", KeyEvent.VK_C, this);
+		Menus.addJMenuItemWithShortcut(m, "Clear", this);
+		Menus.addJMenuItemWithShortcut(m, "Select All", KeyEvent.VK_A, this);
 		m.addSeparator();
-		Menus.addJMenuItemWithShortcut(m, "Find...", KeyEvent.VK_F);
-		Menus.addJMenuItemWithShortcut(m, "Find Next", KeyEvent.VK_G);
-		m.addActionListener(this);
+		Menus.addJMenuItemWithShortcut(m, "Find...", KeyEvent.VK_F, this);
+		Menus.addJMenuItemWithShortcut(m, "Find Next", KeyEvent.VK_G, this);
 		mb.add(m);
 		textPanel.editMenu = m;
 		m = new JMenu("Font");
-		m.add(new JMenuItem("Make Text Smaller"));
-		m.add(new JMenuItem("Make Text Larger"));
+		Menus.addJMenuItemWithShortcut(m, "Make Text Smaller", this);
+		Menus.addJMenuItemWithShortcut(m, "Make Text Larger", this);
 		m.addSeparator();
 		antialiased = new JCheckBoxMenuItem("Antialiased", Prefs.get(FONT_ANTI, IJ.isMacOSX()?true:false));
 		antialiased.addItemListener(this);
 		m.add(antialiased);
-		m.add(new JMenuItem("Save Settings"));
-		m.addActionListener(this);
+		Menus.addJMenuItemWithShortcut(m, "Save Settings",this);
 		mb.add(m);
 		if (getTitle().equals("Results")) {
 			m = new JMenu("Results");
-			m.add(new JMenuItem("Clear Results"));
-			m.add(new JMenuItem("Summarize"));
-			m.add(new JMenuItem("Distribution..."));
-			m.add(new JMenuItem("Set Measurements..."));
-			m.add(new JMenuItem("Sort..."));
-			m.add(new JMenuItem("Plot..."));
-			m.add(new JMenuItem("Options..."));
-			m.addActionListener(this);
+			Menus.addJMenuItemWithShortcut(m, "Clear Results",this);
+			Menus.addJMenuItemWithShortcut(m, "Summarize",this);
+			Menus.addJMenuItemWithShortcut(m, "Distribution...",this);
+			Menus.addJMenuItemWithShortcut(m, "Set Measurements...",this);
+			Menus.addJMenuItemWithShortcut(m, "Sort...",this);
+			Menus.addJMenuItemWithShortcut(m, "Plot...",this);
+			Menus.addJMenuItemWithShortcut(m, "Options...",this);
 			mb.add(m);
 		}
-		//setJMenuBar(mb);
+		setJMenuBar(mb);
 	}
 
 	/**
@@ -201,7 +198,7 @@ public class TextWindow extends JFrame implements ActionListener, FocusListener,
 	}
 	
 	void setFont() {
-        textPanel.setFont(new Font("SanSerif", Font.PLAIN, sizes[fontSize]), antialiased.getState());
+        textPanel.setFont(new Font("SanSerif", Font.PLAIN, sizes[fontSize]), true/*antialiased.isSelected()*/);
 	}
 	
 	boolean openFile(String path) {

@@ -2,7 +2,7 @@ package ij.gui;
 import java.awt.*;
 import javax.swing.*;
 
-/** This is an extended Button class used to reduce the width of the HUGE buttons on Mac OS X. */
+/** This is an extended JButton class used to reduce the width of the HUGE buttons on Mac OS X. */
 public class TrimmedButton extends JButton {
     private int trim = 0;
     

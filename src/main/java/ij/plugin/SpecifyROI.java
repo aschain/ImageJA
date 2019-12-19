@@ -1,5 +1,6 @@
 package ij.plugin;
-import java.awt.*;
+import java.awt.AWTEvent;
+import java.awt.Rectangle;
 import java.awt.event.*;
 import java.util.*;
 import ij.*;
@@ -7,6 +8,7 @@ import ij.gui.*;
 import ij.process.*;
 import ij.util.Tools;
 import ij.measure.Calibration;
+import javax.swing.*;
 
 /**
  *		This plugin implements the Edit/Selection/Specify command.<p>
@@ -37,9 +39,8 @@ public class SpecifyROI implements PlugIn, DialogListener {
 	private static Rectangle prevRoi;
 	private static double prevPixelWidth = 1.0;
 	private int iSlice;
-	private boolean bAbort;
+	//private boolean bAbort;
 	private ImagePlus imp;
-	private Vector fields, checkboxes;
 	private int stackSize;
 
 	public void run(String arg) {
@@ -118,7 +119,6 @@ public class SpecifyROI implements PlugIn, DialogListener {
 			String units = unitsMatch ? cal.getUnits() : cal.getXUnit()+" x "+cal.getYUnit();
 			gd.addCheckbox("Scaled units ("+units+")", scaledUnits);
 		}
-		fields = gd.getNumericFields();
 		gd.addDialogListener(this);
 		gd.showDialog();
 		if (gd.wasCanceled()) {
@@ -173,8 +173,8 @@ public class SpecifyROI implements PlugIn, DialogListener {
 		if (gd.invalidNumber() || width<=0 || height<=0)
 			return false;
 		//
-		Vector numFields = gd.getNumericFields();
-		Vector checkboxes = gd.getCheckboxes();
+		Vector<JTextField> numFields = gd.getNumericFields();
+		Vector<JCheckBox> checkboxes = gd.getCheckboxes();
 		boolean newWidth = false, newHeight = false, newXY = false;
 		if (e!=null && e.getSource()==checkboxes.get(SQUARE) && square) {
 			width = 0.5*(width+height);				//make square: same width&height
@@ -208,13 +208,13 @@ public class SpecifyROI implements PlugIn, DialogListener {
 		}
 		int digits = (scaledUnits || (int)width!=width) ? 2 : 0;
 		if (newWidth)
-			((TextField)(numFields.get(WIDTH))).setText(IJ.d2s(width, digits));
+			((JTextField)(numFields.get(WIDTH))).setText(IJ.d2s(width, digits));
 		if (newHeight)
-			((TextField)(numFields.get(HEIGHT))).setText(IJ.d2s(height, digits));
+			((JTextField)(numFields.get(HEIGHT))).setText(IJ.d2s(height, digits));
 		digits = (scaledUnits || (int)xRoi!=xRoi || (int)yRoi!=yRoi) ? 2 : 0;
 		if (newXY) {
-			((TextField)(numFields.get(X_ROI))).setText(IJ.d2s(xRoi, digits));
-			((TextField)(numFields.get(Y_ROI))).setText(IJ.d2s(yRoi, digits));
+			((JTextField)(numFields.get(X_ROI))).setText(IJ.d2s(xRoi, digits));
+			((JTextField)(numFields.get(Y_ROI))).setText(IJ.d2s(yRoi, digits));
 		}
 
 		if (stackSize>1 && iSlice>0 && iSlice<=stackSize)

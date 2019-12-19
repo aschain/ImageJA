@@ -8,9 +8,11 @@ import java.awt.image.BufferedImage;
 import java.awt.event.*;
 import java.util.Vector;
 
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
+import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 
 /**
  * This plugin implements the Image/Colors/Arrange Channels command,
@@ -18,11 +20,11 @@ import javax.swing.JPopupMenu;
  *
  * @author Norbert Vischer <vischer@science.uva.nl> 23-sep-2012
  */
-public class ChannelArranger implements PlugIn, TextListener {
+public class ChannelArranger implements PlugIn, DocumentListener {
 	private ThumbnailsCanvas thumbNails;
 	private String patternString;
 	private String allowedDigits;
-	private TextField orderField;
+	private JTextField orderField;
 	private int nChannels;
 
 	public void run(String arg) {
@@ -40,14 +42,14 @@ public class ChannelArranger implements PlugIn, TextListener {
 		allowedDigits = patternString;
 		GenericDialog gd = new GenericDialog("Arrange Channels");
 		thumbNails = new ThumbnailsCanvas(imp);
-		Panel panel = new Panel();
+		JPanel panel = new JPanel();
 		panel.add(thumbNails);
 		gd.addPanel(panel);
 		//gd.setInsets(20, 20, 5);
 		gd.addStringField("New channel order:", allowedDigits);
-		Vector v = gd.getStringFields();
-		orderField = (TextField)v.elementAt(0);
-		orderField.addTextListener(this);
+		Vector<JTextField> v = gd.getStringFields();
+		orderField = v.elementAt(0);
+		orderField.getDocument().addDocumentListener(this);
 		gd.addHelp(IJ.URL+"/docs/menus/image.html#arrange");
 		gd.showDialog();
 		if (gd.wasCanceled())
@@ -141,8 +143,12 @@ public class ChannelArranger implements PlugIn, TextListener {
 	}
 
 	public void textValueChanged(TextEvent e) {
-		TextField tf = (TextField) e.getSource();
-		String typed = tf.getText();
+		Document tf = (Document) e.getSource();
+		String typed="";
+		try {
+			typed = tf.getText(0, tf.getLength());
+		} catch (BadLocationException e1) {
+		}
 		if (typed.length()>nChannels) {
 			orderField.setText(patternString);
 			return;
@@ -164,6 +170,13 @@ public class ChannelArranger implements PlugIn, TextListener {
 		thumbNails.repaint();
 		//orderField.setText(patternString);
 	}
+
+	@Override
+	public void insertUpdate(DocumentEvent e) {textValueChanged(new TextEvent(e.getDocument(),TextEvent.TEXT_VALUE_CHANGED));}
+	@Override
+	public void removeUpdate(DocumentEvent e) {textValueChanged(new TextEvent(e.getDocument(),TextEvent.TEXT_VALUE_CHANGED));}
+	@Override
+	public void changedUpdate(DocumentEvent e) {textValueChanged(new TextEvent(e.getDocument(),TextEvent.TEXT_VALUE_CHANGED));}
 
 }
 
@@ -210,9 +223,9 @@ class ThumbnailsCanvas extends JPanel implements MouseListener, MouseMotionListe
 		setSize((nChannels + 1) * iconSize, 2 * iconSize + 30);
 	}
 
-	public void update(Graphics g) {
-		paint(g);
-	}
+	//public void update(Graphics g) {
+	//	paint(g);
+	//}
 
 	public void setSequence(String seq) {
 		this.seq = seq;
@@ -222,7 +235,7 @@ class ThumbnailsCanvas extends JPanel implements MouseListener, MouseMotionListe
 		return new int[]{currentChannel, currentSlice, currentFrame};
 	}
 
-	public void paint(Graphics g) {
+	public void paintComponent(Graphics g) {
 		if (g == null)
 			return;
 		super.paint(g);
@@ -298,7 +311,7 @@ class ThumbnailsCanvas extends JPanel implements MouseListener, MouseMotionListe
 	public void actionPerformed(ActionEvent e) {
 		String cmd = e.getActionCommand();
 		cImp.setPosition(currentChannel, currentSlice, currentFrame);
-		CompositeImage cImp = (CompositeImage) this.cImp;
+		//CompositeImage cImp = (CompositeImage) this.cImp;
 		IJ.run(cmd);
 		repaint();
 		setCursor(defaultCursor);

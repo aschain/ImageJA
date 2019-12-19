@@ -1,16 +1,20 @@
 package ij.gui;
 import ij.*;
-import java.awt.*;
+
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.event.*;
+import javax.swing.*;
 
 /** A modal dialog box that displays information. Based on the
 	InfoDialogclass from "Java in a Nutshell" by David Flanagan. */
-public class MessageDialog extends Dialog implements ActionListener, KeyListener, WindowListener {
-	protected Button button;
+public class MessageDialog extends JDialog implements ActionListener, KeyListener, WindowListener {
+	protected JButton button;
 	protected MultiLineLabel label;
 	private boolean escapePressed;
 	
-	public MessageDialog(Frame parent, String title, String message) {
+	public MessageDialog(JFrame parent, String title, String message) {
 		super(parent, title, true);
 		setLayout(new BorderLayout());
 		if (message==null) message = "";
@@ -29,14 +33,14 @@ public class MessageDialog extends Dialog implements ActionListener, KeyListener
 			label.setFont(font);
 		else if (!IJ.isLinux())
 			label.setFont(new Font("SansSerif", Font.PLAIN, 14));
-		Panel panel = new Panel();
+		JPanel panel = new JPanel();
 		panel.setLayout(new FlowLayout(FlowLayout.CENTER, 15, 15));
 		panel.add(label);
 		add("Center", panel);
-		button = new Button("  OK  ");
+		button = new JButton("  OK  ");
 		button.addActionListener(this);
 		button.addKeyListener(this);
-		panel = new Panel();
+		panel = new JPanel();
 		panel.setLayout(new FlowLayout());
 		panel.add(button);
 		add("South", panel);

@@ -1,11 +1,17 @@
 package ij.plugin.frame;
 import ij.*;
 import ij.plugin.*;
-import java.awt.*;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.*;
 import java.util.Vector;
 
-import javax.swing.JPanel;
+import javax.swing.*;
 
 import ij.process.*;
 import ij.gui.*;
@@ -36,7 +42,7 @@ public class ColorPicker extends PlugInDialog {
         cg.drawColors(colorWidth, colorHeight, columns, rows);
         JPanel colorCanvas = new ColorCanvas(width, height, null, cg, scale);
 		//new ImagePlus("cp",cg.duplicate()).show();
-        Panel panel = new Panel();
+        JPanel panel = new JPanel();
         panel.add(colorCanvas);
         add(panel);
 		setResizable(false);
@@ -221,10 +227,10 @@ class ColorCanvas extends JPanel implements MouseListener, MouseMotionListener {
 	boolean background;
 	long mouseDownTime;
 	ColorGenerator ip;
-	Frame frame;
+	JFrame frame;
 	double scale;
 			
-	public ColorCanvas(int width, int height, Frame frame, ColorGenerator ip, double scale) {
+	public ColorCanvas(int width, int height, JFrame frame, ColorGenerator ip, double scale) {
 		this.width=width; this.height=height;
 		this.ip = ip;
 		addMouseListener(this);

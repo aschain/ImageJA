@@ -1,6 +1,5 @@
 package ij.gui;
 import ij.*;
-import ij.process.*;
 import ij.util.*;
 import ij.plugin.Colors;
 //import java.awt.*;
@@ -11,15 +10,16 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
-import java.awt.Panel;
-import java.awt.TextField;
 import java.awt.event.*;
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 
  /** Displays a dialog that allows the user to select a color using three sliders. */
-public class ColorChooser implements TextListener, AdjustmentListener {
-	Vector colors, sliders;
+public class ColorChooser implements DocumentListener, AdjustmentListener {
+	Vector<JTextField> colors;
+	Vector<JScrollBar> sliders;
 	ColorPanel panel;
 	Color initialColor;
 	int red, green, blue;
@@ -54,7 +54,7 @@ public class ColorChooser implements TextListener, AdjustmentListener {
 		gd.addPanel(panel, GridBagConstraints.CENTER, new Insets(10, 0, 0, 0));
 		colors = gd.getNumericFields();
 		for (int i=0; i<colors.size(); i++)
-			((TextField)colors.elementAt(i)).addTextListener(this);
+			((JTextField)colors.elementAt(i)).getDocument().addDocumentListener(this);
 		sliders = gd.getSliders();
 		for (int i=0; i<sliders.size(); i++)
 			((JScrollBar)sliders.elementAt(i)).addAdjustmentListener(this);
@@ -67,29 +67,37 @@ public class ColorChooser implements TextListener, AdjustmentListener {
 	}
 
 	public void textValueChanged(TextEvent e) {
-		int red = (int)Tools.parseDouble(((TextField)colors.elementAt(0)).getText());
-		int green = (int)Tools.parseDouble(((TextField)colors.elementAt(1)).getText());
-		int blue = (int)Tools.parseDouble(((TextField)colors.elementAt(2)).getText());
+		int red = (int)Tools.parseDouble(((JTextField)colors.elementAt(0)).getText());
+		int green = (int)Tools.parseDouble(((JTextField)colors.elementAt(1)).getText());
+		int blue = (int)Tools.parseDouble(((JTextField)colors.elementAt(2)).getText());
 		if (red<0) red=0; if (red>255) red=255;
 		if (green<0) green=0; if (green>255) green=255;
 		if (blue<0) blue=0; if (blue>255) blue=255;
 		panel.setColor(new Color(red, green, blue));
 		panel.repaint();
 	}
+	
+	@Override
+	public void insertUpdate(DocumentEvent e) {textValueChanged(new TextEvent(e.getDocument(),TextEvent.TEXT_VALUE_CHANGED));}
+	@Override
+	public void removeUpdate(DocumentEvent e) {textValueChanged(new TextEvent(e.getDocument(),TextEvent.TEXT_VALUE_CHANGED));}
+	@Override
+	public void changedUpdate(DocumentEvent e) {textValueChanged(new TextEvent(e.getDocument(),TextEvent.TEXT_VALUE_CHANGED));}
 
 	public synchronized void adjustmentValueChanged(AdjustmentEvent e) {
 		Object source = e.getSource();
 		for (int i=0; i<sliders.size(); i++) {
 			if (source==sliders.elementAt(i)) {
 				JScrollBar sb = (JScrollBar)source;
-				TextField tf = (TextField)colors.elementAt(i);
+				JTextField tf = (JTextField)colors.elementAt(i);
+				tf.setText(Integer.toString(sb.getValue()));
 			}
 		}
 	}
 
 }
 
-class ColorPanel extends Panel {
+class ColorPanel extends JPanel {
 	private int width=150, height=50;
 	private Font font;
 	private Color c;
@@ -113,7 +121,8 @@ class ColorPanel extends Panel {
 		return new Dimension(width, height);
 	}
 
-	public void paint(Graphics g) {
+	public void paintComponent(Graphics g) {
+		super.paintComponent(g);
 		g.setColor(c);
 		g.fillRect(0, 0, width, height);
 		int intensity = (c.getRed()+c.getGreen()+c.getBlue())/3;

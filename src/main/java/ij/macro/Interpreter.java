@@ -39,8 +39,8 @@ public class Interpreter implements MacroConstants {
 
 	static volatile Interpreter instance, previousInstance;
 	public static boolean batchMode;
-	static Vector imageTable; // images opened in batch mode
-	static Vector imageActivations; // images ordered by activation time
+	static Vector<ImagePlus> imageTable; // images opened in batch mode
+	static Vector<ImagePlus> imageActivations; // images ordered by activation time
 	volatile boolean done;
 	Program pgm;
 	Functions func;
@@ -1847,7 +1847,7 @@ public class Interpreter implements MacroConstants {
 			if (pgm.getSize()==1) {
 				String cmd = pgm.decodeToken(pgm.code[0]);
 				cmd = cmd.replaceAll("_", " ");
-				Hashtable commands = Menus.getCommands();
+				Hashtable<String,String> commands = Menus.getCommands();
 				if (commands!=null && commands.get(cmd)!=null)
 					IJ.run(cmd);
 				else
@@ -2014,7 +2014,7 @@ public class Interpreter implements MacroConstants {
 	public static void addBatchModeImage(ImagePlus imp) {
 		if (!batchMode || imp==null) return;
 		if (imageTable==null)
-			imageTable = new Vector();
+			imageTable = new Vector<ImagePlus>();
 		imageTable.add(imp);
 		activateImage(imp);
 	}
@@ -2033,7 +2033,7 @@ public class Interpreter implements MacroConstants {
 	public static void activateImage(ImagePlus imp) {
 		if (imageTable!=null && imp!=null) {
 			if (imageActivations==null)
-				imageActivations = new Vector();
+				imageActivations = new Vector<ImagePlus>();
 			imageActivations.remove(imp);
 			imageActivations.add(imp);
 		}
@@ -2061,8 +2061,8 @@ public class Interpreter implements MacroConstants {
 	public static ImagePlus getBatchModeImage(int id) {
 		if (!batchMode || imageTable==null)
 			return null;
-		for (Enumeration en=Interpreter.imageTable.elements(); en.hasMoreElements();) {
-			ImagePlus imp = (ImagePlus)en.nextElement();
+		for (Enumeration<ImagePlus> en=Interpreter.imageTable.elements(); en.hasMoreElements();) {
+			ImagePlus imp = en.nextElement();
 			if (id==imp.getID())
 				return imp;
 		}

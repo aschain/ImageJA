@@ -4,10 +4,13 @@ import ij.process.*;
 import ij.gui.*;
 //import ij.text.*;
 import ij.measure.ResultsTable;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.*;
-import java.util.ArrayList;
+
+import javax.swing.JButton;
+import javax.swing.JPanel;
 
 /** Displays the active image's look-up table. */
 public class LutViewer implements PlugInFilter {
@@ -109,7 +112,7 @@ public class LutViewer implements PlugInFilter {
 
 class LutWindow extends ImageWindow implements ActionListener {
 
-	private Button button;
+	private JButton button;
 	private ImageProcessor ip;
 
 	LutWindow(ImagePlus imp, ImageCanvas ic, ImageProcessor ip) {
@@ -119,9 +122,9 @@ class LutWindow extends ImageWindow implements ActionListener {
 	}
 
 	void addPanel() {
-		Panel panel = new Panel();
+		JPanel panel = new JPanel();
 		panel.setLayout(new FlowLayout(FlowLayout.RIGHT));
-		button = new Button(" List... ");
+		button = new JButton(" List... ");
 		button.addActionListener(this);
 		panel.add(button);
 		add(panel);

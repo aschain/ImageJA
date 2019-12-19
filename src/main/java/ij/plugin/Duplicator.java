@@ -2,6 +2,10 @@ package ij.plugin;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Vector;
+import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+
 import ij.*;
 import ij.process.*;
 import ij.gui.*;
@@ -18,13 +22,13 @@ import ij.measure.Calibration;
    img2.show();
 </pre>
 */
-public class Duplicator implements PlugIn, TextListener, ItemListener {
+public class Duplicator implements PlugIn, DocumentListener, ItemListener {
 	private static boolean staticDuplicateStack;
 	private boolean duplicateStack;
 	private int first, last;
-	private Checkbox checkbox;
-	private TextField titleField, rangeField;
-	private TextField[] rangeFields;
+	private JCheckBox checkbox;
+	private JTextField titleField, rangeField;
+	private JTextField[] rangeFields;
 	private int firstC, lastC, firstZ, lastZ, firstT, lastT;
 	private String defaultTitle;
 	private String sliceLabel;
@@ -413,13 +417,13 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 			gd.setInsets(2, 30, 3);
 			gd.addStringField("Range:", "1-"+stackSize);
 			if (!isMacro) {
-				checkbox = (Checkbox)(gd.getCheckboxes().elementAt(0));
+				checkbox = (JCheckBox)(gd.getCheckboxes().elementAt(0));
 				checkbox.addItemListener(this);
-				Vector v = gd.getStringFields();
-				titleField = (TextField)v.elementAt(0);
-				rangeField = (TextField)v.elementAt(1);
-				titleField.addTextListener(this);
-				rangeField.addTextListener(this);
+				Vector<JTextField> v = gd.getStringFields();
+				titleField = (JTextField)v.elementAt(0);
+				rangeField = (JTextField)v.elementAt(1);
+				titleField.getDocument().addDocumentListener(this);
+				rangeField.getDocument().addDocumentListener(this);
 			}
 		}
 		gd.setSmartRecording(true);
@@ -454,7 +458,7 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		if (titleChanged)
 			return null;
 		String title = defaultTitle;
-		if (imp.getStackSize()>1 && !duplicateStack && !legacyMacro && (checkbox==null||!checkbox.getState())) {
+		if (imp.getStackSize()>1 && !duplicateStack && !legacyMacro && (checkbox==null||!checkbox.isSelected())) {
 			ImageStack stack = imp.getStack();
 			String label = stack.getShortSliceLabel(imp.getCurrentSlice());
 			if (label!=null && label.length()==0)
@@ -530,13 +534,13 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 			nRangeFields++;
 		}
 		if (!isMacro) {
-			checkbox = (Checkbox)(gd.getCheckboxes().elementAt(0));
+			checkbox = (JCheckBox)(gd.getCheckboxes().elementAt(0));
 			checkbox.addItemListener(this);
-			Vector v = gd.getStringFields();
-			rangeFields = new TextField[3];
+			Vector<JTextField> v = gd.getStringFields();
+			rangeFields = new JTextField[3];
 			for (int i=0; i<nRangeFields; i++) {
-				rangeFields[i] = (TextField)v.elementAt(i+1);
-				rangeFields[i].addTextListener(this);
+				rangeFields[i] = (JTextField)v.elementAt(i+1);
+				rangeFields[i].getDocument().addDocumentListener(this);
 			}
 		}
 		gd.setSmartRecording(true);
@@ -611,15 +615,15 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 
 	public void textValueChanged(TextEvent e) {
 		if (IJ.debugMode) IJ.log("Duplicator.textValueChanged: "+e);
-		if (e.getSource()==titleField) {
+		if (e.getSource()==titleField.getDocument()) {
 			if (!titleField.getText().equals(getNewTitle()))
 				titleChanged = true;
 		} else
-			checkbox.setState(true);
+			checkbox.setSelected(true);
 	}
 	
 	public void itemStateChanged(ItemEvent e) {
-		duplicateStack = checkbox.getState();
+		duplicateStack = checkbox.isSelected();
 		if (titleField!=null) {
 			String title = getNewTitle();
 			if (title!=null && !title.equals(titleField.getText())) {
@@ -627,6 +631,21 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 				if (gd!=null) gd.setDefaultString(0, title);
 			}
 		}
+	}
+
+	@Override
+	public void insertUpdate(DocumentEvent e) {
+		textValueChanged(new TextEvent(e.getDocument(),0));
+	}
+
+	@Override
+	public void removeUpdate(DocumentEvent e) {
+		textValueChanged(new TextEvent(e.getDocument(),1));
+	}
+
+	@Override
+	public void changedUpdate(DocumentEvent e) {
+		textValueChanged(new TextEvent(e.getDocument(),2));
 	}
 
 	

@@ -14,11 +14,13 @@ import ij.util.*;
 import java.awt.event.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 
 
 /** This is a Canvas used to display images in a Window. */
-public class ImageCanvas extends Canvas implements MouseListener, MouseMotionListener, Cloneable {
+public class ImageCanvas extends JPanel implements MouseListener, MouseMotionListener, Cloneable {
 
 	protected static Cursor defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
 	protected static Cursor handCursor = new Cursor(Cursor.HAND_CURSOR);
@@ -198,16 +200,17 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		return paintPending.get();
 	}
 
-	public void update(Graphics g) {
-		paint(g);
-	}
+	//public void update(Graphics g) {
+	//	paint(g);
+	//}
 	
 	//public void repaint() {
 	//	super.repaint();
 	//	//if (IJ.debugMode) IJ.log("repaint: "+imp);
 	//}
 	
-    public void paint(Graphics g) {
+    public void paintComponent(Graphics g) {
+    	super.paintComponent(g);
 		// if (IJ.debugMode) IJ.log("paint: "+imp);
 		painted = true;
 		Roi roi = imp.getRoi();
@@ -1257,7 +1260,7 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 		}
 		JPopupMenu popup = Menus.getPopupMenu();
 		if (popup!=null) {
-			imp.getWindow().add(popup);
+			setComponentPopupMenu(popup);
 			if (IJ.isMacOSX()) IJ.wait(10);
 			popup.show(this, x, y);
 		}

@@ -12,6 +12,7 @@ public class PlugInFrame extends JFrame implements PlugIn, WindowListener, Focus
 	
 	public PlugInFrame(String title) {
 		super(title);
+		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		enableEvents(AWTEvent.WINDOW_EVENT_MASK);
 		this.title = title;
 		ImageJ ij = IJ.getInstance();
@@ -35,7 +36,7 @@ public class PlugInFrame extends JFrame implements PlugIn, WindowListener, Focus
     			Recorder.record("run", "Close");
     	}
     }
-    
+        
     /** Closes this window. */
     public void close() {
 		//setVisible(false);

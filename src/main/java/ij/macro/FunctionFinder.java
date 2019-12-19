@@ -1,23 +1,24 @@
 package ij.macro;
 import ij.*;
-import ij.plugin.*;
 import ij.plugin.frame.*;
 import ij.gui.GUI;
-import java.awt.*;
+
+import java.awt.BorderLayout;
 import java.awt.event.*;
-import java.util.Hashtable;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Set;
+
+import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 /** This class implements the text editor's Macros/Find Functions command.
 	It was written by jerome.mutterer at ibmp.fr, and is based on Mark Longair's CommandFinder plugin.
 */
-public class FunctionFinder implements TextListener,  WindowListener, KeyListener, ItemListener, ActionListener {
-	private static Dialog dialog;
-	private TextField prompt;
-	private List functions;
-	private Button insertButton, infoButton, closeButton;
+public class FunctionFinder implements DocumentListener,  WindowListener, KeyListener, ItemListener, ActionListener {
+	private static JDialog dialog;
+	private JTextField prompt;
+	private JList<String> functions;
+	private DefaultListModel<String> functionsm;
+	private JButton insertButton, infoButton, closeButton;
 	private String [] commands;
 	private Editor editor;
 
@@ -52,27 +53,28 @@ public class FunctionFinder implements TextListener,  WindowListener, KeyListene
 
 		ImageJ imageJ = IJ.getInstance();
 		if (dialog==null) {
-			dialog = new Dialog(imageJ, "Built-in Functions");
+			dialog = new JDialog(imageJ, "Built-in Functions");
 			dialog.setLayout(new BorderLayout());
 			dialog.addWindowListener(this);
-			Panel northPanel = new Panel();
-			prompt = new TextField("", 32);
-			prompt.addTextListener(this);
+			JPanel northPanel = new JPanel();
+			prompt = new JTextField("", 32);
+			prompt.getDocument().addDocumentListener(this);
 			prompt.addKeyListener(this);
 			northPanel.add(prompt);
 			dialog.add(northPanel, BorderLayout.NORTH);
-			functions = new List(12);
+			functionsm=new DefaultListModel<String>();
+			functions = new JList<String>();
 			functions.addKeyListener(this);
 			populateList("");
 			dialog.add(functions, BorderLayout.CENTER);
-			Panel buttonPanel = new Panel();
-			insertButton = new Button("Insert");
+			JPanel buttonPanel = new JPanel();
+			insertButton = new JButton("Insert");
 			insertButton.addActionListener(this);
 			buttonPanel.add(insertButton);
-			infoButton = new Button("Info");
+			infoButton = new JButton("Info");
 			infoButton.addActionListener(this);
 			buttonPanel.add(infoButton);
-			closeButton = new Button("Close");
+			closeButton = new JButton("Close");
 			closeButton.addActionListener(this);
 			buttonPanel.add(closeButton);
 			dialog.add(buttonPanel, BorderLayout.SOUTH);
@@ -80,7 +82,7 @@ public class FunctionFinder implements TextListener,  WindowListener, KeyListene
 			dialog.pack();
 		}
 
-		Frame frame = WindowManager.getFrontWindow();
+		JFrame frame = WindowManager.getFrontWindow();
 		if (frame==null) return;
 		java.awt.Point posi=frame.getLocationOnScreen();
 		int initialX = (int)posi.getX() + 38;
@@ -104,19 +106,19 @@ public class FunctionFinder implements TextListener,  WindowListener, KeyListene
 					continue;
 				String lowerCommandName = commandName.toLowerCase();
 				if( lowerCommandName.indexOf(substring) >= 0 ) {
-					functions.add(commands[i]);
+					functionsm.addElement(commands[i]);
 				}
 			}
 		} catch (Exception e){}
 	}
 
 	public void edPaste(String arg) {
-		Frame frame = WindowManager.getFrontWindow();
+		JFrame frame = WindowManager.getFrontWindow();
 		if (!(frame instanceof Editor))
 			return;
 
 		try {
-			TextArea ta = ((Editor)frame).getTextArea();
+			JTextArea ta = ((Editor)frame).getTextArea();
 			editor = (Editor)frame;
 			int start = ta.getSelectionStart( );
 			int end = ta.getSelectionEnd( );
@@ -150,28 +152,28 @@ public class FunctionFinder implements TextListener,  WindowListener, KeyListene
 
 	public void keyPressed(KeyEvent ke) {
 		int key = ke.getKeyCode();
-		int items = functions.getItemCount();
+		int items = functionsm.getSize();
 		Object source = ke.getSource();
 		if (source==prompt) {
 			if (key==KeyEvent.VK_ENTER) {
 				if (1==items) {
-					String selected = functions.getItem(0);
+					String selected = functionsm.get(0);
 					edPaste(selected);
 				}
 			} else if (key==KeyEvent.VK_UP) {
 				functions.requestFocus();
 				if(items>0)
-					functions.select(functions.getItemCount()-1);
+					functions.setSelectedIndex(functionsm.getSize()-1);
 			} else if (key==KeyEvent.VK_ESCAPE) {
 				closeAndRefocus();
 			} else if (key==KeyEvent.VK_DOWN)  {
 				functions.requestFocus();
 				if (items>0)
-					functions.select(0);
+					functions.setSelectedIndex(0);
 			}
 		} else if (source==functions) {
 			if (key==KeyEvent.VK_ENTER) {
-				String selected = functions.getSelectedItem();
+				String selected = functions.getSelectedValue();
 				if (selected!=null)
 					edPaste(selected);
 			}
@@ -194,20 +196,27 @@ public class FunctionFinder implements TextListener,  WindowListener, KeyListene
 	public void textValueChanged(TextEvent te) {
 		populateList(prompt.getText());
 	}
+	
+	@Override
+	public void insertUpdate(DocumentEvent e) {textValueChanged(new TextEvent(e.getDocument(),TextEvent.TEXT_VALUE_CHANGED));}
+	@Override
+	public void removeUpdate(DocumentEvent e) {textValueChanged(new TextEvent(e.getDocument(),TextEvent.TEXT_VALUE_CHANGED));}
+	@Override
+	public void changedUpdate(DocumentEvent e) {textValueChanged(new TextEvent(e.getDocument(),TextEvent.TEXT_VALUE_CHANGED));}
 
 	public void actionPerformed(ActionEvent e) {
 		Object b = e.getSource();
 		if (b==insertButton) {
 			int index = functions.getSelectedIndex();
 			if (index>=0) {
-				String selected = functions.getItem(index);
+				String selected = functionsm.get(index);
 				edPaste(selected);
 			}
 		} else if (b==infoButton) {
 			String url = IJ.URL+"/developer/macro/functions.html";
 			int index = functions.getSelectedIndex();
 			if (index>=0) {
-				String selected = functions.getItem(index);
+				String selected = functionsm.get(index);
 				int index2 = selected.indexOf("(");
 				if (index2==-1)
 					index2 = selected.length();

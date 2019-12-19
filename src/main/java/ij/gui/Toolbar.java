@@ -1340,7 +1340,7 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 			setTool2(LINE);
 			showMessage(LINE);
 		} else {
-			String label = item.getLabel();
+			String label = item.getText();
 			String cmd = item.getActionCommand();
 			boolean isTool = cmd.equals("Tool") || cmd.equals("Plugin Tool");
 			if (!(label.equals("Help...")||label.equals("Remove Custom Tools")) && !isTool && !label.endsWith("Tool") && !label.endsWith("Tool "))
@@ -1553,7 +1553,7 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
     
     void installMenu(int tool) {
         Program pgm = macroInstaller.getProgram();
-        Hashtable h = pgm.getMenus();
+        Hashtable<String,String[]> h = pgm.getMenus();
         if (h==null) return;
         String[] commands = (String[])h.get(names[tool]);
         if (commands==null)

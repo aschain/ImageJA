@@ -4,9 +4,15 @@ import ij.process.*;
 import ij.gui.*;
 import ij.measure.*;
 import ij.util.Tools;
-import java.awt.*;
+
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.awt.event.*;
 import java.util.*;
+import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 /** Implements the Image/Stacks/Reslice command. Known shortcomings: 
 	for FREELINE or POLYLINE ROI, spatial calibration is ignored: 
@@ -14,7 +20,7 @@ import java.util.*;
 	(if y/x aspect ratio != 1 in source image) one dimension in the output is not
 	homogeneous (i.e. pixelWidth not the same everywhere).
 */
-public class Slicer implements PlugIn, TextListener, ItemListener {
+public class Slicer implements PlugIn, DocumentListener, ItemListener {
 
 	private static final String[] starts = {"Top", "Left", "Bottom", "Right"};
 	private static String startAtS = starts[0];
@@ -32,8 +38,9 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 	private int outputSlices = 1;
 	private boolean noRoi;
 	private boolean rgb, notFloat;
-	private Vector fields, checkboxes;
-	private Label message;
+	private Vector<JTextField> fields;
+	private Vector<JCheckBox> checkboxes;
+	private JLabel message;
 	private ImagePlus imp;
 	private double gx1, gy1, gx2, gy2, gLength;
 
@@ -303,12 +310,12 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 		fields = gd.getNumericFields();
 		if (!macroRunning) {
 			for (int i=0; i<fields.size(); i++)
-				((TextField)fields.elementAt(i)).addTextListener(this);
+				((JTextField)fields.elementAt(i)).getDocument().addDocumentListener(this);
 		}
 		checkboxes = gd.getCheckboxes();
 		if (!macroRunning)
-			((Checkbox)checkboxes.elementAt(2)).addItemListener(this);
-		message = (Label)gd.getMessage();
+			((JCheckBox)checkboxes.elementAt(2)).addItemListener(this);
+		message = (JLabel)gd.getMessage();
 		gd.addHelp(IJ.URL+"/docs/menus/image.html#reslice");
 		gd.showDialog();
 		if (gd.wasCanceled())
@@ -424,7 +431,6 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 		 }
 		 boolean virtualStack = imp.getStack().isVirtual();
 		 String status = null;
-		 ImagePlus imp2 = null;
 		 ImageStack stack2 = null;
 		 boolean isStack = imp.getStackSize()>1;
 		 IJ.resetEscape();
@@ -528,7 +534,6 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 		 double leftOver = 1.0;
 		 double distance = 0.0;
 		 int index;
-		 double oldx=xbase, oldy=ybase;
 		 for (int i=0; i<n; i++) {
 				double len = segmentLengths[i];
 				if (len==0.0)
@@ -658,20 +663,27 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 		updateSize();
 	}
 
+	@Override
+	public void insertUpdate(DocumentEvent e) {textValueChanged(new TextEvent(e.getDocument(),TextEvent.TEXT_VALUE_CHANGED));}
+	@Override
+	public void removeUpdate(DocumentEvent e) {textValueChanged(new TextEvent(e.getDocument(),TextEvent.TEXT_VALUE_CHANGED));}
+	@Override
+	public void changedUpdate(DocumentEvent e) {textValueChanged(new TextEvent(e.getDocument(),TextEvent.TEXT_VALUE_CHANGED));}
+
 	public void itemStateChanged(ItemEvent e) {
 		if (IJ.isMacOSX()) IJ.wait(100);
-		Checkbox cb = (Checkbox)checkboxes.elementAt(2);
-        nointerpolate = cb.getState();
+		JCheckBox cb = (JCheckBox)checkboxes.elementAt(2);
+        nointerpolate = cb.isSelected();
         updateSize();
 	}
 
 	void updateSize() {
-		 //double inSpacing = Tools.parseDouble(((TextField)fields.elementAt(0)).getText(),0.0);
-		 double outSpacing = Tools.parseDouble(((TextField)fields.elementAt(0)).getText(),0.0);
+		 //double inSpacing = Tools.parseDouble(((JTextField)fields.elementAt(0)).getText(),0.0);
+		 double outSpacing = Tools.parseDouble(((JTextField)fields.elementAt(0)).getText(),0.0);
 		 int count = 0;
 		 boolean lineSelection = fields.size()==2;
 		 if (lineSelection) {
-				count = (int)Tools.parseDouble(((TextField)fields.elementAt(1)).getText(), 0.0);
+				count = (int)Tools.parseDouble(((JTextField)fields.elementAt(1)).getText(), 0.0);
 				if (count>0) makePolygon(count, outSpacing);
 		 }
 		 String size = getSize(inputZSpacing, outSpacing, count);

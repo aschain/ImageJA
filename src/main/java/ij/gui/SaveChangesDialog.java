@@ -1,41 +1,46 @@
 package ij.gui;
 import ij.IJ;
-import java.awt.*;
+import javax.swing.*;
+
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.event.*;
 
 /** A modal dialog box with a one line message and
 	"Don't Save", "Cancel" and "Save" buttons. */
-public class SaveChangesDialog extends Dialog implements ActionListener, KeyListener {
-	private Button dontSave, cancel, save;
+public class SaveChangesDialog extends JDialog implements ActionListener, KeyListener {
+	private JButton dontSave, cancel, save;
 	private boolean cancelPressed, savePressed;
 
-	public SaveChangesDialog(Frame parent, String fileName) {
+	public SaveChangesDialog(JFrame parent, String fileName) {
 		super(parent, "Save?", true);
 		setLayout(new BorderLayout());
-		Panel panel = new Panel();
+		JPanel panel = new JPanel();
 		panel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
 		Component message;
 		if (fileName.startsWith("Save "))
-			message = new Label(fileName);
+			message = new JLabel(fileName);
 		else {
 			if (fileName.length()>22)
 				message = new MultiLineLabel("Save changes to\n" + "\"" + fileName + "\"?");
 			else
-				message = new Label("Save changes to \"" + fileName + "\"?");
+				message = new JLabel("Save changes to \"" + fileName + "\"?");
 		}
 		message.setFont(new Font("Dialog", Font.BOLD, 12));
 		panel.add(message);
 		add("Center", panel);
 		
-		panel = new Panel();
+		panel = new JPanel();
 		panel.setLayout(new FlowLayout(FlowLayout.CENTER, 8, 8));
-		save = new Button("  Save  ");
+		save = new JButton("  Save  ");
 		save.addActionListener(this);
 		save.addKeyListener(this);
-		cancel = new Button("  Cancel  ");
+		cancel = new JButton("  Cancel  ");
 		cancel.addActionListener(this);
 		cancel.addKeyListener(this);
-		dontSave = new Button("Don't Save");
+		dontSave = new JButton("Don't Save");
 		dontSave.addActionListener(this);
 		dontSave.addKeyListener(this);
 		if (ij.IJ.isMacintosh()) {

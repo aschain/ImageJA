@@ -1510,7 +1510,7 @@ public class Plot implements Cloneable {
 			return null;
 		}
 		if (imp != null) {
-			Window win = imp.getWindow();
+			ImageWindow win = imp.getWindow();
 			if (win instanceof PlotWindow && win.isVisible()) {
 				updateImage();			// show in existing window
 				return (PlotWindow)win;

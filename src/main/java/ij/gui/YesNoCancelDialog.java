@@ -1,39 +1,44 @@
 package ij.gui;
 import ij.*;
-import java.awt.*;
+import javax.swing.*;
+
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.event.*;
 
 /** A modal dialog box with a one line message and
 	"Yes", "No" and "Cancel" buttons. */
-public class YesNoCancelDialog extends Dialog implements ActionListener, KeyListener, WindowListener {
-    private Button yesB, noB, cancelB;
+public class YesNoCancelDialog extends JDialog implements ActionListener, KeyListener, WindowListener {
+    private JButton yesB, noB, cancelB;
     private boolean cancelPressed, yesPressed;
 	private boolean firstPaint = true;
 
-	public YesNoCancelDialog(Frame parent, String title, String msg) {
+	public YesNoCancelDialog(JFrame parent, String title, String msg) {
 		this(parent, title, msg, "  Yes  ", "  No  ");
 	}
 
-	public YesNoCancelDialog(Frame parent, String title, String msg, String yesLabel, String noLabel) {
+	public YesNoCancelDialog(JFrame parent, String title, String msg, String yesLabel, String noLabel) {
 		super(parent, title, true);
 		setLayout(new BorderLayout());
-		Panel panel = new Panel();
+		JPanel panel = new JPanel();
 		panel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
 		MultiLineLabel message = new MultiLineLabel(msg);
 		message.setFont(new Font("Dialog", Font.PLAIN, 14));
 		panel.add(message);
 		add("North", panel);
 		
-		panel = new Panel();
+		panel = new JPanel();
 		panel.setLayout(new FlowLayout(FlowLayout.RIGHT, 15, 8));
 		if (msg.startsWith("Save")) {
-			yesB = new Button("  Save  ");
-			noB = new Button("Don't Save");
-			cancelB = new Button("  Cancel  ");
+			yesB = new JButton("  Save  ");
+			noB = new JButton("Don't Save");
+			cancelB = new JButton("  Cancel  ");
 		} else {
-			yesB = new Button(yesLabel);
-			noB = new Button(noLabel);
-			cancelB = new Button(" Cancel ");
+			yesB = new JButton(yesLabel);
+			noB = new JButton(noLabel);
+			cancelB = new JButton(" Cancel ");
 		}
 		yesB.addActionListener(this);
 		noB.addActionListener(this);

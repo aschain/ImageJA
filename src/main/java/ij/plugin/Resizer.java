@@ -4,12 +4,16 @@ import ij.gui.*;
 import ij.process.*;
 import ij.measure.*;
 import ij.util.Tools;
-import java.awt.*;
+import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+
+import java.awt.Rectangle;
 import java.awt.event.*;
 import java.util.*;
 
 /** This plugin implements the Edit/Crop and Image/Adjust/Size commands. */
-public class Resizer implements PlugIn, TextListener, ItemListener  {
+public class Resizer implements PlugIn, DocumentListener, ItemListener  {
 	public static final int IN_PLACE=16, SCALE_T=32;
     private static int newWidth;
     private static int newHeight;
@@ -17,7 +21,8 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
     private static boolean averageWhenDownsizing = true;
 	private static int interpolationMethod = ImageProcessor.BILINEAR;
 	private String[] methods = ImageProcessor.getInterpolationMethods();
-    private Vector fields, checkboxes;
+    private Vector<JTextField> fields;
+    private Vector<JCheckBox> checkboxes;
 	private double origWidth, origHeight;
 	private boolean sizeToHeight;
  
@@ -100,11 +105,11 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 			fields = gd.getNumericFields();
 			if (!IJ.macroRunning()) {
 				for (int i=0; i<2; i++)
-					((TextField)fields.elementAt(i)).addTextListener(this);
+					((JTextField)fields.elementAt(i)).getDocument().addDocumentListener(this);
 			}
 			checkboxes = gd.getCheckboxes();
 			if (!IJ.macroRunning())
-				((Checkbox)checkboxes.elementAt(0)).addItemListener(this);
+				((JCheckBox)checkboxes.elementAt(0)).addItemListener(this);
 			gd.showDialog();
 			if (gd.wasCanceled()) {
 				imp.unlock();
@@ -223,10 +228,10 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 		if (imp.isHyperStack())
 			imp2 = zScaleHyperstack(imp, newDepth, interpolationMethod);
 		else {
-			boolean inPlace = (interpolationMethod&IN_PLACE)!=0;
+			//boolean inPlace = (interpolationMethod&IN_PLACE)!=0;
 			interpolationMethod = interpolationMethod&15;
-			int stackSize = imp.getStackSize();
-			int bitDepth = imp.getBitDepth();
+			//int stackSize = imp.getStackSize();
+			//int bitDepth = imp.getBitDepth();
 			imp2 = resizeZ(imp, newDepth, interpolationMethod);
 			if (imp2==null)
 				return null;
@@ -254,7 +259,7 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 	}
 
 	private ImagePlus zScaleHyperstack(ImagePlus imp, int depth2, int interpolationMethod) {
-		boolean inPlace = (interpolationMethod&IN_PLACE)!=0;
+		//boolean inPlace = (interpolationMethod&IN_PLACE)!=0;
 		boolean scaleT = (interpolationMethod&SCALE_T)!=0;
 		interpolationMethod = interpolationMethod&15;
 		int channels = imp.getNChannels();
@@ -269,8 +274,8 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 			frames2 = depth2;
 		else
 			slices2 = depth2;
-		double scale = (double)(depth2-1)/slices;
-		if (scaleT) scale = (double)(depth2-1)/frames;
+		//double scale = (double)(depth2-1)/slices;
+		//if (scaleT) scale = (double)(depth2-1)/frames;
 		ImageStack stack1 = imp.getStack();
 		int width = stack1.getWidth();
 		int height = stack1.getHeight();
@@ -371,8 +376,8 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 	}
 
     public void textValueChanged(TextEvent e) {
-    	TextField widthField = (TextField)fields.elementAt(0);
-    	TextField heightField = (TextField)fields.elementAt(1);
+    	JTextField widthField = (JTextField)fields.elementAt(0);
+    	JTextField heightField = (JTextField)fields.elementAt(1);
         int width = (int)Tools.parseDouble(widthField.getText(),-99);
         int height = (int)Tools.parseDouble(heightField.getText(),-99);
         if (width==-99 || height==-99)
@@ -389,29 +394,36 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 			}
         }
     }
+
+	@Override
+	public void insertUpdate(DocumentEvent e) {textValueChanged(new TextEvent(e.getDocument(),TextEvent.TEXT_VALUE_CHANGED));}
+	@Override
+	public void removeUpdate(DocumentEvent e) {textValueChanged(new TextEvent(e.getDocument(),TextEvent.TEXT_VALUE_CHANGED));}
+	@Override
+	public void changedUpdate(DocumentEvent e) {textValueChanged(new TextEvent(e.getDocument(),TextEvent.TEXT_VALUE_CHANGED));}
     
     void updateFields() {
 		if (sizeToHeight) {
 			newWidth = (int)Math.round(newHeight*(origWidth/origHeight));
-			TextField widthField = (TextField)fields.elementAt(0);
+			JTextField widthField = (JTextField)fields.elementAt(0);
 			widthField.setText(""+newWidth);
 		} else {
 			newHeight = (int)Math.round(newWidth*(origHeight/origWidth));
-			TextField heightField = (TextField)fields.elementAt(1);
+			JTextField heightField = (JTextField)fields.elementAt(1);
 			heightField.setText(""+newHeight);
 		}
    }
 
 	public void itemStateChanged(ItemEvent e) {
-		Checkbox cb = (Checkbox)checkboxes.elementAt(0);
-        boolean newConstrain = cb.getState();
+		JCheckBox cb = (JCheckBox)checkboxes.elementAt(0);
+        boolean newConstrain = cb.isSelected();
         if (newConstrain && newConstrain!=constrain)
         	updateFields();
         constrain = newConstrain;
 	}
 	
 	public void setAverageWhenDownsizing(boolean averageWhenDownsizing) {
-		this. averageWhenDownsizing = averageWhenDownsizing;
+		Resizer.averageWhenDownsizing = averageWhenDownsizing;
 	}
 
 }

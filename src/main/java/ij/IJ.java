@@ -13,20 +13,25 @@ import ij.macro.MacroRunner;
 import ij.measure.Calibration;
 import ij.measure.ResultsTable;
 import ij.measure.Measurements;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.EventQueue;
+import java.awt.Font;
+import java.awt.Polygon;
+import java.awt.Rectangle;
+import java.awt.Window;
 import java.awt.event.*;
 import java.text.*;
 import java.util.*;	
-import java.awt.*;	
+//import java.awt.*;	
 import java.applet.Applet;
 import java.io.*;
-import java.lang.reflect.*;
 import java.net.*;
-import javax.net.ssl.*;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-
-import java.security.cert.*;
-import java.security.KeyStore;
 import java.nio.ByteBuffer;
 
 
@@ -53,7 +58,7 @@ public class IJ {
 	private static ProgressBar progressBar;
 	private static TextPanel textPanel;
 	private static String osname, osarch;
-	private static boolean isMac, isWin, isLinux, is64Bit;
+	private static boolean isMac, isWin, isLinux;// is64Bit;
 	private static int javaVersion;
 	private static boolean controlDown, altDown, spaceDown, shiftDown;
 	private static boolean macroRunning;
@@ -66,13 +71,13 @@ public class IJ {
 	private static boolean escapePressed;
 	private static boolean redirectErrorMessages;
 	private static boolean suppressPluginNotFoundError;
-	private static Hashtable commandTable;
-	private static Vector eventListeners = new Vector();
+	private static Hashtable<String,String> commandTable;
+	private static Vector<IJEventListener> eventListeners = new Vector<IJEventListener>();
 	private static String lastErrorMessage;
 	private static Properties properties;	private static DecimalFormat[] df;
 	private static DecimalFormat[] sf;
 	private static DecimalFormatSymbols dfs;
-	private static boolean trustManagerCreated;
+	//private static boolean trustManagerCreated;
 	private static String smoothMacro;
 	private static Interpreter macroInterpreter;
 	private static boolean protectStatusBar;
@@ -334,7 +339,7 @@ public class IJ {
 		macros using the old names continue to work. */
 	private static String convert(String command) {
 		if (commandTable==null) {
-			commandTable = new Hashtable(30);
+			commandTable = new Hashtable<String,String>(30);
 			commandTable.put("New...", "Image...");
 			commandTable.put("Threshold", "Make Binary");
 			commandTable.put("Display...", "Appearance...");
@@ -513,7 +518,7 @@ public class IJ {
 		} else if (s.startsWith("\\Heading:")) {
 			logPanel.updateColumnHeadings(s.substring(10));
 		} else if (s.equals("\\Close")) {
-			Frame f = WindowManager.getFrame("Log");
+			JFrame f = WindowManager.getFrame("Log");
 			if (f!=null && (f instanceof TextWindow))
 				((TextWindow)f).close();
 		} else
@@ -547,7 +552,7 @@ public class IJ {
 	
 	/** Renames a results window. */
 	public static void renameResults(String title) {
-		Frame frame = WindowManager.getFrontWindow();
+		JFrame frame = WindowManager.getFrontWindow();
 		if (frame!=null && (frame instanceof TextWindow)) {
 			TextWindow tw = (TextWindow)frame;
 			if (tw.getResultsTable()==null) {
@@ -564,7 +569,7 @@ public class IJ {
 
 	/** Changes the name of a table window from 'oldTitle' to 'newTitle'. */
 	public static void renameResults(String oldTitle, String newTitle) {
-		Frame frame = WindowManager.getFrame(oldTitle);
+		JFrame frame = WindowManager.getFrame(oldTitle);
 		if (frame==null) {
 			error("Rename", "\""+oldTitle+"\" not found");
 			return;
@@ -902,8 +907,8 @@ public class IJ {
 			return ""+n;
 		if (n==Float.MAX_VALUE) // divide by 0 in FloatProcessor
 			return "3.4e38";
-		double np = n;
-		if (n<0.0) np = -n;
+		//double np = n;
+		//if (n<0.0) np = -n;
 		if (decimalPlaces<0) synchronized(IJ.class) {
 			decimalPlaces = -decimalPlaces;
 			if (decimalPlaces>9) decimalPlaces=9;
@@ -1513,10 +1518,10 @@ public class IJ {
 	}
 	
 	static void selectWindow(Window win) {
-		if (win instanceof Frame)
-			((Frame)win).toFront();
+		if (win instanceof JFrame)
+			((JFrame)win).toFront();
 		else
-			((Dialog)win).toFront();
+			((JDialog)win).toFront();
 		long start = System.currentTimeMillis();
 		while (true) {
 			wait(10);
@@ -2332,7 +2337,7 @@ public class IJ {
 	/** Returns, as an array of strings, a list of the LUTs in the Image/Lookup Tables menu. */
 	public static String[] getLuts() {
 		ArrayList<String> list = new ArrayList<String>();
-		Hashtable commands = Menus.getCommands();
+		Hashtable<String,String> commands = Menus.getCommands();
 		JMenu lutsMenu = Menus.getImageJMenu("Image>Lookup Tables");
 		if (commands==null || lutsMenu==null)
 			return new String[0];

@@ -1,8 +1,18 @@
 package ij.plugin.frame;
-import java.awt.*;
+//import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.util.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Event;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.PrintGraphics;
+import java.awt.PrintJob;
+import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.datatransfer.*;																																																																																													
 import ij.*;
 import ij.gui.*;
@@ -14,10 +24,12 @@ import ij.plugin.Macro_Runner;
 import ij.plugin.JavaScriptEvaluator;
 import ij.io.SaveDialog;
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
-/** This is a simple TextArea based editor for editing and compiling plugins. */
+/** This is a simple JTextArea based editor for editing and compiling plugins. */
 public class Editor extends PlugInFrame implements ActionListener, ItemListener,
-	TextListener, KeyListener, ClipboardOwner, MacroConstants, Runnable, Debugger {
+	DocumentListener, KeyListener, ClipboardOwner, MacroConstants, Runnable, Debugger {
 	
 	/** ImportPackage statements added in front of scripts. Contains no 
 	newlines so that lines numbers in error messages are not changed. */
@@ -65,7 +77,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	static final String INSERT_SPACES= "editor.spaces";
 	static final String TAB_INC= "editor.tab-inc";
 	public static Editor currentMacroEditor;
-	private TextArea ta;
+	private JTextArea ta;
 	private String path;
 	protected boolean changes;
 	private static String searchString = "";
@@ -101,7 +113,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	private String downloadUrl;
 	private boolean downloading;
 	private FunctionFinder functionFinder;
-	private ArrayList undoBuffer = new ArrayList();
+	private ArrayList<String> undoBuffer = new ArrayList<String>();
 	private boolean performingUndo;
 	private boolean checkForCurlyQuotes;
 	private static int tabInc = (int)Prefs.get(TAB_INC, 3);
@@ -120,8 +132,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		super("Editor");
 		WindowManager.addWindow(this);
 		addMenuBar(options);	
-		ta = new TextArea(rows, columns);
-		ta.addTextListener(this);
+		ta = new JTextArea(rows, columns);
+		ta.getDocument().addDocumentListener(this);
 		ta.addKeyListener(this);
 		if (IJ.isLinux()) ta.setBackground(Color.white);
  		addKeyListener(IJ.getInstance());  // ImageJ handles keyboard shortcuts
@@ -374,7 +386,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			return ta.getText();
 	}
 
-	public TextArea getTextArea() {
+	public JTextArea getTextArea() {
 		return ta;
 	}
 
@@ -728,7 +740,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		checkForCurlyQuotes = true;
 	}
 	
-	// workaround for TextArea.getCaretPosition() bug on Windows
+	// workaround for JTextArea.getCaretPosition() bug on Windows
 	private int offset(int pos) {
 		if (!IJ.isWindows())
 			return 0;
@@ -988,6 +1000,13 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			ta.setCaretPosition(ta.getCaretPosition());
 	}
 	
+	@Override
+	public void insertUpdate(DocumentEvent e) {textValueChanged(new TextEvent(e.getDocument(),TextEvent.TEXT_VALUE_CHANGED));}
+	@Override
+	public void removeUpdate(DocumentEvent e) {textValueChanged(new TextEvent(e.getDocument(),TextEvent.TEXT_VALUE_CHANGED));}
+	@Override
+	public void changedUpdate(DocumentEvent e) {textValueChanged(new TextEvent(e.getDocument(),TextEvent.TEXT_VALUE_CHANGED));}
+	
 	public void keyPressed(KeyEvent e) { 
 	} 
 	
@@ -1030,20 +1049,20 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		if (code.length()==0 || code.equals("\n"))
 			return;		
 		else if (code.length()<=6 && code.contains("help")) {
-			ta.appendText("  Type a statement (e.g., \"run('Invert')\") to run it.\n");			
-			ta.appendText("  Enter an expression (e.g., \"x/2\" or \"log(2)\") to evaluate it.\n");			
-			ta.appendText("  Move cursor to end of line and press 'enter' to repeat.\n");			
-			ta.appendText("  \"quit\" - exit interactive mode\n");			
-			ta.appendText("  "+(IJ.isMacOSX()?"cmd":"ctrl")+"+M - enter interactive mode\n");
+			ta.append("  Type a statement (e.g., \"run('Invert')\") to run it.\n");			
+			ta.append("  Enter an expression (e.g., \"x/2\" or \"log(2)\") to evaluate it.\n");			
+			ta.append("  Move cursor to end of line and press 'enter' to repeat.\n");			
+			ta.append("  \"quit\" - exit interactive mode\n");			
+			ta.append("  "+(IJ.isMacOSX()?"cmd":"ctrl")+"+M - enter interactive mode\n");
 			if (isScript) {	
-				ta.appendText("  \"macro\" - switch language to macro\n");
-				ta.appendText("  \"examples\" - show JavaScript examples\n");	
+				ta.append("  \"macro\" - switch language to macro\n");
+				ta.append("  \"examples\" - show JavaScript examples\n");	
 			} else {
-				ta.appendText("  "+(IJ.isMacOSX()?"cmd":"ctrl")+"+shift+F - open Function Finder\n");	
-				ta.appendText("  \"js\" - switch language to JavaScript\n");	
+				ta.append("  "+(IJ.isMacOSX()?"cmd":"ctrl")+"+shift+F - open Function Finder\n");	
+				ta.append("  \"js\" - switch language to JavaScript\n");	
 			}
 		} else if (isScript && code.length()==9 && code.contains("examples")) {
-			ta.appendText(JS_EXAMPLES);					
+			ta.append(JS_EXAMPLES);					
 		} else if (code.length()<=3 && code.contains("js")) {
 			interactiveMode = false;
 			interpreter = null;
@@ -1060,7 +1079,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			interactiveMode = false;
 			interpreter = null;
 			evaluator = null;
-			ta.appendText("[Exiting interactive mode.]\n");
+			ta.append("[Exiting interactive mode.]\n");
 		} else if (isScript) {
 			boolean updateImage = code.contains("ip.");
 			code = "load(\"nashorn:mozilla_compat.js\");"+JavaScriptIncludes+code;
@@ -1106,7 +1125,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		String language = title.endsWith(".js")?"JavaScript ":"Macro ";
 		messageCount++;
 		String help = messageCount<=2?" Type \"help\" for info.":"";
-		ta.appendText("["+language+"interactive mode."+help+"]\n");
+		ta.append("["+language+"interactive mode."+help+"]\n");
 		interactiveMode = true;
 	}
 	
@@ -1121,7 +1140,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 
 	public void itemStateChanged(ItemEvent e) {
 		JCheckBoxMenuItem item = (JCheckBoxMenuItem)e.getSource();
-		String cmd = e.getItem().toString();
+		String cmd = item.getText();
 		if ("Tab Key Inserts Spaces".equals(cmd)) {
 			insertSpaces = e.getStateChange()==1;
 			Prefs.set(INSERT_SPACES, insertSpaces);
@@ -1200,7 +1219,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			return;
 		String directory = path.substring(0, path.length()-title.length());
 		open(directory, title);
-		undoBuffer = new ArrayList();
+		undoBuffer = new ArrayList<String>();
 	}
 
 	/** Changes a plugins class name to reflect a new file name. */
@@ -1637,7 +1656,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	}
 	
 	public void showLogWindow() {
-		Frame log = WindowManager.getFrame("Log");
+		JFrame log = WindowManager.getFrame("Log");
 		if (log!=null)
 			log.toFront();
 		else

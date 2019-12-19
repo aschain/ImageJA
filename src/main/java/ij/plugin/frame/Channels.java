@@ -2,11 +2,15 @@ package ij.plugin.frame;
 import ij.*;
 import ij.plugin.*;
 import ij.gui.*;
-import java.awt.*;
+
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.Point;
+//import java.awt.*;
 import java.awt.event.*;
 
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
+import javax.swing.*;
 
 /** Displays the ImageJ Channels window. */
 public class Channels extends PlugInDialog implements PlugIn, ItemListener, ActionListener {
@@ -17,11 +21,11 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 
 	private static String moreLabel = "More "+'\u00bb';
 	//private String[] title = {"Red", "Green", "Blue"};
-	private Choice choice;
-	private Checkbox[] checkbox;
-	private Button moreButton;
+	private JComboBox<String> choice;
+	private JCheckBox[] checkbox;
+	private JButton moreButton;
 	private static Channels instance;
-	private int id;
+	//private int id;
 	private static Point location;
 	private JPopupMenu pm;
 
@@ -47,10 +51,10 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 		if (IJ.isMacOSX())
 			margin = 20;
 		c.insets = new Insets(10, margin, 10, margin);
-		choice = new Choice();
+		choice = new JComboBox<String>();
 		for (int i=0; i<modes.length; i++)
 			choice.addItem(modes[i]);
-		choice.select(0);
+		choice.setSelectedIndex(0);
 		choice.addItemListener(this);
 		choice.addKeyListener(ij);
 		add(choice, c);
@@ -59,9 +63,9 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 		int nCheckBoxes = ci!=null?ci.getNChannels():3;
 		if (nCheckBoxes>CompositeImage.MAX_CHANNELS)
 			nCheckBoxes = CompositeImage.MAX_CHANNELS;
-		checkbox = new Checkbox[nCheckBoxes];
+		checkbox = new JCheckBox[nCheckBoxes];
 		for (int i=0; i<nCheckBoxes; i++) {
-			checkbox[i] = new Checkbox("Channel "+(i+1), true);
+			checkbox[i] = new JCheckBox("Channel "+(i+1), true);
 			c.insets = new Insets(0, 25, i<nCheckBoxes-1?0:10, 5);
 			c.gridy = y++;
 			add(checkbox[i], c);
@@ -72,7 +76,7 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 		c.insets = new Insets(0, 15, 10, 15);
 		c.fill = GridBagConstraints.NONE;
 		c.gridy = y++;
-		moreButton = new Button(moreLabel);
+		moreButton = new JButton(moreLabel);
 		moreButton.addActionListener(this);
 		moreButton.addKeyListener(ij);
 		add(moreButton, c);
@@ -111,14 +115,14 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 		}
 		boolean[] active = ci.getActiveChannels();
 		for (int i=0; i<checkbox.length; i++)
-			checkbox[i].setState(active[i]);
+			checkbox[i].setSelected(active[i]);
 		int index = 0;
 		switch (ci.getMode()) {
 			case IJ.COMPOSITE: index=0; break;
 			case IJ.COLOR: index=1; break;
 			case IJ.GRAYSCALE: index=2; break;
 		}
-		choice.select(index);
+		choice.setSelectedIndex(index);
 	}
 	
 	public static void updateChannels() {
@@ -164,7 +168,7 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 		CompositeImage ci = (CompositeImage)imp;
 		Object source = e.getSource();
 		if (source==choice) {
-			int index = ((Choice)source).getSelectedIndex();
+			int index = choice.getSelectedIndex();
 			switch (index) {
 				case 0: ci.setMode(IJ.COMPOSITE); break;
 				case 1: ci.setMode(IJ.COLOR); break;
@@ -189,13 +193,13 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 					Recorder.record("Stack.setDisplayMode", mode);
 				}
 			}
-		} else if (source instanceof Checkbox) {
+		} else if (source instanceof JCheckBox) {
 			for (int i=0; i<checkbox.length; i++) {
-				Checkbox cb = (Checkbox)source;
+				JCheckBox cb = (JCheckBox)source;
 				if (cb==checkbox[i]) {
 					if (ci.getMode()==IJ.COMPOSITE) {
 						boolean[] active = ci.getActiveChannels();
-						active[i] = cb.getState();
+						active[i] = cb.isSelected();
 						if (Recorder.record) {
 							String str = "";
 							for (int c=0; c<ci.getNChannels(); c++)
@@ -234,7 +238,7 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 	}
 	
 	/** Obsolete; always returns null. */
-	public static Frame getInstance() {
+	public static JFrame getInstance() {
 		return null;
 	}
 		

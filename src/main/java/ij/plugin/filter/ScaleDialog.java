@@ -5,10 +5,15 @@ import ij.process.*;
 import ij.measure.*;
 import ij.util.Tools;
 import ij.io.FileOpener;
-import java.awt.*;
+
+import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
 import java.awt.event.*;
 
+import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 /** Implements the Analyze/Set Scale command. */
@@ -114,10 +119,10 @@ public class ScaleDialog implements PlugInFilter {
 	}
 	
 	/** Creates a panel containing an "Unscale" button. */
-	Panel makeButtonPanel(SetScaleDialog gd) {
-		Panel panel = new Panel();
+	JPanel makeButtonPanel(SetScaleDialog gd) {
+		JPanel panel = new JPanel();
     	panel.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
-		gd.unscaleButton = new Button("Click to Remove Scale");
+		gd.unscaleButton = new JButton("Click to Remove Scale");
 		gd.unscaleButton.addActionListener(gd);
 		panel.add(gd.unscaleButton);
 		return panel;
@@ -128,7 +133,7 @@ public class ScaleDialog implements PlugInFilter {
 class SetScaleDialog extends GenericDialog {
 	static final String NO_SCALE = "<no scale>";
 	String initialScale;
-	Button unscaleButton;
+	JButton unscaleButton;
 	String length;
 	boolean scaleChanged;
 

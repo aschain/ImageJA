@@ -11,13 +11,17 @@ import ij.io.*;
 import ij.util.*;
 import java.awt.*;
 import java.awt.image.*;
+import java.awt.datatransfer.*;
+import java.awt.geom.*;
 import java.util.*;
+
+import javax.swing.JFrame;
+import javax.swing.JTextArea;
+import javax.swing.JDialog;
+
 import java.io.*;
 import java.awt.event.KeyEvent;
 import java.lang.reflect.*;
-import java.net.URL;
-import java.awt.datatransfer.*;
-import java.awt.geom.*;
 
 
 /** This class implements the built-in macro functions. */
@@ -1208,7 +1212,7 @@ public class Functions implements MacroConstants, Measurements {
 		ResultsTable rt = Analyzer.getResultsTable();
 		int size = rt.size();
 		if (size==0) {
-			Frame frame = WindowManager.getFrontWindow();
+			JFrame frame = WindowManager.getFrontWindow();
 			if (frame!=null && (frame instanceof TextWindow)) {
 				TextPanel tp = ((TextWindow)frame).getTextPanel();
 				rt = tp.getOrCreateResultsTable();
@@ -1481,9 +1485,9 @@ public class Functions implements MacroConstants, Measurements {
 			return new Variable[0];
 		}
 		interp.getLeftParen();
-		int next = interp.nextToken();
-		int nextNext = interp.nextNextToken();
-		Vector vector = new Vector();
+		//int next = interp.nextToken();
+		//int nextNext = interp.nextNextToken();
+		Vector<Variable> vector = new Vector<Variable>();
 		int size = 0;
 		do {
 			Variable v = new Variable();
@@ -1538,7 +1542,7 @@ public class Functions implements MacroConstants, Measurements {
 
 	String getInfo(String key) {
 			String lowercaseKey = key.toLowerCase(Locale.US);
-			int len = lowercaseKey.length();
+			//int len = lowercaseKey.length();
 			if (lowercaseKey.equals("command.name")) {
 				return ImageJ.getCommandName();
 			} else if (lowercaseKey.equals("overlay")) {
@@ -1634,10 +1638,10 @@ public class Functions implements MacroConstants, Measurements {
 		if (IJ.debugMode) IJ.log("getWindowTitle: "+win);
 		if (win==null)
 			return "";
-		else if (win instanceof Frame)
-			return ((Frame)win).getTitle();
-		else if (win instanceof Dialog)
-			return ((Dialog)win).getTitle();
+		else if (win instanceof JFrame)
+			return ((JFrame)win).getTitle();
+		else if (win instanceof JDialog)
+			return ((JDialog)win).getTitle();
 		else
 			return "";
 	}
@@ -1671,7 +1675,7 @@ public class Functions implements MacroConstants, Measurements {
 	}
 
 	String getWindowContents() {
-		Frame frame = WindowManager.getFrontWindow();
+		JFrame frame = WindowManager.getFrontWindow();
 		if (frame!=null && frame instanceof TextWindow) {
 			TextPanel tp = ((TextWindow)frame).getTextPanel();
 			return tp.getText();
@@ -2406,7 +2410,7 @@ public class Functions implements MacroConstants, Measurements {
 		for (int row = 0; row < nCoords; row++) {
 			floatArr[row] = Tools.toFloat(arr2D[row]);
 		}
-		ArrayList shapeData = new ArrayList();
+		ArrayList<float[]> shapeData = new ArrayList<float[]>();
 		for (int box = 0; box < nBoxes; box++) {
 			float[] coords = new float[nCoords];
 			for (int coord = 0; coord < nCoords; coord++) {
@@ -2681,8 +2685,8 @@ public class Functions implements MacroConstants, Measurements {
 		if (open)
 			return true;
 		else if (Interpreter.isBatchMode() && Interpreter.imageTable!=null) {
-			for (Enumeration en=Interpreter.imageTable.elements(); en.hasMoreElements();) {
-				ImagePlus imp = (ImagePlus)en.nextElement();
+			for (Enumeration<ImagePlus> en=Interpreter.imageTable.elements(); en.hasMoreElements();) {
+				ImagePlus imp = en.nextElement();
 				if (imp!=null && imp.getTitle().equals(title))
 					return true;
 			}
@@ -3071,8 +3075,8 @@ public class Functions implements MacroConstants, Measurements {
 	void selectImage(String title) {
 		if (Interpreter.isBatchMode()) {
 			if (Interpreter.imageTable!=null) {
-				for (Enumeration en=Interpreter.imageTable.elements(); en.hasMoreElements();) {
-					ImagePlus imp = (ImagePlus)en.nextElement();
+				for (Enumeration<ImagePlus> en=Interpreter.imageTable.elements(); en.hasMoreElements();) {
+					ImagePlus imp = en.nextElement();
 					if (imp!=null) {
 						if (imp.getTitle().equals(title)) {
 							ImagePlus imp2 = WindowManager.getCurrentImage();
@@ -3319,7 +3323,7 @@ public class Functions implements MacroConstants, Measurements {
 				IJ.selectWindow(imp2.getID());
 			}
 		} else {
-			Vector v = Interpreter.imageTable;
+			Vector<ImagePlus> v = Interpreter.imageTable;
 			if (v==null) return;
 			ImagePlus cImp = imp2;
 			interp.setBatchMode(false);
@@ -3527,7 +3531,7 @@ public class Functions implements MacroConstants, Measurements {
 		String title = s.substring(1, s.length()-1);
 		String s2 = getLastString();
 		boolean isCommand = s2.startsWith("\\");
-		Frame frame = WindowManager.getFrame(title);
+		JFrame frame = WindowManager.getFrame(title);
 		if (frame==null) {
 			if (isCommand) {
 				//interp.done = true;
@@ -3560,7 +3564,7 @@ public class Functions implements MacroConstants, Measurements {
 
 	void handleEditorCommand(Editor ed, String s) {
 		if (s.startsWith("\\Update:")) {
-			TextArea ta = ed.getTextArea();
+			JTextArea ta = ed.getTextArea();
 			ta.setText(s.substring(8, s.length()));
 			ta.setEditable(false);
 		} else if (s.equals("\\Close"))
@@ -4374,7 +4378,7 @@ public class Functions implements MacroConstants, Measurements {
 		// get optional string arguments
 		Object[] args = null;
 		if (interp.nextToken()==',') {
-			Vector vargs = new Vector();
+			Vector<String> vargs = new Vector<String>();
 			do
 				vargs.add(getNextString());
 			while (interp.nextToken()==',');
@@ -4555,12 +4559,12 @@ public class Functions implements MacroConstants, Measurements {
 			text = title;
 			title = "Untitled";
 		}
-		Frame frame = WindowManager.getFrame(title);
+		JFrame frame = WindowManager.getFrame(title);
 		Editor ed = null;
 		boolean useExisting = frame instanceof Editor;
 		if (useExisting) {
 			ed = (Editor)frame;
-			TextArea ta = ed.getTextArea();
+			JTextArea ta = ed.getTextArea();
 			ta.selectAll();
 			ta.replaceRange(text, ta.getSelectionStart(), ta.getSelectionEnd());
 		} else {
@@ -4578,7 +4582,7 @@ public class Functions implements MacroConstants, Measurements {
         String[] commands = getStringArray();
         interp.getRightParen();
         if (pgm.menus==null)
-            pgm.menus = new Hashtable();
+            pgm.menus = new Hashtable<String,String[]>();
         pgm.menus.put(name, commands);
     	Variable[] commands2 = new Variable[commands.length];
     	for (int i=0; i<commands.length; i++)
@@ -4653,7 +4657,7 @@ public class Functions implements MacroConstants, Measurements {
 		String key = getStringArg().toLowerCase();
 		if (key.equals("java.properties")) {
 			Properties props = System.getProperties();
-			Vector v = new Vector();
+			Vector<String> v = new Vector<String>();
 			for (Enumeration en=props.keys(); en.hasMoreElements();)
 				v.addElement((String)en.nextElement());
 			Variable[] array = new Variable[v.size()];
@@ -6808,7 +6812,7 @@ public class Functions implements MacroConstants, Measurements {
 			ResultsTable rt = getResultsTable(title);
 			title = rt.getTitle();
 		}
-		Frame frame = WindowManager.getFrame(title);
+		JFrame frame = WindowManager.getFrame(title);
 		if (frame!=null) {
 			Point loc = frame.getLocation();
 			Dimension size = frame.getSize();
@@ -6825,7 +6829,7 @@ public class Functions implements MacroConstants, Measurements {
 		double to = interp.getExpression();
 		ResultsTable rt = getResultsTable(getTitle());
 		String title = rt.getTitle();
-		Frame f = WindowManager.getFrame(title);
+		JFrame f = WindowManager.getFrame(title);
 		if (f!=null && (f instanceof TextWindow)){
 			TextWindow tWin = (TextWindow)f;
 			if (from == -1 && to == -1)
@@ -6842,7 +6846,7 @@ public class Functions implements MacroConstants, Measurements {
 		int selStart = -1;
 		ResultsTable rt = getResultsTable(getTitleArg());
 		String title = rt.getTitle();
-		Frame f = WindowManager.getFrame(title);
+		JFrame f = WindowManager.getFrame(title);
 		if (f!=null && (f instanceof TextWindow)){
 			TextWindow tWin = (TextWindow)f;
 			selStart = tWin.getTextPanel().getSelectionStart();
@@ -6855,7 +6859,7 @@ public class Functions implements MacroConstants, Measurements {
 		int selEnd = -1;
 		ResultsTable rt = getResultsTable(getTitleArg());
 		String title = rt.getTitle();
-		Frame f = WindowManager.getFrame(title);
+		JFrame f = WindowManager.getFrame(title);
 		if (f!=null && (f instanceof TextWindow)){
 			TextWindow tWin = (TextWindow)f;
 			selEnd = tWin.getTextPanel().getSelectionEnd();
@@ -6923,7 +6927,7 @@ public class Functions implements MacroConstants, Measurements {
 		long start = System.currentTimeMillis();
 		while (true) {
 			IJ.wait(5);
-			Frame frame = WindowManager.getFrontWindow();
+			JFrame frame = WindowManager.getFrontWindow();
 			String title2 = frame!=null?frame.getTitle():null;
 			if (title.equals(title2))
 				return;
@@ -6936,7 +6940,7 @@ public class Functions implements MacroConstants, Measurements {
 	private void toFront(String title) {
 		if (title==null)
 			return;
-		Frame frame = WindowManager.getFrame(title);
+		JFrame frame = WindowManager.getFrame(title);
 		if (frame!=null) {
 			frame.toFront();
 			WindowManager.setWindow(frame);
@@ -7110,7 +7114,7 @@ public class Functions implements MacroConstants, Measurements {
 		if (interp.applyMacroTable!=null && title==null)
 			return interp.applyMacroTable;
 		ResultsTable rt = null;
-		Frame frame = null;
+		JFrame frame = null;
 		if (title==null) {
 			frame = WindowManager.getFrontWindow();
 			if (frame!=null && (frame instanceof TextWindow)) {

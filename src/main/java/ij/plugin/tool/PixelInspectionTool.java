@@ -9,7 +9,9 @@ import ij.util.Tools;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.datatransfer.*;
-import java.awt.geom.*;
+
+import javax.swing.JButton;
+import javax.swing.JLabel;
 
 /**
  * This plugin continuously displays the pixel values of the cursor and
@@ -107,6 +109,7 @@ public class  PixelInspectionTool extends PlugInTool {
 }
 
 
+@SuppressWarnings("serial")
 class PixelInspector extends PlugInFrame
 		implements ImageListener, KeyListener, MouseListener, Runnable {
 	//ImageListener: listens to changes of image data
@@ -149,9 +152,9 @@ class PixelInspector extends PlugInFrame
 	boolean expMode;				//whether to display the data in exp format
 	ImageCanvas canvas;				//the canvas of imp
 	Thread bgThread;				//thread for output (in the background)
-	Label[] labels;					//the display fields
+	JLabel[] labels;					//the display fields
 	//Label prefsLabel = new Label("Prefs\u2026");
-	Label prefsLabel = new Label("Prefs");
+	JLabel prefsLabel = new JLabel("Prefs");
 	
 
 	/* Initialization, preparing the window (panel) **/
@@ -179,7 +182,7 @@ class PixelInspector extends PlugInFrame
 		else
 			GUI.centerOnImageJScreen(this);
 		setResizable(false);
-		show();
+		setVisible(true);
 		toFront();
 		addImageListeners();
 											//thread for output in the background
@@ -192,9 +195,9 @@ class PixelInspector extends PlugInFrame
 	private void init() {
 		removeAll();
 		int size = 2*radius+2;			   //number of columns and rows
-		labels = new Label[size*size];
+		labels = new JLabel[size*size];
 		for (int i=1; i<labels.length; i++) //make the labels (display fields)
-			labels[i] = new Label();
+			labels[i] = new JLabel();
 		initializeLabels();					//fill the labels with spaceholders
 		setLayout(new GridLayout(size, size, 0, 0));
 		for (int row=0,p=0; row<size; row++) {
@@ -232,7 +235,7 @@ class PixelInspector extends PlugInFrame
 	}
 
 	private void addImageListeners() {
-		imp.addImageListener(this);
+		ImagePlus.addImageListener(this);
 		ImageWindow win = imp.getWindow();
 		if (win == null) close();
 		canvas = win.getCanvas();
@@ -240,7 +243,7 @@ class PixelInspector extends PlugInFrame
 	}
 
 	private void removeImageListeners() {
-		imp.removeImageListener(this);
+		ImagePlus.removeImageListener(this);
 		canvas.removeKeyListener(this);
 	}
 
@@ -264,7 +267,7 @@ class PixelInspector extends PlugInFrame
 			x0--; update(FULL_UPDATE);
 		} else if (e.getKeyCode()==KeyEvent.VK_RIGHT && x0<imp.getWidth()-1) {
 			x0++; update(FULL_UPDATE);
-		} else if (e.getSource() instanceof Button)
+		} else if (e.getSource() instanceof JButton || e.getSource() instanceof Button)
 			ij.keyPressed(e);  //forward other keys from the panel to ImageJ
 		Overlay overlay = imp.getOverlay();
 		if (overlay==null) return;
@@ -431,7 +434,7 @@ class PixelInspector extends PlugInFrame
 			labels[(2*radius+2)*(i+1)].setBackground(bgColor);		
 		}
 		for (int i=1; i<labels.length; i++)
-			labels[i].setAlignment(Label.RIGHT);
+			labels[i].setAlignmentX(JLabel.RIGHT);
 	}
 
 	/* set the pixel value calibration of the ImageProcessor and the output format */
@@ -529,7 +532,7 @@ class PixelInspector extends PlugInFrame
 		grayDisplayType = gd.getNextChoiceIndex();
 		rgbDisplayType = gd.getNextChoiceIndex();
 		copyType = gd.getNextChoiceIndex();
-		boolean keyOK = false;
+		//boolean keyOK = false;
 		init();
 		update(POSITION_UPDATE);
 		Prefs.set(PREFS_KEY+"radius", radius);

@@ -1,9 +1,8 @@
 package ij.plugin;
 import ij.*;
-import ij.process.*;
 import ij.gui.*;
-import ij.plugin.frame.ThresholdAdjuster;
 import java.awt.*;
+import javax.swing.JFrame;
 
 /** This class implements the Window menu's "Show All", "Main Window", "Cascade" and "Tile" commands. */
 public class WindowOrganizer implements PlugIn {
@@ -173,7 +172,7 @@ public class WindowOrganizer implements PlugIn {
 				
 			}
 		}
-		Frame[] frames = WindowManager.getNonImageWindows();
+		JFrame[] frames = WindowManager.getNonImageWindows();
 		if (frames!=null) {
 			for (int i=0; i<frames.length; i++)
 					WindowManager.toFront(frames[i]);

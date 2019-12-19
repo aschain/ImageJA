@@ -3,16 +3,13 @@ import ij.*;
 import java.awt.*;
 import java.awt.image.*;
 import java.awt.event.*;
-import java.io.*;
 
-import javax.swing.JTextField;
+import javax.swing.*;
 
-import java.awt.datatransfer.*;
 import ij.gui.*;
 import ij.process.*;
 import ij.measure.Measurements;
 import ij.plugin.filter.Analyzer;
-import ij.text.TextWindow;
 import ij.measure.*;
 
 /** This plugin implements the Analyze/Tools/Calibration Bar command.
@@ -62,10 +59,10 @@ public class CalibrationBar implements PlugIn {
 	Calibration cal;
 	int[] histogram;
 	Image img;
-	Button setup, redraw, insert, unInsert;
-	Checkbox ne,nw,se,sw;
-	CheckboxGroup locGroup;
-	Label value, note;
+	JButton setup, redraw, insert, unInsert;
+	JCheckBox ne,nw,se,sw;
+	ButtonGroup locGroup;
+	JLabel value, note;
 	int newMaxCount;
 	boolean logScale;
 	int win_width;
@@ -299,8 +296,8 @@ public class CalibrationBar implements PlugIn {
 		Color c = getColor(textColor);
 		if (c == null)
 			return 0;
-		double hmin = cal.getCValue(stats.histMin);
-		double hmax = cal.getCValue(stats.histMax);
+		//double hmin = cal.getCValue(stats.histMin);
+		//double hmax = cal.getCValue(stats.histMax);
 		double barStep = (double)(BAR_LENGTH*zoom) ;
 		if (numLabels > 2)
 			barStep /= (numLabels - 1);
@@ -320,7 +317,7 @@ public class CalibrationBar implements PlugIn {
 		fontHeight = metrics.getHeight();
 
 		for (int i = 0; i < numLabels; i++) {
-			double yLabelD = (int)(YMARGIN*zoom + BAR_LENGTH*zoom - i*barStep - 1);
+			//double yLabelD = (int)(YMARGIN*zoom + BAR_LENGTH*zoom - i*barStep - 1);
 			int yLabel = (int)(Math.round( y + BAR_LENGTH*zoom - i*barStep - 1));
 			Calibration cal = imp.getCalibration();
 			String s = "";
@@ -406,7 +403,7 @@ public class CalibrationBar implements PlugIn {
 					fieldNames[i] = ((JTextField)numberField.elementAt(i)).getName();
 			}
 
-			TextField tf = (TextField)e.getSource();
+			JTextField tf = (JTextField)e.getSource();
 			String name = tf.getName();
 			String value = tf.getText();
 
@@ -462,12 +459,12 @@ public class CalibrationBar implements PlugIn {
 		}
 
 		public void itemStateChanged(ItemEvent e) {
-			location = ( (Choice)(choice.elementAt(0)) ).getSelectedItem();
-			fillColor = ( (Choice)(choice.elementAt(1)) ).getSelectedItem();
-			textColor = ( (Choice)(choice.elementAt(2)) ).getSelectedItem();
-			boldText = ( (Checkbox)(checkbox.elementAt(0)) ).getState();
-			flatten = !( (Checkbox)(checkbox.elementAt(1)) ).getState();
-			showUnit = ( (Checkbox)(checkbox.elementAt(2)) ).getState();
+			location = (String)( (JComboBox<String>)(choice.elementAt(0)) ).getSelectedItem();
+			fillColor = (String)( (JComboBox<String>)(choice.elementAt(1)) ).getSelectedItem();
+			textColor = (String)( (JComboBox<String>)(choice.elementAt(2)) ).getSelectedItem();
+			boldText = ( (JCheckBox)(checkbox.elementAt(0)) ).isSelected();
+			flatten = !( (JCheckBox)(checkbox.elementAt(1)) ).isSelected();
+			showUnit = ( (JCheckBox)(checkbox.elementAt(2)) ).isSelected();
 			updateColorBar();
 		}
 

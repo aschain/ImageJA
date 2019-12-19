@@ -1,16 +1,24 @@
 package ij.plugin.frame;
 import ij.*;
 import ij.gui.*;
-import java.awt.*;
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.Point;
 import java.awt.event.*;
 
 
-/** This plugin implements the Plugins>Utiltiees>Recent Commands command. */
-public class Commands extends PlugInFrame implements ActionListener, ItemListener, CommandListener {
+/** This plugin implements the Plugins>Utilties>Recent Commands command. */
+public class Commands extends PlugInFrame implements ActionListener, ListSelectionListener, CommandListener {
 	public static final String LOC_KEY = "commands.loc";
 	public static final String CMDS_KEY = "commands.cmds";
 		public static final int MAX_COMMANDS = 20;
-	private static Frame instance;
+	private static JFrame instance;
 	private static final String divider = "---------------";
 	private static final String[] commands = {
 		"Blobs (25K)",
@@ -25,9 +33,10 @@ public class Commands extends PlugInFrame implements ActionListener, ItemListene
 		"Capture Screen",
 		"Find Commands..."
 	};
-	private List list;
+	private JList<String> list;
+	private DefaultListModel<String> listm;
 	private String command;
-	private Button button;
+	private JButton button;
 
 	public Commands() {
 		super("Commands");
@@ -37,9 +46,11 @@ public class Commands extends PlugInFrame implements ActionListener, ItemListene
 		}
 		instance = this;
 		WindowManager.addWindow(this);
-		list = new List(MAX_COMMANDS);
-		list.addItemListener(this);
+		listm=new DefaultListModel<String>();
+		list = new JList<String>(listm);
+		list.addListSelectionListener(this);
 		String cmds = Prefs.get(CMDS_KEY, null);
+		
 		if (cmds!=null) {
 			String[] cmd = cmds.split(",");
 			int len = cmd.length<=MAX_COMMANDS?cmd.length:MAX_COMMANDS;
@@ -52,15 +63,15 @@ public class Commands extends PlugInFrame implements ActionListener, ItemListene
 			}
 			if (isDivider) {
 				for (int i=0; i<len; i++)
-					list.add(cmd[i]);
+					listm.addElement(cmd[i]);
 			} else
 				cmds = null;				
 		}
 		if (cmds==null) {
-			list.add(divider);
+			listm.addElement(divider);
 			int len = commands.length<MAX_COMMANDS?commands.length:MAX_COMMANDS-1;
 			for (int i=0; i<len; i++)
-				list.add(commands[i]);		
+				listm.addElement(commands[i]);		
 		}
 		ImageJ ij = IJ.getInstance();
 		addKeyListener(ij);
@@ -73,7 +84,7 @@ public class Commands extends PlugInFrame implements ActionListener, ItemListene
         c.insets = new Insets(0, 0, 0, 0); 
         c.gridx = 0; c.gridy = 0; c.anchor = GridBagConstraints.WEST;
         add(list,c); 
-		button = new Button("Edit");
+		button = new JButton("Edit");
 		button.addActionListener(this);
 		button.addKeyListener(ij);
         //c.insets = new Insets(2, 6, 6, 6); 
@@ -91,9 +102,9 @@ public class Commands extends PlugInFrame implements ActionListener, ItemListene
 		GenericDialog gd = new GenericDialog("Commands");
 		int dividerIndex = getDividerIndex();
 		StringBuilder sb = new StringBuilder(200);
-		sb.append("| ");	
+		sb.append("| ");
 		for (int i=0; i<dividerIndex; i++) {
-			String cmd = list.getItem(i);
+			String cmd = listm.get(i);
 			sb.append(cmd);
 			sb.append(" | ");
 		}
@@ -103,32 +114,31 @@ public class Commands extends PlugInFrame implements ActionListener, ItemListene
 		gd.addTextAreas(recentCommands, null, 5, 28);
 		int index = dividerIndex + 1;
 		int n = 1;
-		for (int i=index; i<list.getItemCount(); i++) {
+		for (int i=index; i<listm.getSize(); i++) {
 			gd.setInsets(2, 8, 0);
-			gd.addStringField("Cmd"+IJ.pad(n++,2)+":", list.getItem(i), 20);
+			gd.addStringField("Cmd"+IJ.pad(n++,2)+":", listm.get(i), 20);
 		}
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
-		for (int i=index; i<list.getItemCount(); i++)
-			list.replaceItem(gd.getNextString(),i);
+		for (int i=index; i<listm.getSize(); i++)
+			listm.set(i,gd.getNextString());
 	}
 
-	public void itemStateChanged(ItemEvent e) {
-		//IJ.log("itemStateChanged: "+e);
-		if (e.getStateChange()==ItemEvent.SELECTED) {
-			int index = list.getSelectedIndex();
-			command = list.getItem(index);
-			if (!command.equals(divider)) {
-				if (command.equals("Debug Mode"))
-					IJ.runMacro("setOption('DebugMode')");
-				else if (command.equals("Hyperstack"))
-					IJ.runMacro("newImage('HyperStack', '8-bit color label', 400, 300, 3, 4, 25)");
-				else
-					IJ.doCommand(command);
-			}
-			list.deselect(index);
+
+	@Override
+	public void valueChanged(ListSelectionEvent e) {
+		int index = list.getSelectedIndex();
+		command = listm.get(index);
+		if (!command.equals(divider)) {
+			if (command.equals("Debug Mode"))
+				IJ.runMacro("setOption('DebugMode')");
+			else if (command.equals("Hyperstack"))
+				IJ.runMacro("newImage('HyperStack', '8-bit color label', 400, 300, 3, 4, 25)");
+			else
+				IJ.doCommand(command);
 		}
+		list.clearSelection();	
 	}
 	
 	public String commandExecuting(String cmd2) {
@@ -137,11 +147,11 @@ public class Commands extends PlugInFrame implements ActionListener, ItemListene
 		String cmd1 = command;
 		if (cmd1==null || !cmd1.equals(cmd2)) {
 			try {
-				list.remove(cmd2);
+				listm.removeElement(cmd2);
 			} catch(Exception e) {}
-			if (list.getItemCount()>=MAX_COMMANDS)
-				list.remove(getDividerIndex()-1);
-			list.add(cmd2, 0);
+			if (listm.getSize()>=MAX_COMMANDS)
+				listm.remove(getDividerIndex()-1);
+			listm.insertElementAt(cmd2, 0);
 		}
 		command = null;
 		return cmd2;
@@ -150,7 +160,7 @@ public class Commands extends PlugInFrame implements ActionListener, ItemListene
 	private int getDividerIndex() {
 		int index = 0;
 		for (int i=0; i<MAX_COMMANDS; i++) {
-			String cmd = list.getItem(i);
+			String cmd = listm.get(i);
 			if (divider.equals(cmd)) {
 				index = i;
 				break;
@@ -166,8 +176,8 @@ public class Commands extends PlugInFrame implements ActionListener, ItemListene
 		Executer.removeCommandListener(this);
 		Prefs.saveLocation(LOC_KEY, getLocation());
 		StringBuilder sb = new StringBuilder(200);
-		for (int i=0; i<list.getItemCount(); i++) {
-			String cmd = list.getItem(i);
+		for (int i=0; i<listm.getSize(); i++) {
+			String cmd = listm.get(i);
 			sb.append(cmd);
 			sb.append(",");
 		}

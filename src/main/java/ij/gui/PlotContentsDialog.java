@@ -13,7 +13,7 @@ import java.awt.event.*;
 import java.util.Arrays;
 import java.util.Vector;
 
-import javax.swing.JFrame;
+import javax.swing.*;
 
 import java.util.ArrayList;
 
@@ -30,22 +30,22 @@ public class PlotContentsDialog implements DialogListener {
 	private double[]      savedLimits;              // previous plot range, for undo upon cancel
 	GenericDialog         gd;
 	private int currentObjectIndex = -1;
-	private Choice        objectChoice;
-	private Choice        symbolChoice;
-	private TextField     colorField, color2Field, labelField, widthField;
-	private Checkbox      visibleCheckbox;
+	private JComboBox<String>        objectChoice;
+	private JComboBox<String>        symbolChoice;
+	private JTextField     colorField, color2Field, labelField, widthField;
+	private JCheckBox      visibleCheckbox;
 	private boolean       creatingPlot;              // for creating plots; dialogType determines source
-	private Choice        plotChoice;                // for "Add from Plot"
+	private JComboBox<String>        plotChoice;                // for "Add from Plot"
 	private Plot[]        allPlots;
 	private String[]      allPlotNames;
 	private static Plot   previousPlot;
 	private static int    previousPlotObjectIndex;
 	private int           defaultPlotIndex, defaultObjectIndex;
 	private int           currentPlotNumObjects;
-	private Choice        tableChoice;               // for "Add from Table"
+	private JComboBox<String>        tableChoice;               // for "Add from Table"
 	final static int      N_COLUMNS = 4;             // number of data columns that we can have; x, y, xE, yE
 	private int           nColumnsToUse = N_COLUMNS; // user may restrict to 2, for not having error bars
-	private Choice[]      columnChoice = new Choice[N_COLUMNS];
+	private JComboBox<String>[]      columnChoice = new JComboBox[N_COLUMNS];
 	private final static String[] COLUMN_NAMES = new String[] {"X:", "Y:", "X Error:", "Y Error:"};
 	private final static boolean[] COLUMN_ALLOW_NONE = new boolean[] {true, false, true, true}; //y data cannot be null
 	private ResultsTable[] allTables;
@@ -56,8 +56,8 @@ public class PlotContentsDialog implements DialogListener {
 	private static int[]  defaultColumnIndex = new int[N_COLUMNS];
 	private String[]      arrayHeadings;             // for "Add from Arrays"
 	private ArrayList<float[]> arrayData;
-	private Choice        fitDataChoice;             // for "Add Fit"
-	private Choice        fitFunctionChoice;
+	private JComboBox<String>        fitDataChoice;             // for "Add Fit"
+	private JComboBox<String>        fitFunctionChoice;
 	private Thread        fittingThread;
 	private static String lastFitFunction = CurveFitter.fitList[0];
 	private String        curveFitterStatusString;
@@ -143,18 +143,18 @@ public class PlotContentsDialog implements DialogListener {
 		IJ.wait(100);			//sometimes needed to avoid hanging?
 		if (dialogType == STYLE) {
 			gd.addChoice("Item:", designations, designations[0]);
-			objectChoice = (Choice)(gd.getChoices().get(0));
+			objectChoice = (JComboBox<String>)(gd.getChoices().get(0));
 			currentObjectIndex = objectChoice.getSelectedIndex();
 		} else if (dialogType == ADD_FROM_PLOT) {
 			gd.addChoice("Select Plot:", allPlotNames, allPlotNames[defaultPlotIndex]);
 			gd.addChoice("Item to Add:", new String[]{""}, "");  // will be set up by makeSourcePlotObjects
-			Vector choices = gd.getChoices();
-			plotChoice = (Choice)(choices.get(0));
-			objectChoice = (Choice)(choices.get(1));
+			Vector<JComboBox<String>> choices = gd.getChoices();
+			plotChoice = (JComboBox<String>)(choices.get(0));
+			objectChoice = (JComboBox<String>)(choices.get(1));
 			makeSourcePlotObjects();
 		} else if (dialogType == ADD_FROM_TABLE) {
 			gd.addChoice("Select Table:", allTableNames, allTableNames[defaultTableIndex]);
-			tableChoice = (Choice)(gd.getChoices().get(0));
+			tableChoice = (JComboBox<String>)(gd.getChoices().get(0));
 			if (creatingPlot) tableChoice.setEnabled(false);     // we can't select the table, we have only one
 		} else if (dialogType == ADD_FIT) {
 			String[] dataSources = plot.getDataObjectDesignations();
@@ -164,20 +164,20 @@ public class PlotContentsDialog implements DialogListener {
 			}
 			gd.addChoice("Fit Data Set:", dataSources, dataSources[0]);
 			gd.addChoice("Fit Function:", new String[0], "");
-			Vector choices = gd.getChoices();
-			fitDataChoice = (Choice)(choices.get(0));
-			fitFunctionChoice = (Choice)(choices.get(1));
+			Vector<JComboBox<String>> choices = gd.getChoices();
+			fitDataChoice = (JComboBox<String>)(choices.get(0));
+			fitFunctionChoice = (JComboBox<String>)(choices.get(1));
 			if (dataSources.length == 1)
 				fitDataChoice.setEnabled(false);
 			for (int i=0; i<CurveFitter.fitList.length; i++)
 				fitFunctionChoice.addItem(CurveFitter.fitList[CurveFitter.sortedTypes[i]]);
-			fitFunctionChoice.select(lastFitFunction);
+			fitFunctionChoice.setSelectedItem(lastFitFunction);
 		}
 		if (dialogType == ADD_FROM_TABLE || dialogType == ADD_FROM_ARRAYS) {
 			for (int i=0; i<nColumnsToUse; i++) {
 				gd.addChoice(COLUMN_NAMES[i], new String[]{""}, "");  // will set up by makeSourceColumns
-				Vector choices = gd.getChoices();
-				columnChoice[i] = (Choice)(choices.get(choices.size()-1));
+				Vector<JComboBox<String>> choices = gd.getChoices();
+				columnChoice[i] = (JComboBox<String>)(choices.get(choices.size()-1));
 			}
 			makeSourceColumns();
 			if (!creatingPlot)
@@ -190,14 +190,14 @@ public class PlotContentsDialog implements DialogListener {
 		gd.addStringField("Label:", "", 20);
 		gd.setInsets(10, 60, 0);
 		gd.addCheckbox("Visible", true);
-		Vector choices = gd.getChoices();
-		symbolChoice = (Choice)(choices.get(choices.size()-1));
-		Vector stringFields = gd.getStringFields();
-		colorField = (TextField)(stringFields.get(0));
-		color2Field = (TextField)(stringFields.get(1));
-		labelField = (TextField)(stringFields.get(2));
-		widthField = (TextField)(gd.getNumericFields().get(0));
-		visibleCheckbox = (Checkbox)(gd.getCheckboxes().get(0));
+		Vector<JComboBox<String>> choices = gd.getChoices();
+		symbolChoice = (JComboBox<String>)(choices.get(choices.size()-1));
+		Vector<JTextField> stringFields = gd.getStringFields();
+		colorField = (JTextField)(stringFields.get(0));
+		color2Field = (JTextField)(stringFields.get(1));
+		labelField = (JTextField)(stringFields.get(2));
+		widthField = (JTextField)(gd.getNumericFields().get(0));
+		visibleCheckbox = (JCheckBox)(gd.getCheckboxes().get(0));
 		gd.addDialogListener(this);
 		IJ.wait(100);			//sometimes needed to avoid hanging?
 		if (dialogType == STYLE)
@@ -241,11 +241,11 @@ public class PlotContentsDialog implements DialogListener {
 		if (dialogType == ADD_FROM_TABLE || dialogType == ADD_FROM_ARRAYS || dialogType == ADD_FIT) {
 			previousColor = colorField.getText();
 			previousColor2 = color2Field.getText();
-			previousSymbol = symbolChoice.getSelectedItem();
+			previousSymbol = (String)symbolChoice.getSelectedItem();
 			previousLineWidth = Tools.parseDouble(widthField.getText());
 		}
 		if (dialogType == ADD_FIT) {
-			lastFitFunction = fitFunctionChoice.getSelectedItem();
+			lastFitFunction = (String)fitFunctionChoice.getSelectedItem();
 			IJ.log(curveFitterStatusString);
 		}
 		if (Recorder.record && !Recorder.scriptMode()) {
@@ -330,8 +330,8 @@ public class PlotContentsDialog implements DialogListener {
 		String color = colorField.getText();
 		String color2 = color2Field.getText();
 		double width = Tools.parseDouble(widthField.getText());
-		String symbol = symbolChoice.getSelectedItem();
-		Boolean visible = visibleCheckbox.getState();
+		String symbol = (String)symbolChoice.getSelectedItem();
+		Boolean visible = visibleCheckbox.isSelected();
 		String style = color.trim()+","+color2.trim()+","+(float)width+","+ symbol+(visible?"":"hidden");
 		return style;
 	}
@@ -340,7 +340,7 @@ public class PlotContentsDialog implements DialogListener {
 	 *  index given. Does nothing with index < 0 */
 	private void setDialogStyleFields(int index) {
 		if (index < 0) return;
-		Checkbox visibleC = (Checkbox)gd.getCheckboxes().get(0);
+		JCheckBox visibleC = (JCheckBox)gd.getCheckboxes().get(0);
 		String styleString = plot.getPlotObjectStyle(index);
 		String designation = plot.getPlotObjectDesignations()[index].toLowerCase();
 		boolean isData = designation.startsWith("data");
@@ -354,9 +354,9 @@ public class PlotContentsDialog implements DialogListener {
 		color2Field.setText(items[1]);
 		widthField.setText(items[2]);
 		if (items.length >= 4)
-			symbolChoice.select(items[3]);
+			symbolChoice.setSelectedItem(items[3]);
 		labelField.setText(isData ? plot.getPlotObjectLabel(index) : "");
-		visibleC.setState(!styleString.contains("hidden"));
+		visibleC.setSelected(!styleString.contains("hidden"));
 
 		colorField.setEnabled(!isGrid);	        //grid color is fixed
 		color2Field.setEnabled(isData || isBox);//only (some) data symbols and boxes have secondary (fill) color
@@ -402,7 +402,7 @@ public class PlotContentsDialog implements DialogListener {
 		}
 	}
 
-	/** Set up the Choice of Plot objects for the source plot after selecting that plot */
+	/** Set up the JComboBox of Plot objects for the source plot after selecting that plot */
 	private void makeSourcePlotObjects() {
 		int plotIndex = plotChoice.getSelectedIndex();
 		String[] plotObjectNames = allPlots[plotIndex].getPlotObjectDesignations();
@@ -410,10 +410,10 @@ public class PlotContentsDialog implements DialogListener {
 		int nPlotObjects = allPlots[plotIndex] == plot ? currentPlotNumObjects : plotObjectNames.length; //for the own plot, the number of objects may have changed in the meanwhile
 		for (int i=0; i<nPlotObjects; i++)
 			objectChoice.addItem(plotObjectNames[i]);
-		objectChoice.select(Math.min(nPlotObjects-1, previousPlotObjectIndex));
+		objectChoice.setSelectedIndex(Math.min(nPlotObjects-1, previousPlotObjectIndex));
 	}
 
-	/** For "Add from Plot", adds item to the plot according to the current Choice settings
+	/** For "Add from Plot", adds item to the plot according to the current JComboBox settings
 	 *  and sets the Style fields for it. */
 	private void addObjectFromPlot() {
 		int plotIndex = plotChoice.getSelectedIndex();
@@ -499,17 +499,17 @@ public class PlotContentsDialog implements DialogListener {
 			for (int i=COLUMN_ALLOW_NONE[c] ? 0 : 1; i<columnHeadings.length; i++)
 					columnChoice[c].addItem(columnHeadings[i]);
 			if (columnChoice[c].getItemCount() > 0 && previousColumns[c] >= 0)
-				columnChoice[c].select(Math.min(columnChoice[c].getItemCount()-1, previousColumns[c]));
+				columnChoice[c].setSelectedIndex(Math.min(columnChoice[c].getItemCount()-1, previousColumns[c]));
 		}
 	}
 
-	/** For "Add from Table" and "Add from Arrays" adds item to the plot according to the current Choice settings
+	/** For "Add from Table" and "Add from Arrays" adds item to the plot according to the current JComboBox settings
 	 *  and sets the Style fields for it. */
 	private void addObjectFromTable() {
 		float[][] data = getDataArrays();
 		if (data[1] == null) return;  //no y data? then can't plot
-		String label = columnChoice[1].getSelectedItem();	//take label from y
-		int shape = Plot.toShape(symbolChoice.getSelectedItem());
+		String label = (String)columnChoice[1].getSelectedItem();	//take label from y
+		int shape = Plot.toShape((String)symbolChoice.getSelectedItem());
 		float lineWidth = (float)(Tools.parseDouble(widthField.getText()));
 		if (lineWidth > 0)
 			plot.setLineWidth(lineWidth);
@@ -521,7 +521,7 @@ public class PlotContentsDialog implements DialogListener {
 		if (data[2] != null)
 			plot.addHorizontalErrorBars(data[2]);
 		if (creatingPlot) {
-			plot.setXYLabels(data[0]==null ? "x" : columnChoice[0].getSelectedItem(), columnChoice[1].getSelectedItem());
+			plot.setXYLabels(data[0]==null ? "x" : (String)columnChoice[0].getSelectedItem(), (String)columnChoice[1].getSelectedItem());
 			plot.setLimitsToFit(false);
 		} else
 			plot.fitRangeToLastPlotObject();
@@ -543,7 +543,7 @@ public class PlotContentsDialog implements DialogListener {
 				if (plot.getPlotObjectIndex(data) < 0)
 					return; //current data are ok (not duplicate)
 			}
-			columnChoice[1].select((currentIndex+i+1)%nYcolumns); //try the next one
+			columnChoice[1].setSelectedIndex((currentIndex+i+1)%nYcolumns); //try the next one
 		}
 	}
 
@@ -553,7 +553,7 @@ public class PlotContentsDialog implements DialogListener {
 		if (dialogType == ADD_FROM_TABLE) {
 			ResultsTable rt = allTables[tableChoice.getSelectedIndex()];
 			for (int c=0; c<N_COLUMNS; c++) {
-				String heading = columnChoice[c].getSelectedItem();
+				String heading = (String) columnChoice[c].getSelectedItem();
 				int index = rt.getColumnIndex(heading);
 				if (index >= 0)
 					data[c] = rt.getColumn(index);
@@ -561,7 +561,7 @@ public class PlotContentsDialog implements DialogListener {
 			}
 		} else { //if (dialogType == ADD_FROM_ARRAYS)
 			for (int c=0; c<nColumnsToUse; c++) {
-				String heading = columnChoice[c].getSelectedItem();
+				String heading = (String)columnChoice[c].getSelectedItem();
 				int index = getIndex(arrayHeadings, heading);
 				if (index >= 0)
 					data[c] = arrayData.get(index);
@@ -578,7 +578,7 @@ public class PlotContentsDialog implements DialogListener {
 			plot.setLimits(savedLimits);
 		int dataIndex = fitDataChoice.getSelectedIndex();
 		float[][] data = plot.getDataObjectArrays(dataIndex);
-		String fitName = fitFunctionChoice.getSelectedItem();
+		String fitName = (String)fitFunctionChoice.getSelectedItem();
 		int fitType = getIndex(CurveFitter.fitList, fitName);
 		CurveFitter cf = new CurveFitter(Tools.toDouble(data[0]), Tools.toDouble(data[1]));
 		cf.doFit(fitType);

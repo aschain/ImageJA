@@ -1,10 +1,17 @@
 package ij.text;
 
-import java.awt.*;
-import javax.swing.*;
+//import java.awt.*;
 import java.io.*;
 import java.awt.event.*;
 import java.util.*;
+
+import javax.swing.*;
+
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.datatransfer.*;
 import ij.*;
 import ij.plugin.filter.Analyzer;
@@ -32,7 +39,7 @@ public class TextPanel extends JPanel implements AdjustmentListener,
 	int iX,iY;
 	// data
 	String[] sColHead;
-	Vector vData;
+	Vector<char[]> vData;
 	int[] iColWidth;
 	int iColCount,iRowCount;
 	int iRowHeight,iFirstRow;
@@ -66,12 +73,12 @@ public class TextPanel extends JPanel implements AdjustmentListener,
 	public TextPanel() {
 		tc = new TextCanvas(this);
 		setLayout(new BorderLayout());
-		add("Center",tc);
+		add(tc,BorderLayout.CENTER);
 		sbHoriz=new JScrollBar(JScrollBar.HORIZONTAL);
 		GUI.fixScrollbar(sbHoriz);
 		sbHoriz.addAdjustmentListener(this);
 		sbHoriz.setFocusable(false); // prevents scroll bar from blinking on Windows
-		add("South", sbHoriz);
+		add(sbHoriz,BorderLayout.SOUTH);
 		sbVert=new JScrollBar(JScrollBar.VERTICAL);
 		GUI.fixScrollbar(sbVert);
 		sbVert.addAdjustmentListener(this);
@@ -81,7 +88,7 @@ public class TextPanel extends JPanel implements AdjustmentListener,
 			sbHoriz.addKeyListener(ij);
 			sbVert.addKeyListener(ij);
 		}
-		add("East", sbVert);
+		add(sbVert, BorderLayout.EAST);
 		addPopupMenu();
 	}
 
@@ -106,7 +113,7 @@ public class TextPanel extends JPanel implements AdjustmentListener,
 		addPopupItem("Copy");
 		addPopupItem("Clear");
 		addPopupItem("Select All");
-		add(pm);
+		setComponentPopupMenu(pm);
 	}
 
 	void addPopupItem(String s) {
@@ -134,7 +141,7 @@ public class TextPanel extends JPanel implements AdjustmentListener,
         	iColCount = sColHead.length;
 		}
 		flush();
-		vData=new Vector();
+		vData=new Vector<char[]>();
 		if (!(iColWidth!=null && iColWidth.length==iColCount && sameLabels && iColCount!=1)) {
 			iColWidth=new int[iColCount];
 			columnsManuallyAdjusted = false;
@@ -209,7 +216,7 @@ public class TextPanel extends JPanel implements AdjustmentListener,
 	}
 
 	/** Adds strings contained in an ArrayList to the end of this TextPanel. */
-	public void append(ArrayList list) {
+	public void append(ArrayList<String> list) {
 		if (list==null) return;
 		if (vData==null) setColumnHeadings("");
 		for (int i=0; i<list.size(); i++)
@@ -298,7 +305,6 @@ public class TextPanel extends JPanel implements AdjustmentListener,
 				String owner = title.substring(20, title.length());
 				String[] titles = WindowManager.getImageTitles();
 				for (int i=0; i<titles.length; i++) {
-					String t = titles[i];
 					if (titles[i].equals(owner)) {
 						ImagePlus imp = WindowManager.getImage(owner);
 						WindowManager.setTempCurrentImage(imp);//?
@@ -578,7 +584,7 @@ public class TextPanel extends JPanel implements AdjustmentListener,
 		} else {
 			tw.setTitle(title2);
 			int mbSize = tw.mb!=null?tw.mb.getMenuCount():0;
-			if (mbSize>0 && tw.mb.getMenu(mbSize-1).getLabel().equals("Results"))
+			if (mbSize>0 && tw.mb.getMenu(mbSize-1).getText().equals("Results"))
 				tw.mb.remove(mbSize-1);
 			title = title2;
 			rt.show(title);
@@ -1055,8 +1061,13 @@ public class TextPanel extends JPanel implements AdjustmentListener,
 		addPopupItem("Sort...");
 		addPopupItem("Plot...");
 		if (fileMenu!=null) {
-			fileMenu.add("Rename...");
-			fileMenu.add("Duplicate...");
+			boolean hasR=false,hasD=false;
+			for(int i=0;i<fileMenu.getItemCount();i++) {
+				if(fileMenu.getItem(i).getText().equals("Rename..."))hasR=true;
+				if(fileMenu.getItem(i).getText().equals("Duplicate..."))hasD=true;
+			}
+			if(!hasR)Menus.addJMenuItemWithShortcut(fileMenu,"Rename...",getTextWindow());
+			if(!hasD)Menus.addJMenuItemWithShortcut(fileMenu,"Duplicate...",getTextWindow());
 		}
 		if (editMenu!=null) {
 			editMenu.addSeparator();

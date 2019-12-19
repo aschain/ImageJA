@@ -326,7 +326,20 @@ public class ImageJ extends JFrame implements ActionListener,
 
 	/** Handle menu events. */
 	public void actionPerformed(ActionEvent e) {
-		if ((e.getSource() instanceof JMenuItem)) {
+		if(e.getSource() instanceof JCheckBoxMenuItem) {
+			JCheckBoxMenuItem item = (JCheckBoxMenuItem)e.getSource();
+			Component parent=item.getParent();
+			if(parent instanceof JPopupMenu)parent=((JPopupMenu)parent).getInvoker();
+			String cmd = item.getActionCommand();
+			IJ.log("parent: "+parent);
+			IJ.log("menuwin: "+Menus.window);
+			if ("Autorun Examples".equals(cmd)) // Examples>Autorun Examples
+				Prefs.autoRunExamples = item.getState();
+			else if (Menus.window==parent)
+				WindowManager.activateWindow(cmd, item);
+			else
+				doCommand(cmd);
+		}else if ((e.getSource() instanceof JMenuItem)) {
 			JMenuItem item = (JMenuItem)e.getSource();
 			String cmd = e.getActionCommand();
 			Frame frame = WindowManager.getFrontWindow();
@@ -357,16 +370,6 @@ public class ImageJ extends JFrame implements ActionListener,
 			}
 			lastKeyCommand = null;
 			if (IJ.debugMode) IJ.log("actionPerformed: time="+ellapsedTime+", "+e);
-		}else if(e.getSource() instanceof JCheckBoxMenuItem) {
-			JCheckBoxMenuItem item = (JCheckBoxMenuItem)e.getSource();
-			Container parent = ((Component)item).getParent();
-			String cmd = item.getActionCommand();
-			if ("Autorun Examples".equals(cmd)) // Examples>Autorun Examples
-				Prefs.autoRunExamples = item.getState();
-			else if (parent instanceof JMenu && (JMenu)parent==Menus.window)
-				WindowManager.activateWindow(cmd, item);
-			else
-				doCommand(cmd);
 		}
 	}
 
