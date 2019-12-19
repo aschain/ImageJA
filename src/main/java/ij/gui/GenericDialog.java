@@ -104,7 +104,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 
     /** Creates a new GenericDialog using the specified title and parent frame. */
     public GenericDialog(String title, Frame parent) {
-		super(parent==null?new Frame():parent, title, true);
+    	super((parent!=null && parent.isVisible())?parent:null, title, true);
 		if (Prefs.blackCanvas) {
 			setForeground(SystemColor.controlText);
 			setBackground(SystemColor.control);
