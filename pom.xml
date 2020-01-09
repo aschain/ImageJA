@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-		http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>24.2.0</version>
+		<version>27.0.1</version>
 		<relativePath />
 	</parent>
 
@@ -77,16 +74,21 @@
 		<url>https://github.com/imagej/imagej1/issues</url>
 	</issueManagement>
 	<ciManagement>
-		<system>Jenkins</system>
-		<url>https://jenkins.imagej.net/</url>
+		<system>Travis CI</system>
+		<url>https://travis-ci.org/imagej/ImageJA</url>
 	</ciManagement>
 
 	<properties>
+		<package-name>ij</package-name>
 		<main-class>ij.ImageJ</main-class>
 		<license.licenseName>N/A</license.licenseName>
 		<license.copyrightOwners>N/A</license.copyrightOwners>
 		<scijava.jvm.version>1.6</scijava.jvm.version>
+		<scijava.jvm.build.version>1.6</scijava.jvm.build.version>
 		<javac.path>${java.home}/../lib/tools.jar</javac.path>
+
+		<!-- NB: Deploy releases to the SciJava Maven repository. -->
+		<releaseProfiles>sonatype-oss-release</releaseProfiles>
 	</properties>
 
 	<dependencies>
@@ -135,7 +137,7 @@
 				      <workingDirectory>${basedir}</workingDirectory>
 				      <arguments>
 				    	  <argument>jars</argument>
-				    	  <argument>ij</argument>
+				    	  <argument>${project.artifactId}</argument>
 				    	  <argument>${basedir}/target/${project.build.finalName}.jar</argument>
 				      </arguments>
 				    </configuration>
