@@ -3,10 +3,6 @@ import java.awt.*;
 import java.io.*;
 import java.net.URL;
 import java.util.*;
-
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-
 import ij.*;
 import ij.io.*;
 import ij.gui.*;
@@ -181,12 +177,12 @@ public class URLOpener implements PlugIn {
 	public static String[] getSampleImageNames() {
 		ArrayList list = new ArrayList();
 		Hashtable commands = Menus.getCommands();
-		JMenu samplesMenu = Menus.getImageJMenu("File>Open Samples");
+		Menu samplesMenu = Menus.getImageJMenu("File>Open Samples");
 		if (samplesMenu==null)
 			return new String[0];
 		for (int i=0; i<samplesMenu.getItemCount(); i++) {
-			JMenuItem menuItem = samplesMenu.getItem(i);
-			if (menuItem ==null || menuItem.getActionListeners().length == 0) continue; // separator?
+			MenuItem menuItem = samplesMenu.getItem(i);
+			if (menuItem.getActionListeners().length == 0) continue; // separator?
 			String label = menuItem.getLabel();
 			if (label.contains("Cache Sample Images")) continue;
 			String command = (String)commands.get(label);

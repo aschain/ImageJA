@@ -1,7 +1,7 @@
 package ij;
 import ij.io.*;
-
-import javax.swing.*;
+import java.awt.*;
+import java.io.*;
 
 /** Opens, in a separate thread, files selected from the File/Open Recent submenu.*/
 public class RecentOpener implements Runnable {
@@ -17,22 +17,19 @@ public class RecentOpener implements Runnable {
 	public void run() {
 		Opener o = new Opener();
 		o.open(path);
-		JMenu menu = Menus.getOpenRecentMenu();
+		Menu menu = Menus.getOpenRecentMenu();
 		int n = menu.getItemCount();
 		int index = 0;
 		for (int i=0; i<n; i++) {
-			JMenuItem mi=menu.getItem(i);
-			if (mi!=null && mi.getLabel().equals(path)) {
+			if (menu.getItem(i).getLabel().equals(path)) {
 				index = i;
 				break;
 			}
 		}
 		if (index>0) {
-			JMenuItem item = menu.getItem(index);
-			if(item!=null) {
-				menu.remove(index);
-				menu.insert(item, 0);
-			}
+			MenuItem item = menu.getItem(index);
+			menu.remove(index);
+			menu.insert(item, 0);
 		}
 	}
 

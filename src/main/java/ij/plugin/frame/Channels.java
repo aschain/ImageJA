@@ -5,9 +5,6 @@ import ij.gui.*;
 import java.awt.*;
 import java.awt.event.*;
 
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-
 /** Displays the ImageJ Channels window. */
 public class Channels extends PlugInDialog implements PlugIn, ItemListener, ActionListener {
 
@@ -23,7 +20,7 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 	private static Channels instance;
 	private int id;
 	private static Point location;
-	private JPopupMenu pm;
+	private PopupMenu pm;
 
 	public Channels() {
 		super("Channels");
@@ -78,7 +75,7 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 		add(moreButton, c);
 		update();
 
-		pm=new JPopupMenu();
+		pm=new PopupMenu();
 		GUI.scalePopupMenu(pm);
 		for (int i=0; i<menuItems.length; i++)
 			addPopupItem(menuItems[i]);
@@ -127,7 +124,7 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 	}
 	
 	void addPopupItem(String s) {
-		JMenuItem mi=new JMenuItem(s);
+		MenuItem mi=new MenuItem(s);
 		mi.addActionListener(this);
 		pm.add(mi);
 	}

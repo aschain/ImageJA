@@ -1,6 +1,5 @@
 package ij.gui;
 import java.awt.*;
-import javax.swing.*;
 import ij.*;
 
 /** This is a custom layout manager that supports resizing of zoomed
@@ -32,16 +31,14 @@ public class ImageLayout implements LayoutManager {
 		for (int i=0; i<nmembers; i++) {
 		    Component m = target.getComponent(i);
 			Dimension d = m.getPreferredSize();
-			if (i==1 || !ignoreNonImageWidths  && !(m instanceof ImageWindow.InfoPanel)) {
-				//IJ.log("il width: "+d.width+" "+m);
+			if (i==0 || !ignoreNonImageWidths)
     			dim.width = Math.max(dim.width, d.width);
-			}
-			if (i>1) dim.height += vgap;
+			if (i>0) dim.height += vgap;
 			dim.height += d.height;
 		}
 		Insets insets = target.getInsets();
 		dim.width += insets.left + insets.right + hgap*2;
-		dim.height += insets.top + insets.bottom + vgap+2;
+		dim.height += insets.top + insets.bottom + vgap*2;
 		return dim;
     }
 
@@ -60,17 +57,15 @@ public class ImageLayout implements LayoutManager {
 
     /** Centers the elements in the specified column, if there is any slack.*/
     private void moveComponents(Container target, int x, int y, int width, int height, int nmembers) {
-    	int x2 = x + (width - ic.getSize().width)/2;
+    	int x2 = 0;
 	    y += height / 2;
 		for (int i=0; i<nmembers; i++) {
 		    Component m = target.getComponent(i);
 		    Dimension d = m.getSize();
-		    if (d.height>60)
+		    if (i==0 || d.height>60)
 		    	x2 = x + (width - d.width)/2;
 			m.setLocation(x2, y);
-			if(i>0)y += vgap;
-			else y+=2;
-			y+=d.height;
+			y += vgap + d.height;
 		}
     }
 
@@ -81,44 +76,38 @@ public class ImageLayout implements LayoutManager {
 		int nmembers = target.getComponentCount();
 		Dimension d;
 		int extraHeight = 0;
-		for (int i=0; i<nmembers; i++) {
+		for (int i=1; i<nmembers; i++) {
 			Component m = target.getComponent(i);
-			if ((m instanceof ScrollbarWithLabel) || (m instanceof JScrollBar) || m instanceof ImageWindow.InfoPanel) {
-				d = m.getPreferredSize();
-				extraHeight += d.height;
-				if ((m instanceof ScrollbarWithLabel) || (m instanceof JScrollBar)) extraHeight+=vgap;
-			}
+			d = m.getPreferredSize();
+			extraHeight += d.height+vgap;
 		}
 		d = target.getSize();
 		int preferredImageWidth = d.width - (insets.left + insets.right + hgap*2);
-		int preferredImageHeight = d.height - (insets.top + insets.bottom + vgap + extraHeight+2);
+		int preferredImageHeight = d.height - (insets.top + insets.bottom + vgap*2 + extraHeight);
 		ic.resizeCanvas(preferredImageWidth, preferredImageHeight);
-		//int maxwidth = d.width - (insets.left + insets.right + hgap*2);
-		int maxheight = d.height - (insets.top + insets.bottom + vgap);
+		int maxwidth = d.width - (insets.left + insets.right + hgap*2);
+		int maxheight = d.height - (insets.top + insets.bottom + vgap*2);
 		Dimension psize = preferredLayoutSize(target);
 		int x = insets.left + hgap + (d.width - psize.width)/2;
 		int y = 0;
 		int colw = 0;
-		int scrollbarWidth = ic.getPreferredSize().width;
 		
 		for (int i=0; i<nmembers; i++) {
 			Component m = target.getComponent(i);
 			d = m.getPreferredSize();
-			if ((m instanceof ScrollbarWithLabel) || (m instanceof JScrollBar) || m instanceof ImageWindow.InfoPanel) {
-				//if(m instanceof ImageWindow.InfoPanel) IJ.log("IPh:"+d.height);
-				//int scrollbarWidth = target.getComponent(1).getPreferredSize().width;
+			if ((m instanceof ScrollbarWithLabel) || (m instanceof Scrollbar)) {
+				int scrollbarWidth = target.getComponent(0).getPreferredSize().width;
 				Dimension minSize = m.getMinimumSize();
 				if (scrollbarWidth<minSize.width) scrollbarWidth = minSize.width;
 				m.setSize(scrollbarWidth, d.height);
 			} else
 				m.setSize(d.width, d.height);
-			if (y > 1) y += vgap;
-			else if(y==1)y+=2;
+			if (y > 0) y += vgap;
 			y += d.height;
-			if (i==1 || !ignoreNonImageWidths && !(m instanceof ImageWindow.InfoPanel))
+			if (i==0 || !ignoreNonImageWidths)
 				colw = Math.max(colw, d.width);
 		}
-		moveComponents(target, x, insets.top, colw, maxheight - y, nmembers);
+		moveComponents(target, x, insets.top + vgap, colw, maxheight - y, nmembers);
     }
     
 }

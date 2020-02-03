@@ -1,18 +1,22 @@
 package ij;
 import ij.gui.*;
+import ij.process.*;
+import ij.io.*;
 import ij.plugin.*;
 import ij.plugin.filter.*;
 import ij.plugin.frame.*;
 import ij.text.*;
 import ij.macro.Interpreter;
+import ij.io.Opener;
 import ij.util.*;
-import java.util.*;
 import java.awt.*;
+import java.util.*;
 import java.awt.event.*;
 import java.io.*;
 import java.net.*;
 import java.awt.image.*;
-import javax.swing.*;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 
 /**
 This frame is the main ImageJ class.
@@ -69,12 +73,12 @@ The following command line options are recognized by ImageJ:
 </pre>
 @author Wayne Rasband (wsr@nih.gov)
 */
-public class ImageJ extends JFrame implements ActionListener, 
+public class ImageJ extends Frame implements ActionListener, 
 	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
 	public static final String VERSION = "1.52t";
-	public static final String BUILD = "23";
+	public static final String BUILD = "";  //51
 	public static Color backgroundColor = new Color(237,237,237);
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -98,9 +102,10 @@ public class ImageJ extends JFrame implements ActionListener,
 	private static String[] arguments;
 	
 	private Toolbar toolbar;
-	private JPanel statusBar;
+	private Panel statusBar;
 	private ProgressBar progressBar;
 	private JLabel statusLine;
+	private boolean firstTime = true;
 	private java.applet.Applet applet; // null if not running as an applet
 	private Vector classes = new Vector();
 	private boolean exitWhenQuitting;
@@ -108,6 +113,7 @@ public class ImageJ extends JFrame implements ActionListener,
 	private boolean quitMacro;
 	private long keyPressedTime, actionPerformedTime;
 	private String lastKeyCommand;
+	private boolean embedded;
 	private boolean windowClosed;
 	private static String commandName;
 	private static boolean batchMode;
@@ -138,6 +144,7 @@ public class ImageJ extends JFrame implements ActionListener,
 			IJ.setDebugMode(true);
 		mode = mode & 255;
 		if (IJ.debugMode) IJ.log("ImageJ starting in debug mode: "+mode);
+		embedded = applet==null && (mode==EMBEDDED||mode==NO_SHOW);
 		this.applet = applet;
 		String err1 = Prefs.load(this, applet);
 		setBackground(backgroundColor);
@@ -152,7 +159,7 @@ public class ImageJ extends JFrame implements ActionListener,
 		add("Center", toolbar);
 
 		// Status bar
-		statusBar = new JPanel();
+		statusBar = new Panel();
 		statusBar.setLayout(new BorderLayout());
 		statusBar.setForeground(Color.black);
 		statusBar.setBackground(backgroundColor);
@@ -175,7 +182,7 @@ public class ImageJ extends JFrame implements ActionListener,
 		m.installStartupMacroSet(); //add custom tools
  		
 		Point loc = getPreferredLocation();
-		//Dimension tbSize = toolbar.getPreferredSize();
+		Dimension tbSize = toolbar.getPreferredSize();
 		setCursor(Cursor.getDefaultCursor()); // work-around for JDK 1.1.8 bug
 		if (mode!=NO_SHOW) {
 			if (IJ.isWindows()) try {setIcon();} catch(Exception e) {}
@@ -295,7 +302,7 @@ public class ImageJ extends JFrame implements ActionListener,
         return progressBar;
 	}
 
-	public JPanel getStatusBar() {
+	public Panel getStatusBar() {
         return statusBar;
 	}
 
@@ -326,8 +333,8 @@ public class ImageJ extends JFrame implements ActionListener,
 
 	/** Handle menu events. */
 	public void actionPerformed(ActionEvent e) {
-		if ((e.getSource() instanceof JMenuItem)) {
-			JMenuItem item = (JMenuItem)e.getSource();
+		if ((e.getSource() instanceof MenuItem)) {
+			MenuItem item = (MenuItem)e.getSource();
 			String cmd = e.getActionCommand();
 			Frame frame = WindowManager.getFrontWindow();
 			if (frame!=null && (frame instanceof Fitter)) {
@@ -357,31 +364,20 @@ public class ImageJ extends JFrame implements ActionListener,
 			}
 			lastKeyCommand = null;
 			if (IJ.debugMode) IJ.log("actionPerformed: time="+ellapsedTime+", "+e);
-		}else if(e.getSource() instanceof JCheckBoxMenuItem) {
-			JCheckBoxMenuItem item = (JCheckBoxMenuItem)e.getSource();
-			Container parent = ((Component)item).getParent();
-			String cmd = item.getActionCommand();
-			if ("Autorun Examples".equals(cmd)) // Examples>Autorun Examples
-				Prefs.autoRunExamples = item.getState();
-			else if (parent instanceof JMenu && (JMenu)parent==Menus.window)
-				WindowManager.activateWindow(cmd, item);
-			else
-				doCommand(cmd);
 		}
 	}
 
 	/** Handles CheckboxMenuItem state changes. */
 	public void itemStateChanged(ItemEvent e) {
-		if(e.getSource() instanceof CheckboxMenuItem) {
-			MenuItem item = (MenuItem)e.getSource();
-			Container parent = (Container)item.getParent();
-			String cmd=e.getItem().toString();
-			//if ("Autorun Examples".equals(cmd)) // Examples>Autorun Examples
-			//	Prefs.autoRunExamples = e.getStateChange()==1;
-			//else 
+		MenuItem item = (MenuItem)e.getSource();
+		MenuComponent parent = (MenuComponent)item.getParent();
+		String cmd = e.getItem().toString();
+		if ("Autorun Examples".equals(cmd)) // Examples>Autorun Examples
+			Prefs.autoRunExamples = e.getStateChange()==1;
+		else if ((Menu)parent==Menus.window)
+			WindowManager.activateWindow(cmd, item);
+		else
 			doCommand(cmd);
-			if (IJ.debugMode) IJ.log("itemStatePerformed: "+e);
-		}//else {IJ.log("ignored itemChange "+e);}
 	}
 
 	public void mousePressed(MouseEvent e) {
@@ -451,7 +447,7 @@ public class ImageJ extends JFrame implements ActionListener,
         		
 		// Handle one character macro shortcuts
 		if (!control && !meta) {
-			Hashtable<Integer,String> macroShortcuts = Menus.getMacroShortcuts();
+			Hashtable macroShortcuts = Menus.getMacroShortcuts();
 			if (macroShortcuts.size()>0) {
 				if (shift)
 					cmd = (String)macroShortcuts.get(new Integer(keyCode+200));
@@ -649,17 +645,15 @@ public class ImageJ extends JFrame implements ActionListener,
 	}
 
 	public void windowActivated(WindowEvent e) {
-		/*
 		if (IJ.isMacintosh() && !quitting) {
 			IJ.wait(10); // may be needed for Java 1.4 on OS X
-			JMenuBar mb = Menus.getMenuBar();
-			if (mb!=null && mb!=getJMenuBar()) {
-				setJMenuBar(mb);
+			MenuBar mb = Menus.getMenuBar();
+			if (mb!=null && mb!=getMenuBar()) {
+				setMenuBar(mb);
 				Menus.setMenuBarCount++;
-				if (IJ.debugMode) IJ.log("setJMenuBar: "+Menus.setMenuBarCount);
+				if (IJ.debugMode) IJ.log("setMenuBar: "+Menus.setMenuBarCount);
 			}
 		}
-		*/
 	}
 	
 	public void windowClosed(WindowEvent e) {}

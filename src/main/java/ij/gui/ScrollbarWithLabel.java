@@ -2,29 +2,17 @@ package ij.gui;
 import ij.ImageJ;
 import ij.IJ;
 import ij.Prefs;
-
-import java.awt.AWTEventMulticaster;
-import java.awt.Adjustable;
-import java.awt.BasicStroke;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Event;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
+import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.*;
-import javax.swing.*;
 
 
 /** This class, based on Joachim Walter's Image5D package, adds "c", "z" labels 
 	 and play-pause icons (T) to the stack and hyperstacks dimension sliders.
  * @author Joachim Walter
  */
-public class ScrollbarWithLabel extends JPanel implements Adjustable, AdjustmentListener {
-	JScrollBar bar;
+public class ScrollbarWithLabel extends Panel implements Adjustable, AdjustmentListener {
+	Scrollbar bar;
 	private Icon icon;
 	private StackWindow stackWindow;
 	transient AdjustmentListener adjustmentListener;
@@ -35,7 +23,7 @@ public class ScrollbarWithLabel extends JPanel implements Adjustable, Adjustment
 	public ScrollbarWithLabel(StackWindow stackWindow, int value, int visible, int minimum, int maximum, char label) {
 		super(new BorderLayout(2, 0));
 		this.stackWindow = stackWindow;
-		bar = new JScrollBar(JScrollBar.HORIZONTAL, value, visible, minimum, maximum);
+		bar = new Scrollbar(Scrollbar.HORIZONTAL, value, visible, minimum, maximum);
 		GUI.fixScrollbar(bar);
 		icon = new Icon(label);
 		add(icon, BorderLayout.WEST);
@@ -156,13 +144,14 @@ public class ScrollbarWithLabel extends JPanel implements Adjustable, Adjustment
 		icon.repaint();
 	}
 	
-	
-	class Icon extends JPanel implements MouseListener {
+		
+	class Icon extends Canvas implements MouseListener {
 		private final double SCALE = Prefs.getGuiScale();
 		private final int WIDTH = (int)(12*SCALE);
 		private final int HEIGHT= (int)(14*SCALE);
 		private BasicStroke stroke = new BasicStroke((float)(2*SCALE));
 		private char type;
+		private Image image;
 		
 		public Icon(char type) {
 			addMouseListener(this);
@@ -181,7 +170,6 @@ public class ScrollbarWithLabel extends JPanel implements Adjustable, Adjustment
 		}
 		
 		public void paint(Graphics g) {
-			super.paint(g);
 			g.setColor(Color.white);
 			g.fillRect(0, 0, WIDTH, HEIGHT);
 			Graphics2D g2d = (Graphics2D)g;

@@ -8,10 +8,6 @@ import java.awt.image.BufferedImage;
 import java.awt.event.*;
 import java.util.Vector;
 
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-
 /**
  * This plugin implements the Image/Colors/Arrange Channels command,
  *	which allows the user to change the order of channels.
@@ -167,7 +163,7 @@ public class ChannelArranger implements PlugIn, TextListener {
 
 }
 
-class ThumbnailsCanvas extends JPanel implements MouseListener, MouseMotionListener, ActionListener {
+class ThumbnailsCanvas extends Canvas implements MouseListener, MouseMotionListener, ActionListener {
 
 	protected static Cursor handCursor = new Cursor(Cursor.HAND_CURSOR);
 	protected static Cursor defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
@@ -225,7 +221,6 @@ class ThumbnailsCanvas extends JPanel implements MouseListener, MouseMotionListe
 	public void paint(Graphics g) {
 		if (g == null)
 			return;
-		super.paint(g);
 		int savedMode = cImp.getMode();
 		if (savedMode==IJ.COMPOSITE)
 			cImp.setMode(IJ.COLOR);
@@ -277,13 +272,13 @@ class ThumbnailsCanvas extends JPanel implements MouseListener, MouseMotionListe
 	protected void handlePopupMenu(MouseEvent e) {
 		int x = e.getX();
 		int y = e.getY();
-		JPopupMenu popup = new JPopupMenu();
+		PopupMenu popup = new PopupMenu();
 		String[] colors = "Grays,-,Red,Green,Blue,Yellow,Magenta,Cyan,-,Fire,Ice,Spectrum,3-3-2 RGB,Red/Green".split(",");
 		for (int jj = 0; jj < colors.length; jj++) {
 			if (colors[jj].equals("-"))
 				popup.addSeparator();
 			else {
-				JMenuItem mi = new JMenuItem(colors[jj]);
+				MenuItem mi = new MenuItem(colors[jj]);
 				popup.add(mi);
 				mi.addActionListener(this);
 			}

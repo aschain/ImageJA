@@ -7,11 +7,8 @@ import ij.plugin.frame.Editor;
 import ij.io.OpenDialog;
 import java.io.*;
 import java.util.*;
-
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-
 import java.awt.event.KeyEvent;
+import java.awt.Menu;
 
 
 /** Runs ImageJ menu commands in a separate thread.*/
@@ -215,11 +212,10 @@ public class Executer implements Runnable {
     /** Opens a file from the File/Open Recent menu
  	      and returns 'true' if successful. */
     boolean openRecent(String cmd) {
-		JMenu menu = Menus.getOpenRecentMenu();
+		Menu menu = Menus.getOpenRecentMenu();
 		if (menu==null) return false;
 		for (int i=0; i<menu.getItemCount(); i++) {
-			JMenuItem mi=menu.getItem(i);
-			if (mi!=null && mi.getLabel().equals(cmd)) {
+			if (menu.getItem(i).getLabel().equals(cmd)) {
 				IJ.open(cmd);
 				return true;
 			}

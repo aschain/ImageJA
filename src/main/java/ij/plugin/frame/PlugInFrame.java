@@ -3,10 +3,9 @@ import java.awt.*;
 import java.awt.event.*;
 import ij.*;
 import ij.plugin.*;
-import javax.swing.*;
 
 /**  This is a closeable window that plugins can extend. */
-public class PlugInFrame extends JFrame implements PlugIn, WindowListener, FocusListener {
+public class PlugInFrame extends Frame implements PlugIn, WindowListener, FocusListener {
 
 	String title;
 	
@@ -45,8 +44,8 @@ public class PlugInFrame extends JFrame implements PlugIn, WindowListener, Focus
 
     public void windowActivated(WindowEvent e) {
 		if (Prefs.setIJMenuBar) {
-			//this.setJMenuBar(Menus.getMenuBar());
-			//Menus.setMenuBarCount++;
+			this.setMenuBar(Menus.getMenuBar());
+			Menus.setMenuBarCount++;
 		}
 		WindowManager.setWindow(this);
 	}

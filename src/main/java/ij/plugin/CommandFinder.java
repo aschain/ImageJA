@@ -68,13 +68,13 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 	}
 
 	class CommandAction {
-		CommandAction(String classCommand, JMenuItem m, String menuLocation) {
+		CommandAction(String classCommand, MenuItem menuItem, String menuLocation) {
 			this.classCommand = classCommand;
-			this.menuItem = m;
+			this.menuItem = menuItem;
 			this.menuLocation = menuLocation;
 		}
 		String classCommand;
-		JMenuItem menuItem;
+		MenuItem menuItem;
 		String menuLocation;
 		public String toString() {
 			return "classCommand: " + classCommand + ", menuItem: "+menuItem+", menuLocation: "+menuLocation;
@@ -315,14 +315,13 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 	   commandsHash the location and MenuItem of any items it
 	   finds that aren't submenus. */
 
-	public void parseMenu(String path, JMenu topLevelMenu) {
-		int n=topLevelMenu.getItemCount();
+	public void parseMenu(String path, Menu menu) {
+		int n=menu.getItemCount();
 		for (int i=0; i<n; ++i) {
-			JMenuItem m=topLevelMenu.getItem(i);
+			MenuItem m=menu.getItem(i);
 			String label=m.getActionCommand();
-			if(m==null) continue;
-			if (m instanceof JMenu) {
-				JMenu subMenu=(JMenu)m;
+			if (m instanceof Menu) {
+				Menu subMenu=(Menu)m;
 				parseMenu(path+">"+label,subMenu);
 			} else {
 				String trimmedLabel = label.trim();
@@ -344,10 +343,10 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 	   recurses down through each. */
 
 	public void findAllMenuItems() {
-		JMenuBar menuBar = Menus.getMenuBar();
+		MenuBar menuBar = Menus.getMenuBar();
 		int topLevelMenus = menuBar.getMenuCount();
 		for (int i=0; i<topLevelMenus; ++i) {
-			JMenu topLevelMenu=menuBar.getMenu(i);
+			Menu topLevelMenu=menuBar.getMenu(i);
 			parseMenu(topLevelMenu.getLabel(), topLevelMenu);
 		}
 	}
@@ -561,7 +560,7 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 
 	public void windowActivated(WindowEvent e) {
 		if (IJ.isMacOSX() && frame!=null)
-			frame.setJMenuBar(Menus.getMenuBar());
+			frame.setMenuBar(Menus.getMenuBar());
 	}
 	
 	public void windowDeactivated(WindowEvent e) { }

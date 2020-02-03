@@ -9,10 +9,6 @@ import ij.util.Tools;
 import ij.macro.Interpreter;
 import java.awt.*;
 import java.util.*;
-
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JMenuItem;
-
 import ij.gui.*;
 
 /** This class consists of static methods used to manage ImageJ's windows. */
@@ -528,7 +524,7 @@ public class WindowManager {
     }
 
 	/** Activates a window selected from the Window menu. */
-	synchronized static void activateWindow(String menuItemLabel, Object item) {
+	synchronized static void activateWindow(String menuItemLabel, MenuItem item) {
 		for (int i=0; i<nonImageList.size(); i++) {
 			Object win = nonImageList.get(i);
 			String title = win instanceof Frame?((Frame)win).getTitle():((Dialog)win).getTitle();
@@ -537,7 +533,7 @@ public class WindowManager {
 					toFront((Frame)win);
 				else
 					((Dialog)win).toFront();
-				((JCheckBoxMenuItem)item).setState(false);
+				((CheckboxMenuItem)item).setState(false);
 				if (Recorder.record && !IJ.isMacro())
 					Recorder.record("selectWindow", title);
 				return;
@@ -546,9 +542,7 @@ public class WindowManager {
 		int lastSpace = menuItemLabel.lastIndexOf(' ');
 		if (lastSpace>0) // remove image size (e.g., " 90K")
 		menuItemLabel = menuItemLabel.substring(0, lastSpace);
-		String idString;
-		if(item instanceof JMenuItem) idString=((JMenuItem)item).getActionCommand();
-		else idString=((MenuItem)item).getActionCommand();
+		String idString = item.getActionCommand();
 		int id = (int)Tools.parseDouble(idString, 0);
 		ImagePlus imp = WindowManager.getImage(id);
 		if (imp==null) return;
@@ -560,9 +554,9 @@ public class WindowManager {
 		int n = Menus.window.getItemCount();
 		int start = Menus.WINDOW_MENU_ITEMS+Menus.windowMenuItems2;
 		for (int j=start; j<n; j++) {
-			JMenuItem mi = Menus.window.getItem(j);
-			if (mi instanceof JCheckBoxMenuItem)
-				((JCheckBoxMenuItem)mi).setState((j-start)==index);						
+			MenuItem mi = Menus.window.getItem(j);
+			if (mi instanceof CheckboxMenuItem)
+				((CheckboxMenuItem)mi).setState((j-start)==index);						
 		}
 	}
     

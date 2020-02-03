@@ -1,32 +1,20 @@
 package ij.gui;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Event;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Image;
-import java.awt.Insets;
-import java.awt.Point;
-import java.awt.Rectangle;
+import java.awt.*;
+import java.awt.image.*;
+import java.util.Properties;
 import java.awt.event.*;
 import ij.*;
+import ij.process.*;
 import ij.io.*;
 import ij.measure.*;
 import ij.plugin.frame.*;
 import ij.plugin.PointToolOptions;
 import ij.macro.Interpreter;
 import ij.util.*;
-import javax.swing.*;
 
 /** A frame for displaying images. */
-public class ImageWindow extends JFrame implements FocusListener, WindowListener, WindowStateListener, MouseWheelListener {
+public class ImageWindow extends Frame implements FocusListener, WindowListener, WindowStateListener, MouseWheelListener {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
 	public static final int MIN_WIDTH = 128;
 	public static final int MIN_HEIGHT = 32;
 	public static final int HGAP = 5;
@@ -37,6 +25,7 @@ public class ImageWindow extends JFrame implements FocusListener, WindowListener
 	protected ImageJ ij;
 	protected ImageCanvas ic;
 	private double initialMagnification = 1;
+	private int newWidth, newHeight;
 	protected boolean closed;
 	private boolean newCanvas;
 	private boolean unzoomWhenMinimizing = true;
@@ -57,8 +46,7 @@ public class ImageWindow extends JFrame implements FocusListener, WindowListener
 	private static boolean centerOnScreen;
 	private static Point nextLocation;
 	public static long setMenuBarTime;	
-    private int textGap = centerOnScreen?0:TEXT_GAP;
-    private InfoPanel subtitlePanel;
+	private int textGap = centerOnScreen?0:TEXT_GAP;
 	private Point initialLoc;
 	private int screenHeight, screenWidth;
 
@@ -72,7 +60,6 @@ public class ImageWindow extends JFrame implements FocusListener, WindowListener
 	
 	public ImageWindow(String title) {
 		super(title);
-    	setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 	}
 
     public ImageWindow(ImagePlus imp) {
@@ -81,7 +68,6 @@ public class ImageWindow extends JFrame implements FocusListener, WindowListener
     
     public ImageWindow(ImagePlus imp, ImageCanvas ic) {
 		super(imp.getTitle());
-    	setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		if (SCALE>1.0) {
 			TEXT_GAP = (int)(TEXT_GAP*SCALE);
 			textGap = centerOnScreen?0:TEXT_GAP;
@@ -106,8 +92,6 @@ public class ImageWindow extends JFrame implements FocusListener, WindowListener
 		this.ic = ic;
 		ImageWindow previousWindow = imp.getWindow();
 		setLayout(new ImageLayout(ic));
-		subtitlePanel=new InfoPanel(getWidth()-HGAP*2,TEXT_GAP);
-		add(subtitlePanel);
 		add(ic);
  		addFocusListener(this);
  		addWindowListener(this);
@@ -130,7 +114,7 @@ public class ImageWindow extends JFrame implements FocusListener, WindowListener
 			setLocation(loc.x, loc.y);
 			if (!(this instanceof StackWindow || this instanceof PlotWindow)) { //layout now unless components will be added later
 				pack();
-				setVisible(true);
+				show();
 			}
 			if (ic.getMagnification()!=0.0)
 				imp.setTitle(imp.getTitle());
@@ -162,7 +146,7 @@ public class ImageWindow extends JFrame implements FocusListener, WindowListener
 				WindowManager.setTempCurrentImage(imp);
 				Interpreter.addBatchModeImage(imp);
 			} else
-				setVisible(true);
+				show();
 		}
      }
     
@@ -278,22 +262,8 @@ public class ImageWindow extends JFrame implements FocusListener, WindowListener
 		if (extraWidth<0) extraWidth = 0;
 		int extraHeight = (int)((MIN_HEIGHT - imp.getHeight()*mag)/2.0);
 		if (extraHeight<0) extraHeight = 0;
-		//insets.top+textGap+extraHeight
-		insets = new Insets(Math.max(IJ.isMacOSX()?4:0,insets.top+extraHeight), insets.left+extraWidth, insets.bottom+extraHeight, insets.right+extraWidth);
+		insets = new Insets(insets.top+textGap+extraHeight, insets.left+extraWidth, insets.bottom+extraHeight, insets.right+extraWidth);
 		return insets;
-	}
-	
-	class InfoPanel extends JPanel {
-		
-		public InfoPanel(int x, int y) {
-			setPreferredSize(new Dimension(x,y+7));
-			setMinimumSize(new Dimension(0,y+7));
-		}
-		@Override
-		public void paint(Graphics g) {
-			super.paint(g);
-			drawInfo(g);
-		}
 	}
 
     /** Draws the subtitle. */
@@ -301,7 +271,7 @@ public class ImageWindow extends JFrame implements FocusListener, WindowListener
     	if (imp==null)
     		return;
         if (textGap!=0) {
-			//Insets insets = super.getInsets();
+			Insets insets = super.getInsets();
 			if (imp.isComposite()) {
 				CompositeImage ci = (CompositeImage)imp;
 				if (ci.getMode()==IJ.COMPOSITE) {
@@ -311,13 +281,12 @@ public class ImageWindow extends JFrame implements FocusListener, WindowListener
 					g.setColor(c);
 				}
 			}
-			Java2.setAntialiasedText(g, true);	
-			Font font = new Font("SansSerif", Font.PLAIN, (int)(12*SCALE));
-			g.setFont(font);
-			FontMetrics fm=g.getFontMetrics();
-			subtitlePanel.setPreferredSize(new Dimension(getWidth(),fm.getHeight()));
-			//g.drawString(createSubtitle(), insets.left+5, insets.top+TEXT_GAP);
-			g.drawString(createSubtitle(), getInsets().left+HGAP, g.getClipBounds().height-fm.getDescent());
+			Java2.setAntialiasedText(g, true);			
+			if (SCALE>1.0) {
+				Font font = new Font("SansSerif", Font.PLAIN, (int)(12*SCALE));
+				g.setFont(font);
+			}
+			g.drawString(createSubtitle(), insets.left+5, insets.top+TEXT_GAP);
 		}
     }
     
@@ -415,16 +384,13 @@ public class ImageWindow extends JFrame implements FocusListener, WindowListener
 		return IJ.d2s(n,digits);
     }
 
-    @Override
     public void paint(Graphics g) {
-    	super.paint(g);
-		//drawInfo(g);
-    	subtitlePanel.repaint();
+		drawInfo(g);
 		Rectangle r = ic.getBounds();
-		Insets is=getInsets();
-		//IJ.log("IC Bounds "+r.x+" "+r.y+" "+r.width+" "+r.height);
-		if (r.width>=MIN_WIDTH && r.height>=MIN_HEIGHT && !Prefs.noBorder && !IJ.isLinux())
-			g.drawRect(r.x+is.left-1, r.y+is.top-1, r.width+1, r.height+1);
+		int extraWidth = MIN_WIDTH - r.width;
+		int extraHeight = MIN_HEIGHT - r.height;
+		if (extraWidth<=0 && extraHeight<=0 && !Prefs.noBorder && !IJ.isLinux())
+			g.drawRect(r.x-1, r.y-1, r.width+1, r.height+1);
     }
     
 	/** Removes this window from the window list and disposes of it.
@@ -615,8 +581,8 @@ public class ImageWindow extends JFrame implements FocusListener, WindowListener
 
 	public void windowActivated(WindowEvent e) {
 		if (IJ.debugMode) IJ.log("windowActivated: "+imp.getTitle());
-		//if (IJ.isMacOSX())
-		//	setImageJMenuBar(this);
+		if (IJ.isMacOSX())
+			setImageJMenuBar(this);
 		if (imp==null)
 			return;
 		ImageJ ij = IJ.getInstance();
@@ -646,7 +612,7 @@ public class ImageWindow extends JFrame implements FocusListener, WindowListener
 		int oldState = e.getOldState();
 		int newState = e.getNewState();
 		if (IJ.debugMode) IJ.log("windowStateChanged: "+oldState+" "+newState);
-		if ((oldState&JFrame.MAXIMIZED_BOTH)==0 && (newState&JFrame.MAXIMIZED_BOTH)!=0)
+		if ((oldState&Frame.MAXIMIZED_BOTH)==0 && (newState&Frame.MAXIMIZED_BOTH)!=0)
 			maximize();
 	}
 
@@ -765,14 +731,14 @@ public class ImageWindow extends JFrame implements FocusListener, WindowListener
 		ImagePlus imp = win.getImagePlus();
 		if (imp!=null)
 			setMenuBar = imp.setIJMenuBar();
-		JMenuBar mb = Menus.getMenuBar();
-		if (mb!=null && mb==win.getJMenuBar())
+		MenuBar mb = Menus.getMenuBar();
+		if (mb!=null && mb==win.getMenuBar())
 			setMenuBar = false;
 		setMenuBarTime = 0L;
 		if (setMenuBar && ij!=null && !ij.quitting() && !Interpreter.nonBatchMacroRunning()) {
 			IJ.wait(10); // may be needed for Java 1.4 on OS X
 			long t0 = System.currentTimeMillis();
-			win.setJMenuBar(mb);
+			win.setMenuBar(mb);
 			long time = System.currentTimeMillis()-t0;
 			setMenuBarTime = time;
 			Menus.setMenuBarCount++;

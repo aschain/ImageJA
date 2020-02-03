@@ -4,9 +4,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.*;
 import java.io.File;
 import java.util.*;
-
-import javax.swing.*;
-
 import ij.*;
 import ij.plugin.frame.Recorder;
 import ij.plugin.frame.Editor; 
@@ -17,7 +14,7 @@ import ij.plugin.tool.MacroToolRunner;
 import ij.macro.Program;
 
 /** The ImageJ toolbar. */
-public class Toolbar extends JPanel implements MouseListener, MouseMotionListener, ItemListener, ActionListener {
+public class Toolbar extends Canvas implements MouseListener, MouseMotionListener, ItemListener, ActionListener {
 
 	public static final int RECTANGLE = 0;
 	public static final int OVAL = 1;
@@ -47,9 +44,9 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 	public static final int RECT_ROI=0, ROUNDED_RECT_ROI=1, ROTATED_RECT_ROI=2;
 	public static final int OVAL_ROI=0, ELLIPSE_ROI=1, BRUSH_ROI=2;
 	
-	public static final String[] builtInTools = {"Arrow","Brush","Command Finder", "Developer JMenu","Flood Filler",
-		"LUT JMenu","Overlay Brush","Pencil","Pixel Inspector","Selection Rotator",
-		"Spray Can","Stacks JMenu"};
+	public static final String[] builtInTools = {"Arrow","Brush","Command Finder", "Developer Menu","Flood Filler",
+		"LUT Menu","Overlay Brush","Pencil","Pixel Inspector","Selection Rotator",
+		"Spray Can","Stacks Menu","ROI Menu"};
 	private static final String[] builtInTools2 = {"Pixel Inspection Tool","Paintbrush Tool","Flood Fill Tool"};
 
 	private static final int NUM_TOOLS = 23;
@@ -78,7 +75,7 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 	private String[] names = new String[MAX_TOOLS];
 	private String[] icons = new String[MAX_TOOLS];
 	private PlugInTool[] tools = new PlugInTool[MAX_TOOLS];
-	private JPopupMenu[] menus = new JPopupMenu[MAX_TOOLS];
+	private PopupMenu[] menus = new PopupMenu[MAX_TOOLS];
 	private int nExtraTools;
 	private MacroInstaller macroInstaller;
 	private boolean addingSingleTool;
@@ -87,11 +84,11 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 	private int pc;
 	private String icon;
 	private int startupTime;
-	private JPopupMenu rectPopup, ovalPopup, pointPopup, linePopup, switchPopup;
-	private JCheckBoxMenuItem rectItem, roundRectItem, rotatedRectItem;
-	private JCheckBoxMenuItem ovalItem, ellipseItem, brushItem;
-	private JCheckBoxMenuItem pointItem, multiPointItem;
-	private JCheckBoxMenuItem straightLineItem, polyLineItem, freeLineItem, arrowItem;
+	private PopupMenu rectPopup, ovalPopup, pointPopup, linePopup, switchPopup;
+	private CheckboxMenuItem rectItem, roundRectItem, rotatedRectItem;
+	private CheckboxMenuItem ovalItem, ellipseItem, brushItem;
+	private CheckboxMenuItem pointItem, multiPointItem;
+	private CheckboxMenuItem straightLineItem, polyLineItem, freeLineItem, arrowItem;
 	private String currentSet = "Startup Macros";
 
 	private static Color foregroundColor = Prefs.getColor(Prefs.FCOLOR,Color.white);
@@ -158,63 +155,63 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 	}
 
 	void addPopupMenus() {
-		rectPopup = new JPopupMenu();
+		rectPopup = new PopupMenu();
 		if (Menus.getFontSize()!=0)
 			rectPopup.setFont(Menus.getFont());
-		rectItem = new JCheckBoxMenuItem("Rectangle", rectType==RECT_ROI);
+		rectItem = new CheckboxMenuItem("Rectangle", rectType==RECT_ROI);
 		rectItem.addItemListener(this);
 		rectPopup.add(rectItem);
-		roundRectItem = new JCheckBoxMenuItem("Rounded Rectangle", rectType==ROUNDED_RECT_ROI);
+		roundRectItem = new CheckboxMenuItem("Rounded Rectangle", rectType==ROUNDED_RECT_ROI);
 		roundRectItem.addItemListener(this);
 		rectPopup.add(roundRectItem);
-		rotatedRectItem = new JCheckBoxMenuItem("Rotated Rectangle", rectType==ROTATED_RECT_ROI);
+		rotatedRectItem = new CheckboxMenuItem("Rotated Rectangle", rectType==ROTATED_RECT_ROI);
 		rotatedRectItem.addItemListener(this);
 		rectPopup.add(rotatedRectItem);
 		add(rectPopup);
 
-		ovalPopup = new JPopupMenu();
+		ovalPopup = new PopupMenu();
 		if (Menus.getFontSize()!=0)
 			ovalPopup.setFont(Menus.getFont());
-		ovalItem = new JCheckBoxMenuItem("Oval selections", ovalType==OVAL_ROI);
+		ovalItem = new CheckboxMenuItem("Oval selections", ovalType==OVAL_ROI);
 		ovalItem.addItemListener(this);
 		ovalPopup.add(ovalItem);
-		ellipseItem = new JCheckBoxMenuItem("Elliptical selections", ovalType==ELLIPSE_ROI);
+		ellipseItem = new CheckboxMenuItem("Elliptical selections", ovalType==ELLIPSE_ROI);
 		ellipseItem.addItemListener(this);
 		ovalPopup.add(ellipseItem);
-		brushItem = new JCheckBoxMenuItem("Selection Brush Tool", ovalType==BRUSH_ROI);
+		brushItem = new CheckboxMenuItem("Selection Brush Tool", ovalType==BRUSH_ROI);
 		brushItem.addItemListener(this);
 		ovalPopup.add(brushItem);
 		add(ovalPopup);
 
-		pointPopup = new JPopupMenu();
+		pointPopup = new PopupMenu();
 		if (Menus.getFontSize()!=0)
 			pointPopup.setFont(Menus.getFont());
-		pointItem = new JCheckBoxMenuItem("Point Tool", !multiPointMode);
+		pointItem = new CheckboxMenuItem("Point Tool", !multiPointMode);
 		pointItem.addItemListener(this);
 		pointPopup.add(pointItem);
-		multiPointItem = new JCheckBoxMenuItem("Multi-point Tool", multiPointMode);
+		multiPointItem = new CheckboxMenuItem("Multi-point Tool", multiPointMode);
 		multiPointItem.addItemListener(this);
 		pointPopup.add(multiPointItem);
 		add(pointPopup);
 
-		linePopup = new JPopupMenu();
+		linePopup = new PopupMenu();
 		if (Menus.getFontSize()!=0)
 			linePopup.setFont(Menus.getFont());
-		straightLineItem = new JCheckBoxMenuItem("Straight Line", lineType==LINE&&!arrowMode);
+		straightLineItem = new CheckboxMenuItem("Straight Line", lineType==LINE&&!arrowMode);
 		straightLineItem.addItemListener(this);
 		linePopup.add(straightLineItem);
-		polyLineItem = new JCheckBoxMenuItem("Segmented Line", lineType==POLYLINE);
+		polyLineItem = new CheckboxMenuItem("Segmented Line", lineType==POLYLINE);
 		polyLineItem.addItemListener(this);
 		linePopup.add(polyLineItem);
-		freeLineItem = new JCheckBoxMenuItem("Freehand Line", lineType==FREELINE);
+		freeLineItem = new CheckboxMenuItem("Freehand Line", lineType==FREELINE);
 		freeLineItem.addItemListener(this);
 		linePopup.add(freeLineItem);
-		arrowItem = new JCheckBoxMenuItem("Arrow tool", lineType==LINE&&!arrowMode);
+		arrowItem = new CheckboxMenuItem("Arrow tool", lineType==LINE&&!arrowMode);
 		arrowItem.addItemListener(this);
 		linePopup.add(arrowItem);
 		add(linePopup);
 
-		switchPopup = new JPopupMenu();
+		switchPopup = new PopupMenu();
 		if (Menus.getFontSize()!=0)
 			switchPopup.setFont(Menus.getFont());
 		add(switchPopup);
@@ -507,7 +504,7 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 			}
 			if (pc>=icon.length()) break;
 		}
-		if (menus[tool]!=null && menus[tool].getComponentCount()>0) { 
+		if (menus[tool]!=null && menus[tool].getItemCount()>0) { 
 			xOffset = x; yOffset = y;
 			drawTriangle(15, 15);
 		}
@@ -548,7 +545,7 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 			if (index!=-1)
 				name = name.replace("Action Tool", "Tool");
 			else {
-				index = name.indexOf("JMenu Tool");
+				index = name.indexOf("Menu Tool");
 				if (index!=-1)
 					name = name.substring(0, index+4);
 			}
@@ -657,7 +654,6 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 	}
 
 	public void paint(Graphics g) {
-		super.paint(g);
 		drawButtons(g);
 	}
 
@@ -1021,7 +1017,7 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 		}
 		if (!isValidTool(newTool))
 			return;
-		if (menus[newTool]!=null && menus[newTool].getComponentCount()>0) {
+		if (menus[newTool]!=null && menus[newTool].getItemCount()>0) {
             menus[newTool].show(e.getComponent(), e.getX(), e.getY());
 			return;
 		}
@@ -1193,21 +1189,21 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 		switchPopup.addSeparator();
 		for (int i=0; i<builtInTools.length; i++)
 			addBuiltInTool(builtInTools[i]);
-		JMenuBar menuBar = Menus.getMenuBar();
+		MenuBar menuBar = Menus.getMenuBar();
 		if (menuBar==null)
 			return;
 		int n = menuBar.getMenuCount();
-		JMenu pluginsMenu = null;
+		Menu pluginsMenu = null;
 		if (menuBar.getMenuCount()>=5)
 			pluginsMenu = menuBar.getMenu(5);
 		if (pluginsMenu==null || !"Plugins".equals(pluginsMenu.getLabel()))
 			return;
 		n = pluginsMenu.getItemCount();
-		JMenu toolsMenu = null;
+		Menu toolsMenu = null;
 		for (int i=0; i<n; ++i) {
-			JMenuItem m = pluginsMenu.getItem(i);
-			if (m!=null && "Tools".equals(m.getLabel()) && (m instanceof JMenu)) {
-				toolsMenu = (JMenu)m;
+			MenuItem m = pluginsMenu.getItem(i);
+			if ("Tools".equals(m.getLabel()) && (m instanceof Menu)) {
+				toolsMenu = (Menu)m;
 				break;
 			}
 		}
@@ -1218,9 +1214,9 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 		n = toolsMenu.getItemCount();
 		boolean separatorAdded = false;
 		for (int i=0; i<n; ++i) {
-			JMenuItem m = toolsMenu.getItem(i);
-			String label = m==null?null:m.getText();
-			if (label!=null && (label.endsWith(" Tool")||label.endsWith(" JMenu"))) {
+			MenuItem m = toolsMenu.getItem(i);
+			String label = m.getLabel();
+			if (label!=null && (label.endsWith(" Tool")||label.endsWith(" Menu"))) {
 				if (!separatorAdded) {
 					switchPopup.addSeparator();
 					separatorAdded = true;
@@ -1232,21 +1228,21 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 	}
 
     private void addBuiltInTool(String name) {
-		JCheckBoxMenuItem item = new JCheckBoxMenuItem(name, name.equals(currentSet));
+		CheckboxMenuItem item = new CheckboxMenuItem(name, name.equals(currentSet));
 		item.addItemListener(this);
 		item.setActionCommand("Tool");
 		switchPopup.add(item);
     }
 
     private void addPluginTool(String name) {
-		JCheckBoxMenuItem item = new JCheckBoxMenuItem(name, name.equals(currentSet));
+		CheckboxMenuItem item = new CheckboxMenuItem(name, name.equals(currentSet));
 		item.addItemListener(this);
 		item.setActionCommand("Plugin Tool");
 		switchPopup.add(item);
     }
 
     private void addItem(String name) {
-		JCheckBoxMenuItem item = new JCheckBoxMenuItem(name, name.equals(currentSet));
+		CheckboxMenuItem item = new CheckboxMenuItem(name, name.equals(currentSet));
 		item.addItemListener(this);
 		switchPopup.add(item);
     }
@@ -1286,7 +1282,7 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
     public void mouseDragged(MouseEvent e) {}
 	
 	public void itemStateChanged(ItemEvent e) {
-		JCheckBoxMenuItem item = (JCheckBoxMenuItem)e.getSource();
+		CheckboxMenuItem item = (CheckboxMenuItem)e.getSource();
 		String previousName = getToolName();
 		if (item==rectItem || item==roundRectItem || item==rotatedRectItem) {
 			if (item==roundRectItem)
@@ -1467,9 +1463,9 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 	}
 
 	public void actionPerformed(ActionEvent e) {
-		JMenuItem item = (JMenuItem)e.getSource();
+		MenuItem item = (MenuItem)e.getSource();
 		String cmd = e.getActionCommand();
-		JPopupMenu popup = (JPopupMenu)item.getParent();
+		PopupMenu popup = (PopupMenu)item.getParent();
 		int tool = -1;
 		for (int i=CUSTOM1; i<getNumTools(); i++) {
 			if (popup==menus[i]) {
@@ -1545,7 +1541,7 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 		}
         if (tool==current && (names[tool].indexOf("Action Tool")!=-1||names[tool].indexOf("Unused Tool")!=-1))
         	setTool(RECTANGLE);
-        if (names[tool].endsWith(" JMenu Tool"))
+        if (names[tool].endsWith(" Menu Tool"))
             installMenu(tool);
         if (IJ.debugMode) IJ.log("Toolbar.addTool: "+tool+" "+toolTip);
 		return tool;
@@ -1559,7 +1555,7 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
         if (commands==null)
         	return;
 		if (menus[tool]==null) {
-			menus[tool] = new JPopupMenu("");
+			menus[tool] = new PopupMenu("");
 			if (Menus.getFontSize()!=0)
 				menus[tool].setFont(Menus.getFont());
 			add(menus[tool] );
@@ -1575,7 +1571,7 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 				String command = commands[i];
 				if (disable)
 					command = command.substring(1);
-				JMenuItem mi = new JMenuItem(command);
+				MenuItem mi = new MenuItem(command);
 				if (disable)
 					mi.setEnabled(false);
 				mi.addActionListener(this);
@@ -1631,7 +1627,7 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 		this.macroInstaller = null;
 		if (tool!=-1) {
 			tools[tool] = new MacroToolRunner(macroInstaller);
-			if (!name.contains(" JMenu Tool")) {
+			if (!name.contains(" Menu Tool")) {
 				if (menus[tool]!=null)
 					menus[tool].removeAll();
 				if (!installingStartupTool)
@@ -1757,7 +1753,7 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 			if (!ok) {
 				ok = installToolsetTool(name);
 				if (!ok) {  // install tool in plugins/Tools
-					if (name.endsWith("JMenu Tool"))
+					if (name.endsWith("Menu Tool"))
 						name = name.substring(0, name.length()-5);
 					Hashtable commands = Menus.getCommands();
 					if (commands!=null && commands.get(name)!=null)
@@ -1814,14 +1810,16 @@ public class Toolbar extends JPanel implements MouseListener, MouseMotionListene
 			installMacroFromJar("/macros/FloodFillTool.txt");
 		else if (label.startsWith("Spray Can"))
 			installMacroFromJar("/macros/SprayCanTool.txt");
-		else if (label.startsWith("Developer JMenu"))
+		else if (label.startsWith("Developer Menu"))
 			installMacroFromJar("/macros/DeveloperMenuTool.txt");
-		else if (label.startsWith("Stacks JMenu"))
+		else if (label.startsWith("Stacks Menu"))
 			installMacroFromJar("/macros/StacksMenuTool.txt");
-		else if (label.startsWith("LUT JMenu"))
+		else if (label.startsWith("LUT Menu"))
 			installMacroFromJar("/macros/LUTMenuTool.txt");
 		else if (label.startsWith("Command Finder"))
 			installMacroFromJar("/macros/CommandFinderTool.txt");
+		else if (label.startsWith("ROI"))
+			installMacroFromJar("/macros/RoiMenuTool.txt");
 		else
 			ok = false;
 		return ok;

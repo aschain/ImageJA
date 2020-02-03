@@ -19,9 +19,6 @@ import java.util.*;
 import java.awt.geom.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-
 
 /** This is a Canvas used to display images in a Window. */
 public class ImageCanvas extends Canvas implements MouseListener, MouseMotionListener, Cloneable {
@@ -1261,9 +1258,9 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 			roi.handleMouseUp(x, y); // polygon or polyline selection
 			return;
 		}
-		JPopupMenu popup = Menus.getPopupMenu();
+		PopupMenu popup = Menus.getPopupMenu();
 		if (popup!=null) {
-			imp.getWindow().add(popup);
+			add(popup);
 			if (IJ.isMacOSX()) IJ.wait(10);
 			popup.show(this, x, y);
 		}

@@ -3,18 +3,9 @@ import ij.*;
 import ij.process.*;
 import ij.util.*;
 import ij.plugin.Colors;
-//import java.awt.*;
+import java.awt.*;
 import java.util.Vector;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
-import java.awt.Panel;
-import java.awt.TextField;
 import java.awt.event.*;
-import javax.swing.*;
 
 
  /** Displays a dialog that allows the user to select a color using three sliders. */
@@ -25,7 +16,7 @@ public class ColorChooser implements TextListener, AdjustmentListener {
 	int red, green, blue;
 	boolean useHSB;
 	String title;
-	JFrame frame;
+	Frame frame;
 	double scale = Prefs.getGuiScale();
 
 	/** Constructs a ColorChooser using the specified title and initial color. */
@@ -33,7 +24,7 @@ public class ColorChooser implements TextListener, AdjustmentListener {
 		this(title, initialColor, useHSB, null);
 	}
 	
-	public ColorChooser(String title, Color initialColor, boolean useHSB, JFrame frame) {
+	public ColorChooser(String title, Color initialColor, boolean useHSB, Frame frame) {
 		this.title = title;
 		if (initialColor==null) initialColor = Color.black;
 		this.initialColor = initialColor;
@@ -57,7 +48,7 @@ public class ColorChooser implements TextListener, AdjustmentListener {
 			((TextField)colors.elementAt(i)).addTextListener(this);
 		sliders = gd.getSliders();
 		for (int i=0; i<sliders.size(); i++)
-			((JScrollBar)sliders.elementAt(i)).addAdjustmentListener(this);
+			((Scrollbar)sliders.elementAt(i)).addAdjustmentListener(this);
 		gd.showDialog();
 		if (gd.wasCanceled()) return null;
 		int red = (int)gd.getNextNumber();
@@ -81,7 +72,7 @@ public class ColorChooser implements TextListener, AdjustmentListener {
 		Object source = e.getSource();
 		for (int i=0; i<sliders.size(); i++) {
 			if (source==sliders.elementAt(i)) {
-				JScrollBar sb = (JScrollBar)source;
+				Scrollbar sb = (Scrollbar)source;
 				TextField tf = (TextField)colors.elementAt(i);
 			}
 		}

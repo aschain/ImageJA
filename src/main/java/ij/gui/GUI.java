@@ -1,23 +1,10 @@
 package ij.gui;
 import ij.*;
-
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GraphicsConfiguration;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
-import java.awt.Image;
-import java.awt.Insets;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.Scrollbar;
-import java.awt.Toolkit;
-import java.awt.Window;
-
-import javax.swing.*;
+import java.awt.*;
+import javax.swing.JComponent;
+import javax.swing.JList;
+import javax.swing.JTable;
+import javax.swing.UIManager;
 
 /** This class consists of static GUI utility methods. */
 public class GUI {
@@ -151,14 +138,14 @@ public class GUI {
 		return unionOfBounds;
 	}
 	
-    static private JFrame frame;
+    static private Frame frame;
     
     /** Creates a white AWT Image image of the specified size. */
     public static Image createBlankImage(int width, int height) {
         if (width==0 || height==0)
             throw new IllegalArgumentException("");
 		if (frame==null) {
-			frame = new JFrame();
+			frame = new Frame();
 			frame.pack();
 			frame.setBackground(Color.white);
 		}
@@ -167,7 +154,7 @@ public class GUI {
     }
     
     /** Lightens overly dark scrollbar background on Windows 8. */
-    public static void fix(JScrollBar sb) {
+    public static void fix(Scrollbar sb) {
     }
     
     public static boolean showCompositeAdvisory(ImagePlus imp, String title) {
@@ -211,7 +198,7 @@ public class GUI {
 		component.setFont(font);
 	}
 
-	public static void scalePopupMenu(final JPopupMenu popup) {
+	public static void scalePopupMenu(final PopupMenu popup) {
 		final float scale = (float) Prefs.getGuiScale();
 		if (scale==1f)
 			return;
@@ -266,12 +253,7 @@ public class GUI {
 		 * causes the scrollbar thumb color and background
 		 * color to be almost identical.
 		*/
-	public static final void fixScrollbar(Scrollbar sb) {
-		if (IJ.isWindows())
-			sb.setBackground(scrollbarBackground);
-	}	
-
-	public static final void fixScrollbar(JScrollBar sb) {
+		public static final void fixScrollbar(Scrollbar sb) {
 		if (IJ.isWindows())
 			sb.setBackground(scrollbarBackground);
 	}	
