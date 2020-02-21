@@ -491,13 +491,8 @@ public class TextRoi extends Roi {
 	}
 	
 	/** Increases the size of bounding rectangle so it's large enough to hold the text. */ 
-<<<<<<< HEAD
 	void updateBounds(Graphics g) {
 		if (drawStringMode)
-=======
-	private void updateBounds(Graphics g) {
-		if (firstChar || drawStringMode)
->>>>>>> upstream/master
 			return;
 		double mag = ic!=null?ic.getMagnification():1.0;
 		if (nonScalable) mag = 1.0;
