@@ -183,12 +183,8 @@ public class TextRoi extends Roi {
 		} else {
 			char[] chr = {c};
 			theText[cline] += new String(chr);
-<<<<<<< HEAD
-			updateBounds(null);
-			imp.draw();
-=======
 			updateBounds();
->>>>>>> upstream/master
+			imp.draw();
 			updateText();
 			firstChar = false;
 			return;
@@ -477,13 +473,8 @@ public class TextRoi extends Roi {
 	}
 	
 	/** Increases the size of bounding rectangle so it's large enough to hold the text. */ 
-<<<<<<< HEAD
-	void updateBounds(Graphics g) {
-		if (drawStringMode)
-=======
 	private void updateBounds() {
 		if (firstChar )
->>>>>>> upstream/master
 			return;
 		double lineHeight = 0;
 		double mag = getMagnification();
