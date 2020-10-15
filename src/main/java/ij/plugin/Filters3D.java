@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Filters3D implements PlugIn {
     public final static int MEAN=10, MEDIAN=11, MIN=12, MAX=13, VAR=14, MAXLOCAL=15;
 	private static float xradius = 2, yradius = 2, zradius = 2;
+	private static boolean doAllFrms=false;
 
 	public void run(String arg) {
 		String name = null;
@@ -49,10 +50,12 @@ public class Filters3D implements PlugIn {
 	}
 
 	private boolean showDialog(String name) {
+		ImagePlus imp = IJ.getImage();
 		GenericDialog gd = new GenericDialog(name);
 		gd.addNumericField("X radius:", xradius, 1);
 		gd.addNumericField("Y radius:", yradius, 1);
 		gd.addNumericField("Z radius:", zradius, 1);
+		if(imp.getNFrames()>1)gd.addCheckbox("Run on all frames?", doAllFrms);
 		gd.showDialog();
 		if (gd.wasCanceled()) {
 			return false;
@@ -60,6 +63,7 @@ public class Filters3D implements PlugIn {
 		xradius = (float) gd.getNextNumber();
 		yradius = (float) gd.getNextNumber();
 		zradius = (float) gd.getNextNumber();
+		if(imp.getNFrames()>1)doAllFrms=gd.getNextBoolean();
 		return true;
 	}
 
@@ -117,24 +121,39 @@ public class Filters3D implements PlugIn {
 	}
 	
 	private static void filterHyperstack(ImagePlus imp, int filter, float vx, float vy, float vz) {
-		if (imp.getNDimensions()>4) {
-			IJ.error("5D hyperstacks are currently not supported");
-			return;
+		//if (imp.getNDimensions()>4) {
+		//	IJ.error("5D hyperstacks are currently not supported");
+		//	return;
+		//}
+		int frms=imp.getNFrames(), chs=imp.getNChannels(), sls=imp.getNSlices(), firstfr=0, lastfr=frms;
+		if(!doAllFrms) {firstfr=imp.getT()-1; lastfr=imp.getT();}
+		for(int fr=firstfr;fr<lastfr;fr++) {
+			ImagePlus curimp=imp;
+			imp.setT(fr+1);
+			if(frms>1) {
+				Duplicator dup=new Duplicator();
+				curimp=dup.run(imp, 1, chs, 1, sls, fr+1, fr+1);
+			}
+			if (imp.getNChannels()==1) {
+				ImageStack stack = filter(curimp.getStack(), filter, vx, vy, vz);
+				curimp.setStack(stack);
+				return;
+			}
+	        ImagePlus[] channels = ChannelSplitter.split(curimp);
+	        int n = channels.length;
+	        for (int i=0; i<n; i++) {
+				ImageStack stack = filter(channels[i].getStack(), filter, vx, vy, vz);
+				channels[i].setStack(stack);
+			}
+			curimp.setImage(RGBStackMerge.mergeChannels(channels, false));
+			curimp.setC(1);
+			if(frms>1) {
+				for(int sl=0;sl<sls;sl++)
+					for(int c=1;c<=chs;c++)
+						imp.getStack().setProcessor(curimp.getStack().getProcessor(sl*chs+c), sl*chs+c+fr*sls*chs);
+			}
 		}
-		if (imp.getNChannels()==1) {
-			ImageStack stack = filter(imp.getStack(), filter, vx, vy, vz);
-			imp.setStack(stack);
-			return;
-		}
-        ImagePlus[] channels = ChannelSplitter.split(imp);
-        int n = channels.length;
-        for (int i=0; i<n; i++) {
-			ImageStack stack = filter(channels[i].getStack(), filter, vx, vy, vz);
-			channels[i].setStack(stack);
-		}
-		ImagePlus imp2 = RGBStackMerge.mergeChannels(channels, false);
-		imp.setImage(imp2);
-		imp.setC(1);
+		
 	}
 
 	private static ImageStack filterRGB(ImageStack rgb_in, int filter, float vx, float vy, float vz) {
