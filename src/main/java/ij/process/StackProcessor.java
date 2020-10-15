@@ -342,6 +342,10 @@ public class StackProcessor {
      * @return The values of the nieghbor pixels inside an array
      */
     private ArrayUtil getNeighborhood(int[] ker, int nbval, int x, int y, int z, float radx, float rady, float radz) {
+    	return getNeighborhood(null, ker, nbval, x, y, z, radx, rady, radz);
+    }
+    
+    private ArrayUtil getNeighborhood(ImagePlus imp, int[] ker, int nbval, int x, int y, int z, float radx, float rady, float radz) {
         ArrayUtil pix = new ArrayUtil(nbval);
         int vx = (int) Math.ceil(radx);
         int vy = (int) Math.ceil(rady);
@@ -351,11 +355,13 @@ public class StackProcessor {
         int sizex = stack.getWidth();
         int sizey = stack.getHeight();
         int sizez = stack.size();
+        if(imp!=null) sizez=imp.getNSlices();
         for (int k = z - vz; k <= z + vz; k++) {
             for (int j = y - vy; j <= y + vy; j++) {
                 for (int i = x - vx; i <= x + vx; i++) {
 					if (ker[c]>0 && i>=0 && j>=0 && k>=0 && i<sizex && j<sizey && k<sizez) {
-						pix.putValue(index, (float)stack.getVoxel(i, j, k));
+						int khs=imp==null?k:imp.getStackIndex(imp.getC(), k+1, imp.getT());
+						pix.putValue(index, (float)stack.getVoxel(i, j, khs));
 						index++;
 					}
                     c++;
