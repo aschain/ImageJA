@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Filters3D implements PlugIn {
     public final static int MEAN=10, MEDIAN=11, MIN=12, MAX=13, VAR=14, MAXLOCAL=15;
 	private static float xradius = 2, yradius = 2, zradius = 2;
-	private static boolean doAllFrms=false;
+	private static boolean doAllFrms=true;
 
 	public void run(String arg) {
 		String name = null;
