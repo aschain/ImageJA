@@ -274,14 +274,20 @@ public class StackProcessor {
      * @param filter
      */
     public void filter3D(ImageStack out, float radx, float rady, float radz, int zmin, int zmax, int filter) {
+    	filter3D(out, null, 0, 0, radx, rady, radz, zmin, zmax, filter);
+    }
+    
+    public void filter3D(ImageStack out, ImagePlus imp, int ch, int fr,  float radx, float rady, float radz, int zmin, int zmax, int filter) {
         int[] ker = this.createKernelEllipsoid(radx, rady, radz);
         int nb = 0;
+        int slices=stack.getSize();
+        if(imp!=null)slices=imp.getNSlices();
         for (int i=0; i<ker.length; i++)
             nb += ker[i];
         if (zmin<0)
             zmin = 0;
-        if (zmax>stack.size())
-            zmax = stack.size();
+        if (zmax>slices)
+            zmax = slices;
         int sizex = stack.getWidth();
         int sizey = stack.getHeight();
         double value;
@@ -289,24 +295,25 @@ public class StackProcessor {
             if (zmin==0) IJ.showProgress(z+1, zmax);
             for (int y=0; y<sizey; y++) {
                 for (int x=0; x<sizex; x++) {
-                    ArrayUtil tab = getNeighborhood(ker, nb, x, y, z, radx, rady, radz);
+                    ArrayUtil tab = getNeighborhood(imp, ch, fr, ker, nb, x, y, z, radx, rady, radz);
+                	int z2 =imp==null?z:imp.getStackIndex(ch, z+1, fr);
                     switch (filter) {
 						case FILTER_MEAN:
-							out.setVoxel(x, y, z, tab.getMean()); break;
+							out.setVoxel(x, y, z2, tab.getMean()); break;
 						case FILTER_MEDIAN:
-							out.setVoxel(x, y, z, tab.medianSort()); break;
+							out.setVoxel(x, y, z2, tab.medianSort()); break;
 						case FILTER_MIN:
-							out.setVoxel(x, y, z, tab.getMinimum()); break;
+							out.setVoxel(x, y, z2, tab.getMinimum()); break;
 						case FILTER_MAX:
-							out.setVoxel(x, y, z, tab.getMaximum()); break;
+							out.setVoxel(x, y, z2, tab.getMaximum()); break;
 						case FILTER_VAR:
-							out.setVoxel(x, y, z, tab.getVariance()); break;
+							out.setVoxel(x, y, z2, tab.getVariance()); break;
 						case FILTER_MAXLOCAL:
-							value = stack.getVoxel(x, y, z);
+							value = stack.getVoxel(x, y, z2);
 							if (tab.isMaximum(value))
-								out.setVoxel(x, y, z, value);
+								out.setVoxel(x, y, z2, value);
 							else
-								out.setVoxel(x, y, z, 0);
+								out.setVoxel(x, y, z2, 0);
 							break;
                     } //switch
                 }  //x
@@ -330,7 +337,12 @@ public class StackProcessor {
 
     /**
      * Gets the neighboring attribute of the Image3D with a kernel as a array
+     * adapted for hyperstack.  For a hyperstack, include imp, ch and fr.
+     * ch and fr are 1-based
      *
+     * @param imp include the ImagePlus
+     * @param ch channel of the hyperstack (1-based)
+     * @param fr frame of the hyperstack (1-based)
      * @param ker The kernel array (>0 ok)
      * @param nbval The number of non-zero values
      * @param x Coordinate x of the pixel
@@ -341,11 +353,7 @@ public class StackProcessor {
      * @param rady Radius z of the neighboring
      * @return The values of the nieghbor pixels inside an array
      */
-    private ArrayUtil getNeighborhood(int[] ker, int nbval, int x, int y, int z, float radx, float rady, float radz) {
-    	return getNeighborhood(null, ker, nbval, x, y, z, radx, rady, radz);
-    }
-    
-    private ArrayUtil getNeighborhood(ImagePlus imp, int[] ker, int nbval, int x, int y, int z, float radx, float rady, float radz) {
+    private ArrayUtil getNeighborhood(ImagePlus imp, int ch, int fr, int[] ker, int nbval, int x, int y, int z, float radx, float rady, float radz) {
         ArrayUtil pix = new ArrayUtil(nbval);
         int vx = (int) Math.ceil(radx);
         int vy = (int) Math.ceil(rady);
@@ -360,7 +368,7 @@ public class StackProcessor {
             for (int j = y - vy; j <= y + vy; j++) {
                 for (int i = x - vx; i <= x + vx; i++) {
 					if (ker[c]>0 && i>=0 && j>=0 && k>=0 && i<sizex && j<sizey && k<sizez) {
-						int khs=imp==null?k:imp.getStackIndex(imp.getC(), k+1, imp.getT());
+						int khs=imp==null?k:imp.getStackIndex(ch, k+1, fr);
 						pix.putValue(index, (float)stack.getVoxel(i, j, khs));
 						index++;
 					}
