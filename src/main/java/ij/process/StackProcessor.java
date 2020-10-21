@@ -296,7 +296,8 @@ public class StackProcessor {
             for (int y=0; y<sizey; y++) {
                 for (int x=0; x<sizex; x++) {
                     ArrayUtil tab = getNeighborhood(imp, ch, fr, ker, nb, x, y, z, radx, rady, radz);
-                	int z2 =imp==null?z:imp.getStackIndex(ch, z+1, fr);
+                	int z2 =z;
+                	if(imp!=null) z2=imp.getStackIndex(ch, z+1, fr);
                     switch (filter) {
 						case FILTER_MEAN:
 							out.setVoxel(x, y, z2, tab.getMean()); break;
