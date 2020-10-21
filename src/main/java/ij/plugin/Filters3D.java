@@ -190,7 +190,6 @@ public class Filters3D implements PlugIn {
 				channels[i].setStack(stack);
 			}
 			curimp.setImage(RGBStackMerge.mergeChannels(channels, false));
-			curimp.setC(1);
 			if(frms>1) {
 				for(int sl=0;sl<sls;sl++)
 					for(int c=1;c<=chs;c++)
