@@ -293,11 +293,10 @@ public class StackProcessor {
         double value;
         for (int z=zmin; z<zmax; z++) {
             if (zmin==0) IJ.showProgress(z+1, zmax);
+        	int z2 = ((imp==null)? z : imp.getStackIndex(ch, z+1, fr));
             for (int y=0; y<sizey; y++) {
                 for (int x=0; x<sizex; x++) {
                     ArrayUtil tab = getNeighborhood(imp, ch, fr, ker, nb, x, y, z, radx, rady, radz);
-                	int z2 =z;
-                	if(imp!=null) z2=imp.getStackIndex(ch, z+1, fr);
                     switch (filter) {
 						case FILTER_MEAN:
 							out.setVoxel(x, y, z2, tab.getMean()); break;
@@ -366,10 +365,10 @@ public class StackProcessor {
         int sizez = stack.size();
         if(imp!=null) sizez=imp.getNSlices();
         for (int k = z - vz; k <= z + vz; k++) {
+			int khs=imp==null?k:imp.getStackIndex(ch, k+1, fr);
             for (int j = y - vy; j <= y + vy; j++) {
                 for (int i = x - vx; i <= x + vx; i++) {
 					if (ker[c]>0 && i>=0 && j>=0 && k>=0 && i<sizex && j<sizey && k<sizez) {
-						int khs=imp==null?k:imp.getStackIndex(ch, k+1, fr);
 						pix.putValue(index, (float)stack.getVoxel(i, j, khs));
 						index++;
 					}
