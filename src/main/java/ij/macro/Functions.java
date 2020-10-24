@@ -3623,19 +3623,8 @@ public class Functions implements MacroConstants, Measurements {
 		String s2 = getLastString();
 		boolean isCommand = s2.startsWith("\\");
 		Frame frame = WindowManager.getFrame(title);
-<<<<<<< HEAD
-		if (frame==null) {
-			if (isCommand) {
-				//interp.done = true;
-				IJ.log("**MACRO ERROR: No window called "+title+" found**");
-				return;
-			} else
-				interp.error("Window not found");
-		}
-=======
 		if (frame==null)
 			interp.error("Window not found");
->>>>>>> upstream/master
 		boolean isEditor = frame instanceof Editor;
 		if (!(isEditor || frame instanceof TextWindow))
 			interp.error("Window is not text window");
