@@ -435,7 +435,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 		if (ij!=null && ij.quitting())  // this may help avoid thread deadlocks
 			return true;
 		Rectangle bounds = getBounds();
-		if (initialLoc!=null && !bounds.equals(initialLoc) && !IJ.isMacro()
+		if (initialLoc!=null && !(new Point(bounds.x,bounds.y)).equals(initialLoc) && !IJ.isMacro()
 		&& bounds.y<screenHeight/3 && (bounds.y+bounds.height)<=screenHeight
 		&& (bounds.x+bounds.width)<=screenWidth) {
 			Prefs.saveLocation(LOC_KEY, new Point(bounds.x,bounds.y));
