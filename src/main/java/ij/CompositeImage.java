@@ -2,10 +2,9 @@ package ij;
 import ij.process.*;
 import ij.plugin.frame.*;
 import ij.io.FileInfo;
-import ij.measure.Calibration;
-
 import java.awt.*;
 import java.awt.image.*;
+import ij.measure.Calibration;
 
 public class CompositeImage extends ImagePlus {
 
@@ -684,7 +683,7 @@ public class CompositeImage extends ImagePlus {
 		rgbPixels = null;
 		awtImage = null;
 		channelLuts = null;
-		//active = new boolean[MAX_CHANNELS];
+		boolean[] active = new boolean[MAX_CHANNELS];
 	}
 
 }
