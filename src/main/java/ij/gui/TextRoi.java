@@ -186,7 +186,6 @@ public class TextRoi extends Roi {
 			char[] chr = {c};
 			theText[cline] += new String(chr);
 			updateBounds();
-			imp.draw();
 			updateText();
 			firstChar = false;
 			return;

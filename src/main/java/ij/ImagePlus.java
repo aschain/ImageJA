@@ -667,7 +667,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	}
 
 	void setProcessor2(String title, ImageProcessor ip, ImageStack newStack) {
-		//IJ.log("setProcessor2: "+ip+" "+this.ip+" "+newStack);
 		if (title!=null) setTitle(title);
 		if (ip==null)
 			return;
@@ -719,7 +718,6 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 	/** Replaces the image with the specified stack and updates
 		the display. Set 'title' to null to leave the title unchanged. */
     public void setStack(String title, ImageStack newStack) {
-		//IJ.log("setStack1: "+nChannels+" "+nSlices+" "+nFrames);
 		int bitDepth1 = getBitDepth();
 		int previousStackSize = getStackSize();
 		int newStackSize = newStack.getSize();
@@ -1617,6 +1615,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 				pvalue[3] = index;
 				// fall through to get rgb values
 			case COLOR_RGB:
+				if (ip!=null && ip.getNChannels()==1) {
+					pvalue[0] = ip.getPixel(x, y);
+					return pvalue;
+				}
 				int c = 0;
 				if (imageType==COLOR_RGB && ip!=null)
 					c = ip.getPixel(x, y);
@@ -2735,8 +2737,12 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     			String s = (int)value==value?IJ.d2s(value,0)+".0":IJ.d2s(value,4,7);
     			return(", value=" + s);
 			case COLOR_RGB:
-				String hex = Colors.colorToString(new Color(v[0],v[1],v[2]));
-				return(", value=" + IJ.pad(v[0],3) + "," + IJ.pad(v[1],3) + "," + IJ.pad(v[2],3) + " ("+hex + ")");
+				if (ip!=null && ip.getNChannels()==1)
+	 				return(", value=" + v[0]);
+	 			else {
+					String hex = Colors.colorToString(new Color(v[0],v[1],v[2]));
+					return(", value=" + IJ.pad(v[0],3) + "," + IJ.pad(v[1],3) + "," + IJ.pad(v[2],3) + " ("+hex + ")");
+				}
     		default: return("");
 		}
     }
@@ -3318,6 +3324,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
     	if (imageProperties==null)
     		imageProperties = new Properties();
     	return imageProperties;
+    }
+    
+    public boolean isRGB() {
+		return ip!=null && ip.getNChannels()==3;
     }
     
 }

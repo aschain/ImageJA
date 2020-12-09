@@ -89,6 +89,8 @@ import javax.swing.filechooser.*;
 				//OpenDialog.setDefaultDirectory(directory);
 				Prefs.set("DirectoryChooser.DefaultDirectory",directory);
 				Prefs.savePreferences();
+				directory = IJ.addSeparator(directory);
+				OpenDialog.setDefaultDirectory(directory);
 			}
 		} catch (Exception e) {}
 	}
@@ -107,13 +109,14 @@ import javax.swing.filechooser.*;
 		}
 		if (IJ.debugMode)
 			IJ.log("DirectoryChooser: dir=\""+dir+"\",  file=\""+name+"\"");
-		OpenDialog od = new OpenDialog(title, dir, name);
-		if (od.getDirectory()==null)
+		OpenDialog od = new OpenDialog(title, dir, null);
+		String odDir = od.getDirectory();
+		if (odDir==null)
 			directory = null;
-		else
-			directory = od.getDirectory() + od.getFileName() + "/";
-		if (directory!=null)
+		else {
+			directory = odDir + od.getFileName() + "/";
 			OpenDialog.setDefaultDirectory(directory);
+		}
 		System.setProperty("apple.awt.fileDialogForDirectories", "false");
  		Prefs.useJFileChooser = saveUseJFC;
 	}
