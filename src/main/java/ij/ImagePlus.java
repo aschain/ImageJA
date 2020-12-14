@@ -515,7 +515,7 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 			notifyListeners(OPENED);
 		}
 	}
-
+	
 	void invertLookupTable() {
 		int nImages = getStackSize();
 		ip.invertLut();
@@ -2936,6 +2936,10 @@ public class ImagePlus implements ImageObserver, Measurements, Cloneable {
 
 	public static void removeImageListener(ImageListener listener) {
 		listeners.removeElement(listener);
+	}
+	
+	public static Vector getListeners() {
+		return listeners;
 	}
 	
 	/** For debug purposes, writes all registered (and possibly,
