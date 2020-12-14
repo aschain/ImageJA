@@ -113,13 +113,13 @@
 							<!-- compile everything to ensure module-info contains right entries -->
 							<!-- required when JAVA_HOME is JDK 8 or below -->
 							<jdkToolchain>
-								<version>1.6</version>
+								<version>9</version>
 							</jdkToolchain>
 							<!-- Exclude MacAdapter because it requires internal packages -->
 							<excludes>
 								<exclude>**/MacAdapter.java</exclude>
 							</excludes>
-							<release>1.6</release>
+							<release>9</release>
 						</configuration>
 					</execution>
 					<execution>
