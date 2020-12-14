@@ -84,8 +84,8 @@
 		<license.licenseName>N/A</license.licenseName>
 		<license.copyrightOwners>N/A</license.copyrightOwners>
 
-		<scijava.jvm.version>1.8</scijava.jvm.version>
-		<scijava.jvm.build.version>1.8</scijava.jvm.build.version>
+		<scijava.jvm.version>1.6</scijava.jvm.version>
+		<scijava.jvm.build.version>1.6</scijava.jvm.build.version>
 		<javac.path>${java.home}/../lib/tools.jar</javac.path>
 
 		<!-- NB: Deploy releases to the SciJava Maven repository. -->
@@ -113,13 +113,13 @@
 							<!-- compile everything to ensure module-info contains right entries -->
 							<!-- required when JAVA_HOME is JDK 8 or below -->
 							<jdkToolchain>
-								<version>9</version>
+								<version>1.6</version>
 							</jdkToolchain>
 							<!-- Exclude MacAdapter because it requires internal packages -->
 							<excludes>
 								<exclude>**/MacAdapter.java</exclude>
 							</excludes>
-							<release>9</release>
+							<release>1.6</release>
 						</configuration>
 					</execution>
 					<execution>
@@ -146,8 +146,8 @@
 					<jdkToolchain>
 						<version>[1.6,8)</version>
 					</jdkToolchain>
-					<source>8</source>
-					<target>8</target>
+					<source>1.6</source>
+					<target>1.6</target>
 				</configuration>
 			</plugin>
 			<plugin>
