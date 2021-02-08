@@ -89,8 +89,6 @@ import javax.swing.filechooser.*;
 				//OpenDialog.setDefaultDirectory(directory);
 				Prefs.set("DirectoryChooser.DefaultDirectory",directory);
 				Prefs.savePreferences();
-				directory = IJ.addSeparator(directory);
-				OpenDialog.setDefaultDirectory(directory);
 			}
 		} catch (Exception e) {}
 	}
