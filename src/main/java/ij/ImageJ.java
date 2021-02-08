@@ -77,8 +77,8 @@ public class ImageJ extends Frame implements ActionListener,
 	MouseListener, KeyListener, WindowListener, ItemListener, Runnable {
 
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
-	public static final String VERSION = "1.53g";
-	public static final String BUILD = "11";
+	public static final String VERSION = "1.53i";
+	public static final String BUILD = "3";
 	public static Color backgroundColor = new Color(237,237,237);
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
@@ -214,7 +214,7 @@ public class ImageJ extends Frame implements ActionListener,
 			IJ.error(err2);
 			IJ.runPlugIn("ij.plugin.ClassChecker", "");
 		}
-		if (IJ.isMacintosh()&&applet==null) { 
+		if (IJ.isMacintosh()&&applet==null) {
 			try {
 				IJ.runPlugIn("ij.plugin.MacAdapter", ""); 
 			} catch(Throwable e) {}
@@ -400,6 +400,8 @@ public class ImageJ extends Frame implements ActionListener,
 	public void mouseEntered(MouseEvent e) {}
 
  	public void keyPressed(KeyEvent e) {
+		if (e.isConsumed())
+			return;
 		int keyCode = e.getKeyCode();
 		IJ.setKeyDown(keyCode);
 		hotkey = false;
@@ -597,8 +599,8 @@ public class ImageJ extends Frame implements ActionListener,
 	public void keyTyped(KeyEvent e) {
 		char keyChar = e.getKeyChar();
 		int flags = e.getModifiers();
-		if (IJ.debugMode) IJ.log("keyTyped: char=\"" + keyChar + "\" (" + (int)keyChar 
-			+ "), flags= "+Integer.toHexString(flags)+ " ("+KeyEvent.getKeyModifiersText(flags)+")");
+		//if (IJ.debugMode) IJ.log("keyTyped: char=\"" + keyChar + "\" (" + (int)keyChar 
+		//	+ "), flags= "+Integer.toHexString(flags)+ " ("+KeyEvent.getKeyModifiersText(flags)+")");
 		if (keyChar=='\\' || keyChar==171 || keyChar==223) {
 			if (((flags&Event.ALT_MASK)!=0))
 				doCommand("Animation Options...");
