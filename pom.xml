@@ -180,7 +180,7 @@
 				      <workingDirectory>${basedir}</workingDirectory>
 				      <arguments>
 				    	  <argument>-c</argument>
-				    	  <argument>"../copyToFiji.sh plugins ${project.artifactId} target/${project.build.finalName}.jar"</argument>
+				    	  <argument>"../copyToFiji.sh jars ${project.artifactId} target/${project.build.finalName}.jar"</argument>
 				      </arguments>
 				    </configuration>
 				  </execution>
